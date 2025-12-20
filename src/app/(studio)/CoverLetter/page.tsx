@@ -2,13 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import React, { useEffect, useState } from 'react'
-import ReadTXT from '../GenComponents/ReadTXT'
-import Analyse from '../GenComponents/Analyse'
-import SearchResults from '../GenComponents/SearchResults'
+import ReadTXT from '../../GenComponents/ReadTXT'
+import Analyse from '../../GenComponents/Analyse'
+import SearchResults from '../../GenComponents/SearchResults'
 import { Textarea } from '@/components/ui/textarea'
 import { getFromStorage } from '@/Cookiesmv'
-import AnalyseResults from '../GenComponents/AnalyseResults'
-import Coverlettergenarate from '../GenComponents/Coverlettergenarate'
+import AnalyseResults from '../../GenComponents/AnalyseResults'
+import Coverlettergenarate from '../../GenComponents/Coverlettergenarate'
 
 export default function page() {
   const [data, setdata] = useState('')
@@ -26,14 +26,14 @@ export default function page() {
             </h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card className="h-fit">
+              {/* <Card className="h-fit">
                 <CardHeader>
                   <CardTitle>Uploaded Resume</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <AnalyseResults />
                 </CardContent>
-              </Card>
+              </Card> */}
 
               <Coverlettergenarate/>
             </div>

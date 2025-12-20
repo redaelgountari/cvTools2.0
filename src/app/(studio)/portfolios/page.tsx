@@ -91,10 +91,10 @@ function TemplateCard({ template }) {
           className="w-full group-hover:shadow-md transition-shadow" 
           asChild
         >
-         <Link href={`/portfolio/${template.link}`}>
+         <a href={`/portfolio/${template.link}`}>
             View Template
             <ExternalLink className="ml-2 h-4 w-4" />
-          </Link>
+          </a>
         </Button>
       </CardFooter>
     </Card>
