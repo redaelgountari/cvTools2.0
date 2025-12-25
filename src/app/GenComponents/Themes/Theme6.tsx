@@ -70,14 +70,14 @@ interface Resume {
 
 // ======= THEME CONSTANTS =======
 const COLORS = {
-  primary: '#0F4C81',      // Deep blue
-  secondary: '#1E88E5',    // Bright blue
-  accent: '#2E7D32',       // Green accent
-  text: '#37474F',         // Dark slate
-  textLight: '#546E7A',    // Medium slate
-  textLighter: '#90A4AE',  // Light slate
-  divider: '#CFD8DC',      // Light blue-gray
-  background: '#F5F8FA',   // Very light blue
+  primary: '#0F4C81',
+  secondary: '#1E88E5',
+  accent: '#2E7D32',
+  text: '#37474F',
+  textLight: '#546E7A',
+  textLighter: '#90A4AE',
+  divider: '#CFD8DC',
+  background: '#F8FAFB',
   white: '#FFFFFF',
 };
 
@@ -93,21 +93,21 @@ const styles = StyleSheet.create({
   // Header styles
   header: {
     flexDirection: 'row',
-    paddingTop: 32,
-    paddingBottom: 22,
-    paddingHorizontal: 40,
-    borderBottomWidth: 1,
+    paddingTop: 28,
+    paddingBottom: 20,
+    paddingHorizontal: 36,
+    borderBottomWidth: 1.5,
     borderBottomColor: COLORS.divider,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     backgroundColor: COLORS.background,
   },
   photoContainer: {
-    width: 90,
-    height: 90,
-    marginRight: 22,
-    borderRadius: 45,
+    width: 85,
+    height: 85,
+    marginRight: 20,
+    borderRadius: 43,
     overflow: 'hidden',
-    border: `2px solid ${COLORS.divider}`,
+    border: `2.5px solid ${COLORS.primary}`,
   },
   photo: {
     width: '100%',
@@ -119,19 +119,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    fontSize: 28,
+    fontSize: 26,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.primary,
     marginBottom: 5,
     textTransform: 'uppercase',
-    letterSpacing: 2.5,
+    letterSpacing: 2,
     lineHeight: 1.1,
   },
   jobTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: COLORS.text,
     textTransform: 'uppercase',
-    letterSpacing: 1.2,
+    letterSpacing: 1.1,
     fontFamily: 'Helvetica',
   },
   contactInfo: {
@@ -142,17 +142,17 @@ const styles = StyleSheet.create({
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 4.5,
   },
   contactIcon: {
-    width: 11,
+    width: 10,
     marginRight: 7,
-    fontSize: 7.5,
+    fontSize: 7,
     color: COLORS.primary,
     textAlign: 'center',
   },
   contactText: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
   },
   
@@ -162,40 +162,40 @@ const styles = StyleSheet.create({
   },
   leftColumn: {
     width: '35%',
-    paddingTop: 28,
-    paddingLeft: 40,
-    paddingRight: 22,
-    paddingBottom: 35,
+    paddingTop: 26,
+    paddingLeft: 36,
+    paddingRight: 20,
+    paddingBottom: 32,
     backgroundColor: COLORS.background,
   },
   rightColumn: {
     width: '65%',
-    paddingTop: 28,
-    paddingLeft: 28,
-    paddingRight: 40,
-    paddingBottom: 35,
+    paddingTop: 26,
+    paddingLeft: 26,
+    paddingRight: 36,
+    paddingBottom: 32,
     backgroundColor: COLORS.white,
   },
   
   // Section styles
   section: {
-    marginBottom: 24,
+    marginBottom: 22,
   },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.primary,
     textTransform: 'uppercase',
-    marginBottom: 12,
-    letterSpacing: 1.3,
-    paddingBottom: 6,
+    marginBottom: 11,
+    letterSpacing: 1.2,
+    paddingBottom: 5,
     borderBottomWidth: 2,
     borderBottomColor: COLORS.primary,
   },
   
   // Profile/Summary
   profileText: {
-    fontSize: 9.5,
+    fontSize: 9,
     lineHeight: 1.65,
     color: COLORS.text,
     textAlign: 'justify',
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   
   // Education styles
   educationItem: {
-    marginBottom: 14,
+    marginBottom: 13,
   },
   degree: {
     fontSize: 9.5,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.3,
   },
   institution: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     marginBottom: 2,
     fontFamily: 'Helvetica',
@@ -229,10 +229,10 @@ const styles = StyleSheet.create({
   
   // Skills styles
   skillsList: {
-    marginBottom: 12,
+    marginBottom: 11,
   },
   skillsSubtitle: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.secondary,
     marginBottom: 7,
@@ -240,12 +240,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   skillItem: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     marginBottom: 3.5,
     paddingLeft: 8,
     fontFamily: 'Helvetica',
-    lineHeight: 1.3,
+    lineHeight: 1.35,
   },
   
   // Languages
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   languageName: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     fontFamily: 'Helvetica-Bold',
   },
@@ -269,15 +269,15 @@ const styles = StyleSheet.create({
   
   // Experience styles
   experienceItem: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   expTitle: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.primary,
     marginBottom: 3,
     letterSpacing: 0.3,
-    lineHeight: 1.2,
+    lineHeight: 1.25,
   },
   companyLine: {
     flexDirection: 'row',
@@ -286,19 +286,19 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   companyName: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     fontStyle: 'italic',
     flex: 1,
   },
   dateRange: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.textLight,
     marginLeft: 10,
     fontFamily: 'Helvetica-Bold',
   },
   description: {
-    fontSize: 9.5,
+    fontSize: 9,
     lineHeight: 1.6,
     color: COLORS.text,
     textAlign: 'justify',
@@ -315,14 +315,14 @@ const styles = StyleSheet.create({
     marginBottom: 3.5,
   },
   bullet: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.primary,
     marginRight: 7,
     width: 6,
     fontFamily: 'Helvetica-Bold',
   },
   bulletText: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     lineHeight: 1.55,
     flex: 1,
@@ -338,14 +338,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   expertiseBullet: {
-    fontSize: 9.5,
+    fontSize: 9,
     marginRight: 7,
     color: COLORS.primary,
     width: 6,
     fontFamily: 'Helvetica-Bold',
   },
   expertiseText: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     lineHeight: 1.45,
     flex: 1,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   
   // Certifications
   certificationItem: {
-    marginBottom: 14,
+    marginBottom: 13,
   },
   certName: {
     fontSize: 9.5,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.3,
   },
   certIssuer: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -411,9 +411,11 @@ const Header = ({ personalInfo, jobTitle, userImage }: {
   userImage?: any;
 }) => (
   <View style={styles.header}>
-    <View style={styles.photoContainer}>
-      {userImage && <Image style={styles.photo} src={userImage} />}
-    </View>
+    {userImage && (
+      <View style={styles.photoContainer}>
+        <Image style={styles.photo} src={userImage} />
+      </View>
+    )}
     <View style={styles.nameAndTitle}>
       <Text style={styles.name}>{filterNA(personalInfo.fullName)}</Text>
       {jobTitle && <Text style={styles.jobTitle}>{jobTitle}</Text>}
@@ -439,7 +441,7 @@ const Header = ({ personalInfo, jobTitle, userImage }: {
       )}
       {filterNA(personalInfo.location) && (
         <View style={styles.contactItem}>
-          <Text style={styles.contactIcon}>📍</Text>
+          <Text style={styles.contactIcon}></Text>
           <Text style={styles.contactText}>{personalInfo.location}</Text>
         </View>
       )}
@@ -481,7 +483,7 @@ export default function ResumeTemplate({
               </View>
             )}
 
-            {/* Languages - MOVED UP */}
+            {/* Languages */}
             {userdata.skills.languages.length > 0 && (
               <View style={styles.section}>
                 <SectionTitle title="LANGUES" />
@@ -493,9 +495,6 @@ export default function ResumeTemplate({
                 ))}
               </View>
             )}
-
-            {/* Education - MOVED DOWN */}
-            
 
             {/* Certifications */}
             {userdata.certifications && userdata.certifications.length > 0 && (
@@ -520,7 +519,7 @@ export default function ResumeTemplate({
                   <View style={styles.skillsList}>
                     <Text style={styles.skillsSubtitle}>LOGICIELS MAÎTRISÉS</Text>
                     {[...userdata.tools, ...userdata.skills.technical].map((tool, index) => (
-                      <Text key={`tool-${index}`} style={styles.skillItem}>{tool}</Text>
+                      <Text key={`tool-${index}`} style={styles.skillItem}>• {tool}</Text>
                     ))}
                   </View>
                 )}
@@ -559,9 +558,8 @@ export default function ResumeTemplate({
           </View>
 
           {/* Right Column */}
-          
           <View style={styles.rightColumn}>
-            {/* Experience */}
+            {/* Education */}
             {userdata.education.length > 0 && (
               <View style={styles.section}>
                 <SectionTitle title="FORMATION" />
@@ -574,6 +572,8 @@ export default function ResumeTemplate({
                 ))}
               </View>
             )}
+
+            {/* Experience */}
             {userdata.experience.length > 0 && (
               <View style={styles.section}>
                 <SectionTitle title="EXPÉRIENCE PROFESSIONNELLE" />
@@ -590,9 +590,14 @@ export default function ResumeTemplate({
                     </View>
                     
                     {exp.responsibilities.length > 0 && (
-                      <Text style={styles.description}>
-                        {exp.responsibilities.join('. ')}
-                      </Text>
+                      <View style={styles.bulletList}>
+                        {exp.responsibilities.map((resp, idx) => (
+                          <View key={`resp-${idx}`} style={styles.bulletItem}>
+                            <Text style={styles.bullet}>•</Text>
+                            <Text style={styles.bulletText}>{resp}</Text>
+                          </View>
+                        ))}
+                      </View>
                     )}
                     
                     {exp.achievements && exp.achievements.length > 0 && (
@@ -622,6 +627,50 @@ export default function ResumeTemplate({
                       <Text style={styles.projectTech}>
                         Technologies: {project.technologies.join(', ')}
                       </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Publications */}
+            {userdata.publications && userdata.publications.length > 0 && (
+              <View style={styles.section}>
+                <SectionTitle title="PUBLICATIONS" />
+                {userdata.publications.map((pub, index) => (
+                  <View key={`pub-${index}`} style={styles.experienceItem}>
+                    <Text style={styles.expTitle}>{filterNA(pub.title)}</Text>
+                    <Text style={styles.companyName}>{filterNA(pub.publisher)}</Text>
+                    {pub.date && <Text style={styles.eduYear}>{filterNA(pub.date)}</Text>}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Awards */}
+            {userdata.awards && userdata.awards.length > 0 && (
+              <View style={styles.section}>
+                <SectionTitle title="RÉCOMPENSES" />
+                {userdata.awards.map((award, index) => (
+                  <View key={`award-${index}`} style={styles.educationItem}>
+                    <Text style={styles.degree}>{filterNA(award.title)}</Text>
+                    <Text style={styles.institution}>{filterNA(award.issuer)}</Text>
+                    {award.year && <Text style={styles.eduYear}>{filterNA(award.year)}</Text>}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Volunteer Experience */}
+            {userdata.volunteerExperience && userdata.volunteerExperience.length > 0 && (
+              <View style={styles.section}>
+                <SectionTitle title="EXPÉRIENCE BÉNÉVOLE" />
+                {userdata.volunteerExperience.map((vol, index) => (
+                  <View key={`vol-${index}`} style={styles.experienceItem}>
+                    <Text style={styles.expTitle}>{filterNA(vol.role)}</Text>
+                    <Text style={styles.companyName}>{filterNA(vol.organization)}</Text>
+                    {vol.description && (
+                      <Text style={styles.description}>{filterNA(vol.description)}</Text>
                     )}
                   </View>
                 ))}
