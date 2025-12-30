@@ -58,7 +58,11 @@ export default function CoverLetterGenerate() {
                 Important: The cover letter must not exceed ${lineLimit} lines. Ensure it is concise and well-structured.
             `;
 
-            const { data } = await axios.post("/api/gemini", { userData: prompt });
+            const { data } = await axios.post("/api/gemini", { 
+                userData: prompt,
+                useCase: 'cover-letter',
+                jobDescription: jobAnnouncement
+             });
             const cleanedData = data.text.replace(/```json|```/g, '').trim();
 
             setCoverLetter(cleanedData);
@@ -75,7 +79,6 @@ export default function CoverLetterGenerate() {
             <Card className="p-6 shadow-md">
                 <h1 className="text-2xl font-bold mb-4">Cover Letter Generator</h1>
 
-                {/* Job Announcement Input */}
                 <div className="mb-6">
                     <label className="block text-sm font-medium mb-2">Job Announcement</label>
                     <Textarea

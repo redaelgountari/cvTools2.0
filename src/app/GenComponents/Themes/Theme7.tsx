@@ -1,295 +1,481 @@
 "use client"
 
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
-import { Resume } from '@/app/types/resume';
+import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 
-// Register Inter font for a modern look
+// Register custom fonts
 Font.register({
   family: 'Inter',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_0ew.ttf', fontWeight: 'normal' },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hjp-Ek-_0ew.ttf', fontWeight: 'bold' },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hjp-Ek-_0ew.ttf', fontWeight: 'semibold' },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2', fontWeight: 'normal' },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2', fontWeight: 'bold' },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2', fontWeight: 600 },
   ],
 });
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontFamily: 'Inter',
     backgroundColor: '#FFFFFF',
+    fontFamily: 'Inter',
+    padding: 0,
   },
+  
+  // Header Section
   header: {
-    flexDirection: 'row',
-    marginBottom: 30,
-    borderBottom: '2px solid #2563EB',
-    paddingBottom: 20,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerRight: {
-    width: 100,
+    backgroundColor: '#2c3e50',
+    padding: 25,
+    paddingVertical: 28,
     alignItems: 'center',
   },
-  imageContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    overflow: 'hidden',
-    border: '2px solid #2563EB',
+  headerContent: {
+    alignItems: 'center',
+    maxWidth: '80%',
+  },
+  profileImageContainer: {
+    marginBottom: 12,
   },
   profileImage: {
-    width: '100%',
-    height: '100%',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    border: '3px solid #ecf0f1',
+    objectFit: 'cover',
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 14,
-    color: '#2563EB',
-    marginBottom: 12,
-  },
-  contactInfo: {
-    fontSize: 10,
-    color: '#475569',
-    marginBottom: 3,
-  },
-  mainContent: {
-    flexDirection: 'row',
-    gap: 30,
-  },
-  leftColumn: {
-    width: '30%',
-  },
-  rightColumn: {
-    flex: 1,
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2563EB',
-    marginBottom: 12,
+    color: '#FFFFFF',
+    marginBottom: 6,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  skillCategory: {
-    fontSize: 12,
-    fontWeight: 'semibold',
-    color: '#1E293B',
-    marginBottom: 8,
-  },
-  skillGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  skillItem: {
-    fontSize: 9,
-    padding: '4 8',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    color: '#2563EB',
-  },
-  experienceItem: {
-    marginBottom: 15,
-  },
-  experienceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
   },
   jobTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
-    color: '#1E293B',
+    color: '#ecf0f1',
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
-  company: {
-    fontSize: 11,
-    color: '#475569',
-    marginBottom: 6,
+  contactBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 6,
   },
-  period: {
-    fontSize: 10,
-    color: '#64748B',
-  },
-  bulletPoint: {
-    fontSize: 10,
-    marginLeft: 12,
-    marginBottom: 3,
-    color: '#475569',
-    lineHeight: 1.4,
-  },
-  summary: {
-    fontSize: 10,
-    lineHeight: 1.6,
-    color: '#475569',
-    textAlign: 'justify',
-  },
-  languageItem: {
+  contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
   },
-  languageDot: {
-    width: 4,
-    height: 4,
-    backgroundColor: '#2563EB',
-    borderRadius: 2,
-    marginRight: 6,
+  contactSeparator: {
+    fontSize: 9,
+    color: '#95a5a6',
+    marginHorizontal: 8,
   },
-  languageText: {
-    fontSize: 10,
-    color: '#475569',
+  contactText: {
+    fontSize: 8.5,
+    color: '#bdc3c7',
   },
-  certificationItem: {
-    marginBottom: 8,
+
+  // Main Layout
+  mainLayout: {
+    flexDirection: 'row',
   },
-  certName: {
-    fontSize: 11,
-    fontWeight: 'semibold',
-    color: '#1E293B',
+
+  // Left Column
+  leftColumn: {
+    width: '35%',
+    backgroundColor: '#ecf0f1',
+    padding: 30,
+    paddingTop: 35,
   },
-  certDetails: {
-    fontSize: 10,
-    color: '#64748B',
+  leftSection: {
+    marginBottom: 28,
   },
-  projectItem: {
-    marginBottom: 12,
-    padding: 10,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 6,
-  },
-  projectTitle: {
+  leftSectionHeading: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 4,
+    color: '#2c3e50',
+    textTransform: 'uppercase',
+    marginBottom: 12,
+    letterSpacing: 1.2,
+    paddingBottom: 6,
+    borderBottomWidth: 2,
+    borderBottomColor: '#34495e',
   },
-  projectDesc: {
-    fontSize: 10,
-    color: '#475569',
-    marginBottom: 6,
+  skillItem: {
+    fontSize: 9,
+    color: '#2c3e50',
+    marginBottom: 9,
+    paddingLeft: 12,
+    position: 'relative',
+    lineHeight: 1.4,
   },
-  projectTech: {
+  skillBullet: {
+    position: 'absolute',
+    left: 0,
+    top: 4,
+    width: 4,
+    height: 4,
+    backgroundColor: '#34495e',
+    borderRadius: 2,
+  },
+  languageItem: {
+    marginBottom: 10,
+  },
+  languageText: {
+    fontSize: 9,
+    color: '#2c3e50',
+    fontWeight: 600,
+  },
+  toolTag: {
+    fontSize: 8,
+    color: '#2c3e50',
+    backgroundColor: '#bdc3c7',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+    marginBottom: 7,
+    marginRight: 7,
+    fontWeight: 600,
+  },
+  toolsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
   },
-  projectTechItem: {
+  hobbyTag: {
     fontSize: 8,
-    padding: '2 6',
-    backgroundColor: '#E0E7FF',
-    color: '#4F46E5',
-    borderRadius: 8,
+    color: '#2c3e50',
+    backgroundColor: '#d5dbdb',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginBottom: 7,
+    marginRight: 7,
+  },
+  hobbiesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+
+  // Right Column
+  rightColumn: {
+    width: '65%',
+    padding: 35,
+    paddingTop: 35,
+  },
+  section: {
+    marginBottom: 26,
+  },
+  sectionHeading: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    textTransform: 'uppercase',
+    marginBottom: 16,
+    letterSpacing: 1.5,
+    paddingBottom: 8,
+    borderBottomWidth: 3,
+    borderBottomColor: '#34495e',
+  },
+  profileText: {
+    fontSize: 9.5,
+    color: '#34495e',
+    lineHeight: 1.7,
+    textAlign: 'justify',
+  },
+
+  // Timeline Items
+  timelineItem: {
+    marginBottom: 20,
+    paddingBottom: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ecf0f1',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  itemLeft: {
+    flex: 1,
+  },
+  itemTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 4,
+    lineHeight: 1.3,
+  },
+  itemSubtitle: {
+    fontSize: 9.5,
+    color: '#34495e',
+    marginBottom: 3,
+    fontWeight: 600,
+  },
+  itemLocation: {
+    fontSize: 8.5,
+    color: '#7f8c8d',
+    marginTop: 2,
+  },
+  itemPeriod: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    backgroundColor: '#34495e',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 3,
+    alignSelf: 'flex-start',
+    fontWeight: 600,
+    letterSpacing: 0.5,
+  },
+  bulletList: {
+    marginTop: 8,
+  },
+  bulletItem: {
+    fontSize: 9,
+    color: '#34495e',
+    marginBottom: 6,
+    paddingLeft: 14,
+    position: 'relative',
+    lineHeight: 1.6,
+  },
+  bullet: {
+    position: 'absolute',
+    left: 0,
+    top: 1,
+    fontSize: 7,
+    color: '#34495e',
+  },
+
+  // Projects
+  projectDescription: {
+    fontSize: 9,
+    color: '#34495e',
+    marginBottom: 8,
+    lineHeight: 1.6,
+    marginTop: 4,
+  },
+  techContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  techTag: {
+    fontSize: 7.5,
+    color: '#2c3e50',
+    backgroundColor: '#ecf0f1',
+    paddingVertical: 4,
+    paddingHorizontal: 9,
+    borderRadius: 3,
+    marginRight: 6,
+    marginBottom: 6,
+    fontWeight: 600,
+    borderWidth: 1,
+    borderColor: '#bdc3c7',
+  },
+
+  // Education
+  educationItem: {
+    marginBottom: 18,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ecf0f1',
+  },
+  educationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  degreeTitle: {
+    fontSize: 10.5,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 4,
+    lineHeight: 1.3,
+  },
+  institutionName: {
+    fontSize: 9.5,
+    color: '#34495e',
+    marginBottom: 3,
+    fontWeight: 600,
+  },
+  educationYear: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    backgroundColor: '#34495e',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 3,
+    alignSelf: 'flex-start',
+    fontWeight: 600,
   },
 });
 
-const filterNA = (value: string | undefined): string => (value && value !== 'N/A' ? value : '');
+const filterNA = (value) => (value && value !== 'N/A' ? value : '');
 
-export default function Theme7({ userdata, userImage }: { userdata: Resume; userImage: any }) {
+export default function Theme7({ userdata, userImage, themeName = 'modern' }) {
+  const safeUserData = {
+    personalInfo: {
+      fullName: userdata?.personalInfo?.fullName || '',
+      title: userdata?.personalInfo?.title || '',
+      phone: userdata?.personalInfo?.phone || '',
+      email: userdata?.personalInfo?.email || '',
+      location: userdata?.personalInfo?.location || '',
+      city: userdata?.personalInfo?.city || '',
+      website: userdata?.personalInfo?.website || '',
+      linkedin: userdata?.personalInfo?.linkedin || '',
+      github: userdata?.personalInfo?.github || '',
+      portfolio: userdata?.personalInfo?.portfolio || ''
+    },
+    professionalSummary: userdata?.professionalSummary || '',
+    jobSearchTitle: userdata?.jobSearchTitle || '',
+    skills: {
+      technical: userdata?.skills?.technical || [],
+      soft: userdata?.skills?.soft || [],
+      languages: userdata?.skills?.languages || []
+    },
+    tools: userdata?.tools || [],
+    hobbies: userdata?.hobbies || [],
+    experience: userdata?.experience || [],
+    education: userdata?.education || [],
+    projects: userdata?.projects || [],
+    certifications: userdata?.certifications || [],
+    awards: userdata?.awards || [],
+    publications: userdata?.publications || [],
+    volunteerExperience: userdata?.volunteerExperience || [],
+    image: userdata?.image || []
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.name}>{filterNA(userdata.personalInfo.fullName)}</Text>
-            {userdata.experience[0]?.title && (
-              <Text style={styles.title}>{userdata.experience[0].title}</Text>
+          <View style={styles.headerContent}>
+            {safeUserData.image && safeUserData.image[0] && (
+              <View style={styles.profileImageContainer}>
+                <Image style={styles.profileImage} src={safeUserData.image[0]} />
+              </View>
             )}
-            <Text style={styles.contactInfo}>{filterNA(userdata.personalInfo.email)}</Text>
-            <Text style={styles.contactInfo}>{filterNA(userdata.personalInfo.phone)}</Text>
-            <Text style={styles.contactInfo}>{filterNA(userdata.personalInfo.location)}</Text>
-            {filterNA(userdata.personalInfo.linkedin) && (
-              <Text style={styles.contactInfo}>{userdata.personalInfo.linkedin}</Text>
-            )}
-          </View>
-          <View style={styles.headerRight}>
-            <View style={styles.imageContainer}>
-              <Image style={styles.profileImage} src={userImage} />
+            
+            <Text style={styles.name}>{filterNA(safeUserData.personalInfo.fullName)}</Text>
+            <Text style={styles.jobTitle}>{filterNA(safeUserData.jobSearchTitle || safeUserData.personalInfo.title)}</Text>
+            
+            <View style={styles.contactBar}>
+              {filterNA(safeUserData.personalInfo.phone) && (
+                <>
+                  <Text style={styles.contactText}>{safeUserData.personalInfo.phone}</Text>
+                  <Text style={styles.contactSeparator}>•</Text>
+                </>
+              )}
+              {filterNA(safeUserData.personalInfo.email) && (
+                <>
+                  <Text style={styles.contactText}>{safeUserData.personalInfo.email}</Text>
+                  {(filterNA(safeUserData.personalInfo.city) || filterNA(safeUserData.personalInfo.location)) && (
+                    <Text style={styles.contactSeparator}>•</Text>
+                  )}
+                </>
+              )}
+              {filterNA(safeUserData.personalInfo.city) && (
+                <Text style={styles.contactText}>{safeUserData.personalInfo.city}</Text>
+              )}
+              {!filterNA(safeUserData.personalInfo.city) && filterNA(safeUserData.personalInfo.location) && (
+                <Text style={styles.contactText}>{safeUserData.personalInfo.location}</Text>
+              )}
             </View>
+            
+            {(filterNA(safeUserData.personalInfo.website) || filterNA(safeUserData.personalInfo.linkedin) || filterNA(safeUserData.personalInfo.github)) && (
+              <View style={styles.contactBar}>
+                {filterNA(safeUserData.personalInfo.website) && (
+                  <>
+                    <Text style={styles.contactText}>{safeUserData.personalInfo.website}</Text>
+                    {(filterNA(safeUserData.personalInfo.linkedin) || filterNA(safeUserData.personalInfo.github)) && (
+                      <Text style={styles.contactSeparator}>•</Text>
+                    )}
+                  </>
+                )}
+                {filterNA(safeUserData.personalInfo.linkedin) && (
+                  <>
+                    <Text style={styles.contactText}>{safeUserData.personalInfo.linkedin}</Text>
+                    {filterNA(safeUserData.personalInfo.github) && (
+                      <Text style={styles.contactSeparator}>•</Text>
+                    )}
+                  </>
+                )}
+                {filterNA(safeUserData.personalInfo.github) && (
+                  <Text style={styles.contactText}>{safeUserData.personalInfo.github}</Text>
+                )}
+              </View>
+            )}
           </View>
         </View>
 
-        <View style={styles.mainContent}>
+        {/* Main Layout */}
+        <View style={styles.mainLayout}>
           {/* Left Column */}
           <View style={styles.leftColumn}>
-            {/* Skills Section */}
-            {(userdata.skills.technical.length > 0 || userdata.skills.soft.length > 0) && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Compétences</Text>
-                
-                {userdata.skills.technical.length > 0 && (
-                  <View style={{ marginBottom: 15 }}>
-                    <Text style={styles.skillCategory}>Techniques</Text>
-                    <View style={styles.skillGrid}>
-                      {userdata.skills.technical.map((skill, index) => (
-                        <Text key={index} style={styles.skillItem}>{skill}</Text>
-                      ))}
-                    </View>
-                  </View>
-                )}
-                
-                {userdata.skills.soft.length > 0 && (
-                  <View>
-                    <Text style={styles.skillCategory}>Soft Skills</Text>
-                    <View style={styles.skillGrid}>
-                      {userdata.skills.soft.map((skill, index) => (
-                        <Text key={index} style={styles.skillItem}>{skill}</Text>
-                      ))}
-                    </View>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* Languages Section */}
-            {userdata.skills.languages.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Langues</Text>
-                {userdata.skills.languages.map((language, index) => (
+            {/* Languages */}
+            {safeUserData.skills.languages.length > 0 && (
+              <View style={styles.leftSection}>
+                <Text style={styles.leftSectionHeading}>Langues</Text>
+                {safeUserData.skills.languages.map((language, index) => (
                   <View key={index} style={styles.languageItem}>
-                    <View style={styles.languageDot} />
-                    <Text style={styles.languageText}>{language}</Text>
+                    <View style={styles.skillBullet} />
+                    <Text style={styles.skillItem}>{language}</Text>
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Hobbies Section */}
-            {userdata.hobbies.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Centres d'intérêt</Text>
-                {userdata.hobbies.map((hobby, index) => (
-                  <View key={index} style={styles.languageItem}>
-                    <View style={styles.languageDot} />
-                    <Text style={styles.languageText}>{hobby}</Text>
+            {/* Technical Skills */}
+            {safeUserData.skills.technical.length > 0 && (
+              <View style={styles.leftSection}>
+                <Text style={styles.leftSectionHeading}>Compétences Techniques</Text>
+                {safeUserData.skills.technical.map((skill, index) => (
+                  <View key={index}>
+                    <View style={styles.skillBullet} />
+                    <Text style={styles.skillItem}>{skill}</Text>
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Certifications Section */}
-            {userdata.certifications && userdata.certifications.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Certifications</Text>
-                {userdata.certifications.map((cert, index) => (
-                  <View key={index} style={styles.certificationItem}>
-                    <Text style={styles.certName}>{filterNA(cert.name)}</Text>
-                    <Text style={styles.certDetails}>
-                      {filterNA(cert.issuer)} • {filterNA(cert.year)}
-                    </Text>
+            {/* Soft Skills */}
+            {safeUserData.skills.soft.length > 0 && (
+              <View style={styles.leftSection}>
+                <Text style={styles.leftSectionHeading}>Soft Skills</Text>
+                {safeUserData.skills.soft.map((skill, index) => (
+                  <View key={index}>
+                    <View style={styles.skillBullet} />
+                    <Text style={styles.skillItem}>{skill}</Text>
                   </View>
                 ))}
+              </View>
+            )}
+
+            {/* Tools */}
+            {safeUserData.tools.length > 0 && (
+              <View style={styles.leftSection}>
+                <Text style={styles.leftSectionHeading}>Outils</Text>
+                <View style={styles.toolsContainer}>
+                  {safeUserData.tools.map((tool, index) => (
+                    <Text key={index} style={styles.toolTag}>{tool}</Text>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Hobbies */}
+            {safeUserData.hobbies.length > 0 && (
+              <View style={styles.leftSection}>
+                <Text style={styles.leftSectionHeading}>Loisirs</Text>
+                <View style={styles.hobbiesContainer}>
+                  {safeUserData.hobbies.map((hobby, index) => (
+                    <Text key={index} style={styles.hobbyTag}>{hobby}</Text>
+                  ))}
+                </View>
               </View>
             )}
           </View>
@@ -297,69 +483,188 @@ export default function Theme7({ userdata, userImage }: { userdata: Resume; user
           {/* Right Column */}
           <View style={styles.rightColumn}>
             {/* Professional Summary */}
-            {filterNA(userdata.professionalSummary) && (
+            {filterNA(safeUserData.professionalSummary) && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Profil Professionnel</Text>
-                <Text style={styles.summary}>{userdata.professionalSummary}</Text>
+                <Text style={styles.sectionHeading}>Profil Professionnel</Text>
+                <Text style={styles.profileText}>{safeUserData.professionalSummary}</Text>
               </View>
             )}
 
-            {/* Experience Section */}
-            {userdata.experience.length > 0 && (
+            {/* Work Experience */}
+            {safeUserData.experience.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Expérience Professionnelle</Text>
-                {userdata.experience.map((exp, index) => (
-                  <View key={index} style={styles.experienceItem}>
-                    <View style={styles.experienceHeader}>
-                      <Text style={styles.jobTitle}>{filterNA(exp.title)}</Text>
-                      <Text style={styles.period}>
-                        {filterNA(exp.startDate)} - {filterNA(exp.endDate)}
+                <Text style={styles.sectionHeading}>Expérience Professionnelle</Text>
+                {safeUserData.experience.map((exp, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <View style={styles.itemRow}>
+                      <View style={styles.itemLeft}>
+                        <Text style={styles.itemTitle}>{filterNA(exp.title)}</Text>
+                        <Text style={styles.itemSubtitle}>{filterNA(exp.company)}</Text>
+                        {filterNA(exp.location) && (
+                          <Text style={styles.itemLocation}>📍 {exp.location}</Text>
+                        )}
+                      </View>
+                      <Text style={styles.itemPeriod}>
+                        {filterNA(exp.startDate)} - {filterNA(exp.endDate || 'Présent')}
                       </Text>
                     </View>
-                    <Text style={styles.company}>
-                      {filterNA(exp.company)} • {filterNA(exp.location)}
-                    </Text>
-                    {exp.responsibilities.map((resp, idx) => (
-                      <Text key={idx} style={styles.bulletPoint}>• {resp}</Text>
-                    ))}
+                    
+                    {Array.isArray(exp.responsibilities) && exp.responsibilities.length > 0 && (
+                      <View style={styles.bulletList}>
+                        {exp.responsibilities.map((responsibility, idx) => (
+                          <View key={idx}>
+                            <Text style={styles.bullet}>•</Text>
+                            <Text style={styles.bulletItem}>{responsibility}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                    
+                    {Array.isArray(exp.achievements) && exp.achievements.length > 0 && (
+                      <View style={styles.bulletList}>
+                        {exp.achievements.map((achievement, idx) => (
+                          <View key={`ach-${idx}`}>
+                            <Text style={styles.bullet}>•</Text>
+                            <Text style={styles.bulletItem}>{achievement}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Education Section */}
-            {userdata.education.length > 0 && (
+            {/* Projects */}
+            {safeUserData.projects.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Formation</Text>
-                {userdata.education.map((edu, index) => (
-                  <View key={index} style={styles.experienceItem}>
-                    <View style={styles.experienceHeader}>
-                      <Text style={styles.jobTitle}>{filterNA(edu.degree)}</Text>
-                      <Text style={styles.period}>{filterNA(edu.graduationYear)}</Text>
+                <Text style={styles.sectionHeading}>Projets</Text>
+                {safeUserData.projects.map((project, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <Text style={styles.itemTitle}>{project.title || ''}</Text>
+                    {project.role && <Text style={styles.itemSubtitle}>{project.role}</Text>}
+                    <Text style={styles.projectDescription}>{project.description || ''}</Text>
+                    
+                    {Array.isArray(project.technologiesUsed) && project.technologiesUsed.length > 0 && (
+                      <View style={styles.techContainer}>
+                        {project.technologiesUsed.map((tech, techIdx) => (
+                          <Text key={techIdx} style={styles.techTag}>{tech}</Text>
+                        ))}
+                      </View>
+                    )}
+                    
+                    {project.github && (
+                      <View style={styles.bulletList}>
+                        <View>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletItem}>GitHub: {project.github}</Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Education */}
+            {safeUserData.education.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Formation</Text>
+                {safeUserData.education.map((edu, index) => (
+                  <View key={index} style={styles.educationItem}>
+                    <View style={styles.educationRow}>
+                      <View style={styles.itemLeft}>
+                        <Text style={styles.degreeTitle}>{filterNA(edu.degree)}</Text>
+                        <Text style={styles.institutionName}>{filterNA(edu.institution)}</Text>
+                        {filterNA(edu.location) && (
+                          <Text style={styles.itemLocation}>📍 {edu.location}</Text>
+                        )}
+                      </View>
+                      {filterNA(edu.graduationYear) && (
+                        <Text style={styles.educationYear}>{edu.graduationYear}</Text>
+                      )}
                     </View>
-                    <Text style={styles.company}>
-                      {filterNA(edu.institution)} • {filterNA(edu.location)}
-                    </Text>
-                    {edu.relevantCourses && edu.relevantCourses.map((course, idx) => (
-                      <Text key={idx} style={styles.bulletPoint}>• {course}</Text>
-                    ))}
+                    
+                    {Array.isArray(edu.relevantCourses) && edu.relevantCourses.length > 0 && (
+                      <View style={styles.bulletList}>
+                        {edu.relevantCourses.map((course, idx) => (
+                          <View key={idx}>
+                            <Text style={styles.bullet}>•</Text>
+                            <Text style={styles.bulletItem}>{course}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 ))}
               </View>
             )}
 
-            {/* Projects Section */}
-            {userdata.projects && userdata.projects.length > 0 && (
+            {/* Certifications */}
+            {safeUserData.certifications.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Projets</Text>
-                {userdata.projects.map((project, index) => (
-                  <View key={index} style={styles.projectItem}>
-                    <Text style={styles.projectTitle}>{project.title}</Text>
-                    <Text style={styles.projectDesc}>{project.description}</Text>
-                    <View style={styles.projectTech}>
-                      {project.technologies.map((tech, idx) => (
-                        <Text key={idx} style={styles.projectTechItem}>{tech}</Text>
-                      ))}
+                <Text style={styles.sectionHeading}>Certifications</Text>
+                {safeUserData.certifications.map((cert, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <View style={styles.itemRow}>
+                      <View style={styles.itemLeft}>
+                        <Text style={styles.itemTitle}>{filterNA(cert.name)}</Text>
+                        <Text style={styles.itemSubtitle}>{filterNA(cert.issuer)}</Text>
+                        {cert.expiryDate && (
+                          <Text style={styles.itemLocation}>Valide jusqu'à: {cert.expiryDate}</Text>
+                        )}
+                      </View>
+                      {cert.year && <Text style={styles.itemPeriod}>{cert.year}</Text>}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Volunteer Experience */}
+            {safeUserData.volunteerExperience.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Expérience Bénévole</Text>
+                {safeUserData.volunteerExperience.map((vol, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <Text style={styles.itemTitle}>{filterNA(vol.role)}</Text>
+                    <Text style={styles.itemSubtitle}>{filterNA(vol.organization)}</Text>
+                    <Text style={styles.projectDescription}>{filterNA(vol.description)}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Publications */}
+            {safeUserData.publications.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Publications</Text>
+                {safeUserData.publications.map((pub, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <View style={styles.itemRow}>
+                      <View style={styles.itemLeft}>
+                        <Text style={styles.itemTitle}>{filterNA(pub.title)}</Text>
+                        <Text style={styles.itemSubtitle}>{filterNA(pub.publisher)}</Text>
+                      </View>
+                      {pub.date && <Text style={styles.itemPeriod}>{pub.date}</Text>}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Awards */}
+            {safeUserData.awards.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionHeading}>Récompenses</Text>
+                {safeUserData.awards.map((award, index) => (
+                  <View key={index} style={styles.timelineItem}>
+                    <View style={styles.itemRow}>
+                      <View style={styles.itemLeft}>
+                        <Text style={styles.itemTitle}>{filterNA(award.title)}</Text>
+                        <Text style={styles.itemSubtitle}>{filterNA(award.issuer)}</Text>
+                      </View>
+                      {award.year && <Text style={styles.itemPeriod}>{award.year}</Text>}
                     </View>
                   </View>
                 ))}

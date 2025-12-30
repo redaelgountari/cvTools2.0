@@ -27,12 +27,10 @@ import {
 } from "@/components/ui/sidebar"
 import { signOut } from "next-auth/react"
 
-// This is sample data.
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "RE",
+    avatar: "/avatars/RE.jpg",
   },
   teams: [
     {
@@ -69,6 +67,10 @@ const data = {
         {
           title: "Resume",
           url: "/Resume",
+        },
+        {
+          title: "Portfolio",
+          url: "/portfolios",
         },
         {
           title: "Settings",

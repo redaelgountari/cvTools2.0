@@ -75,7 +75,10 @@ export default function Settings() {
         
         try {
           const prompt = `Change the language of this CV to ${settings.selectedLanguage}. Return ONLY valid JSON without any additional text or markdown formatting: ${JSON.stringify(AnlysedCV)}`;
-          const { data } = await axios.post("/api/gemini", { userData: prompt });
+          const { data } = await axios.post("/api/gemini", { 
+            userData: prompt,
+            useCase: 'Translate-cv'
+           });
           
           // More robust cleaning of the response
           let cleanedData = data.text;

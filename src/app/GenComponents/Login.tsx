@@ -236,7 +236,7 @@ export function Login() {
       <div className="flex justify-center pb-6">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
-          <Link href="/register" className="text-primary underline hover:text-primary/80">
+          <Link href="/Signup" className="text-primary underline hover:text-primary/80">
             Sign up
           </Link>
         </p>

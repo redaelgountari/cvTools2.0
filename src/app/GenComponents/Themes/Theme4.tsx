@@ -362,7 +362,7 @@ export default function Theme4({ userdata, userImage }: { userdata: Resume; user
           <View style={styles.headerImageContainer}>
             <Image
               style={styles.headerImage}
-              src={userImage}
+              src={userdata.image[0]}
             />
           </View>
           <View style={styles.headerInfo}>

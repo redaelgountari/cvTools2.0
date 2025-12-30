@@ -50,6 +50,24 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
+    objectFit: 'cover',
+  },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#3182CE',
+    backgroundColor: '#CBD5E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  avatarInitials: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#2D3748',
   },
   name: {
     fontSize: 15,
@@ -59,32 +77,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
     marginBottom: 10,
     color: '#4A5568',
     textAlign: 'center',
+    lineHeight: 1.3,
   },
   contactContainer: {
     marginBottom: 20,
   },
   contactItem: {
-    flexDirection: 'row',
-    marginBottom: 5,
-    alignItems: 'center',
-  },
-  contactIcon: {
-    width: 12,
-    marginRight: 8,
+    marginBottom: 6,
   },
   contactText: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: '#4A5568',
+    lineHeight: 1.4,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#2D3748',
@@ -92,7 +106,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   leftSectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#2D3748',
@@ -100,14 +114,14 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   skillCategory: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'semibold',
     marginBottom: 5,
     marginTop: 8,
     color: '#4A5568',
   },
   skillItem: {
-    fontSize: 10,
+    fontSize: 9,
     marginBottom: 3,
     color: '#4A5568',
     padding: 3,
@@ -121,10 +135,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   bulletPoint: {
-    fontSize: 10,
+    fontSize: 9.5,
     marginLeft: 10,
     marginBottom: 3,
     color: '#4A5568',
+    lineHeight: 1.4,
   },
   experienceItem: {
     marginBottom: 12,
@@ -132,29 +147,36 @@ const styles = StyleSheet.create({
   experienceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 3,
+    gap: 8,
   },
   jobTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
     color: '#2D3748',
+    flex: 1,
+    lineHeight: 1.3,
   },
   jobPeriod: {
-    fontSize: 10,
+    fontSize: 9,
     fontStyle: 'italic',
     color: '#718096',
+    flexShrink: 0,
+    textAlign: 'right',
   },
   company: {
-    fontSize: 11,
+    fontSize: 10,
     marginBottom: 4,
     color: '#4A5568',
+    lineHeight: 1.3,
   },
   bulletList: {
     marginLeft: 10,
   },
   summary: {
-    fontSize: 10,
-    lineHeight: 1.5,
+    fontSize: 9.5,
+    lineHeight: 1.6,
     color: '#4A5568',
     marginBottom: 10,
     textAlign: 'justify',
@@ -163,48 +185,52 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   languageName: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: '#4A5568',
   },
   achievementText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontStyle: 'italic',
     color: '#38A169',
     marginLeft: 10,
     marginBottom: 3,
+    lineHeight: 1.4,
   },
   certificationItem: {
-    marginBottom: 5,
+    marginBottom: 8,
   },
   certificationName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
     color: '#2D3748',
+    marginBottom: 2,
   },
   certificationDetails: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#4A5568',
   },
   projectItem: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   projectTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 'bold',
     color: '#2D3748',
+    marginBottom: 2,
   },
   projectDescription: {
-    fontSize: 10,
+    fontSize: 9.5,
     marginTop: 2,
-    marginBottom: 2,
+    marginBottom: 4,
     color: '#4A5568',
+    lineHeight: 1.5,
   },
   projectTech: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   projectTechItem: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#4A5568',
     backgroundColor: '#EDF2F7',
     padding: 2,
@@ -213,17 +239,38 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   projectLink: {
-    fontSize: 9,
+    fontSize: 8.5,
     color: '#3182CE',
     textDecoration: 'underline',
+    marginTop: 2,
   },
 });
 
-// Helper function to filter out N/A values
-const filterNA = (value: string | undefined): string => (value && value !== 'N/A' ? value : '');
+// Helper function to filter out N/A and empty values
+const filterEmpty = (value?: string | null): string => {
+  if (!value || value === 'N/A' || value.trim() === '') return '';
+  return value.trim();
+};
+
+const hasContent = (value?: string | null): boolean => {
+  return filterEmpty(value) !== '';
+};
 
 // Create Document Component
-export default function Theme2({ userdata, userImage }: { userdata: Resume; userImage: any }) {
+export default function Theme2({ userdata, userImage }: { userdata: Resume; userImage?: any }) {
+  // Get initials for placeholder
+  const getInitials = (name: string): string => {
+    const parts = name.trim().split(' ').filter(p => p);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const displayName = filterEmpty(userdata.personalInfo?.fullName) || 'Your Name';
+  const displayTitle = filterEmpty(userdata.experience?.[0]?.title) || '';
+  const hasValidImage = userdata.image[0] && hasContent(userdata.image[0]);
+  const initials = getInitials(displayName);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -232,70 +279,83 @@ export default function Theme2({ userdata, userImage }: { userdata: Resume; user
           <View style={styles.leftColumn}>
             {/* Header with profile image and name */}
             <View style={styles.header}>
-              <View style={styles.imageContainer}>
-                <Image
-                  style={styles.profileImage}
-                  src={userImage}
-                />
-              </View>
-              <Text style={styles.name}>{filterNA(userdata.personalInfo.fullName)}</Text>
-              {userdata.experience[0]?.title && <Text style={styles.title}>{userdata.experience[0].title}</Text>}
+              {hasValidImage ? (
+                <View style={styles.imageContainer}>
+                  <Image style={styles.profileImage} src={userdata.image[0]} />
+                </View>
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarInitials}>{initials}</Text>
+                </View>
+              )}
+              <Text style={styles.name}>{displayName}</Text>
+              {displayTitle && <Text style={styles.title}>{displayTitle}</Text>}
             </View>
 
             {/* Contact Information */}
-            <View style={styles.contactContainer}>
-              <Text style={styles.leftSectionTitle}>Contact</Text>
-              {filterNA(userdata.personalInfo.location) && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactText}>{userdata.personalInfo.location}</Text>
-                </View>
-              )}
-              {filterNA(userdata.personalInfo.phone) && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactText}>{userdata.personalInfo.phone}</Text>
-                </View>
-              )}
-              {filterNA(userdata.personalInfo.email) && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactText}>{userdata.personalInfo.email}</Text>
-                </View>
-              )}
-              {filterNA(userdata.personalInfo.linkedin) && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactText}>{userdata.personalInfo.linkedin}</Text>
-                </View>
-              )}
-              {filterNA(userdata.personalInfo.website) && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactText}>{userdata.personalInfo.website}</Text>
-                </View>
-              )}
-            </View>
+            {(hasContent(userdata.personalInfo?.location) ||
+              hasContent(userdata.personalInfo?.phone) ||
+              hasContent(userdata.personalInfo?.email) ||
+              hasContent(userdata.personalInfo?.linkedin) ||
+              hasContent(userdata.personalInfo?.website)) && (
+              <View style={styles.contactContainer}>
+                <Text style={styles.leftSectionTitle}>Contact</Text>
+                {hasContent(userdata.personalInfo?.location) && (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>{filterEmpty(userdata.personalInfo.location)}</Text>
+                  </View>
+                )}
+                {hasContent(userdata.personalInfo?.phone) && (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>{filterEmpty(userdata.personalInfo.phone)}</Text>
+                  </View>
+                )}
+                {hasContent(userdata.personalInfo?.email) && (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>{filterEmpty(userdata.personalInfo.email)}</Text>
+                  </View>
+                )}
+                {hasContent(userdata.personalInfo?.linkedin) && (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>{filterEmpty(userdata.personalInfo.linkedin)}</Text>
+                  </View>
+                )}
+                {hasContent(userdata.personalInfo?.website) && (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>{filterEmpty(userdata.personalInfo.website)}</Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* Skills Section */}
-            {(userdata.skills.technical.length > 0 || userdata.skills.soft.length > 0) && (
+            {((userdata.skills?.technical && userdata.skills.technical.length > 0) || 
+              (userdata.skills?.soft && userdata.skills.soft.length > 0)) && (
               <View style={styles.section}>
                 <Text style={styles.leftSectionTitle}>Compétences</Text>
                 
-                {userdata.skills.technical.length > 0 && (
+                {userdata.skills.technical && userdata.skills.technical.length > 0 && (
                   <View>
                     <Text style={styles.skillCategory}>Techniques</Text>
                     <View style={styles.skillRow}>
-                      {userdata.skills.technical.map((skill, index) => (
-                        <Text key={index} style={styles.skillItem}>{skill}</Text>
-                      ))}
+                      {userdata.skills.technical
+                        .filter(skill => skill && skill.trim())
+                        .map((skill, index) => (
+                          <Text key={index} style={styles.skillItem}>{skill.trim()}</Text>
+                        ))}
                     </View>
                   </View>
                 )}
                 
-                {userdata.skills.soft.length > 0 && (
+                {userdata.skills.soft && userdata.skills.soft.length > 0 && (
                   <View>
-                    
-                    {userdata.skills.technical && <Text style={styles.skillCategory}>Soft Skills</Text>}
+                    <Text style={styles.skillCategory}>Soft Skills</Text>
                     <View style={styles.skillRow}>
-                      {userdata.skills.soft.map((skill, index) => (
-                        <Text key={index} style={styles.skillItem}>{skill}</Text>
-                      ))}
+                      {userdata.skills.soft
+                        .filter(skill => skill && skill.trim())
+                        .map((skill, index) => (
+                          <Text key={index} style={styles.skillItem}>{skill.trim()}</Text>
+                        ))}
                     </View>
                   </View>
                 )}
@@ -303,25 +363,29 @@ export default function Theme2({ userdata, userImage }: { userdata: Resume; user
             )}
 
             {/* Languages */}
-            {userdata.skills.languages.length > 0 && (
+            {userdata.skills?.languages && userdata.skills.languages.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.leftSectionTitle}>Langues</Text>
-                {userdata.skills.languages.map((language, index) => (
-                  <View key={index} style={styles.languageItem}>
-                    <Text style={styles.languageName}>• {language}</Text>
-                  </View>
-                ))}
+                {userdata.skills.languages
+                  .filter(lang => lang && lang.trim())
+                  .map((language, index) => (
+                    <View key={index} style={styles.languageItem}>
+                      <Text style={styles.languageName}>• {language.trim()}</Text>
+                    </View>
+                  ))}
               </View>
             )}
             
-            {userdata.hobbies.length > 0 && (
+            {userdata.hobbies && userdata.hobbies.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.leftSectionTitle}>hobbies</Text>
-                {userdata.hobbies.map((hobbies, index) => (
-                  <View key={index} style={styles.languageItem}>
-                    <Text style={styles.languageName}>• {hobbies}</Text>
-                  </View>
-                ))}
+                <Text style={styles.leftSectionTitle}>Hobbies</Text>
+                {userdata.hobbies
+                  .filter(hobby => hobby && hobby.trim())
+                  .map((hobby, index) => (
+                    <View key={index} style={styles.languageItem}>
+                      <Text style={styles.languageName}>• {hobby.trim()}</Text>
+                    </View>
+                  ))}
               </View>
             )}
 
@@ -329,15 +393,17 @@ export default function Theme2({ userdata, userImage }: { userdata: Resume; user
             {userdata.certifications && userdata.certifications.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.leftSectionTitle}>Certifications</Text>
-                {userdata.certifications.map((cert, index) => (
-                  <View key={index} style={styles.certificationItem}>
-                    <Text style={styles.certificationName}>{filterNA(cert.name)}</Text>
-                    <Text style={styles.certificationDetails}>
-                      {filterNA(cert.issuer)}, {filterNA(cert.year)}
-                      {cert.expiryDate && ` - ${cert.expiryDate}`}
-                    </Text>
-                  </View>
-                ))}
+                {userdata.certifications
+                  .filter(cert => hasContent(cert.name) || hasContent(cert.issuer))
+                  .map((cert, index) => (
+                    <View key={index} style={styles.certificationItem}>
+                      <Text style={styles.certificationName}>{filterEmpty(cert.name) || 'Certification'}</Text>
+                      <Text style={styles.certificationDetails}>
+                        {[filterEmpty(cert.issuer), filterEmpty(cert.year)].filter(x => x).join(', ')}
+                        {hasContent(cert.expiryDate) && ` - ${filterEmpty(cert.expiryDate)}`}
+                      </Text>
+                    </View>
+                  ))}
               </View>
             )}
           </View>
@@ -345,83 +411,120 @@ export default function Theme2({ userdata, userImage }: { userdata: Resume; user
           {/* Right Column - Summary, Experience, Education, Projects */}
           <View style={styles.rightColumn}>
             {/* Professional Summary */}
-            {filterNA(userdata.professionalSummary) && (
+            {hasContent(userdata.professionalSummary) && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Profil Professionnel</Text>
-                <Text style={styles.summary}>{userdata.professionalSummary}</Text>
+                <Text style={styles.summary}>{filterEmpty(userdata.professionalSummary)}</Text>
               </View>
             )}
 
             {/* Experience */}
-            {userdata.experience.length > 0 && (
+            {userdata.experience && userdata.experience.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Expérience Professionnelle</Text>
-                {userdata.experience.map((exp, index) => (
-                  <View key={index} style={styles.experienceItem}>
-                    <View style={styles.experienceHeader}>
-                      <Text style={styles.jobTitle}>{filterNA(exp.title)}</Text>
-                      <Text style={styles.jobPeriod}>{filterNA(exp.startDate)} - {filterNA(exp.endDate)}</Text>
-                    </View>
-                    <Text style={styles.company}>{filterNA(exp.company)}, {filterNA(exp.location)}</Text>
-                    {exp.responsibilities.length > 0 && (
-                      <View style={styles.bulletList}>
-                        {exp.responsibilities.map((responsibility, idx) => (
-                          <Text key={idx} style={styles.bulletPoint}>• {responsibility}</Text>
-                        ))}
+                {userdata.experience
+                  .filter(exp => hasContent(exp.title) || hasContent(exp.company))
+                  .map((exp, index) => {
+                    const dateRange = [filterEmpty(exp.startDate), filterEmpty(exp.endDate)]
+                      .filter(d => d)
+                      .join(' - ');
+                    const companyLocation = [filterEmpty(exp.company), filterEmpty(exp.location)]
+                      .filter(c => c)
+                      .join(', ');
+
+                    return (
+                      <View key={index} style={styles.experienceItem}>
+                        <View style={styles.experienceHeader}>
+                          <Text style={styles.jobTitle}>{filterEmpty(exp.title) || 'Position'}</Text>
+                          {dateRange && <Text style={styles.jobPeriod}>{dateRange}</Text>}
+                        </View>
+                        {companyLocation && <Text style={styles.company}>{companyLocation}</Text>}
+                        {exp.responsibilities && exp.responsibilities.length > 0 && (
+                          <View style={styles.bulletList}>
+                            {exp.responsibilities
+                              .filter(r => r && r.trim())
+                              .map((responsibility, idx) => (
+                                <Text key={idx} style={styles.bulletPoint}>• {responsibility.trim()}</Text>
+                              ))}
+                          </View>
+                        )}
+                        {exp.achievements && exp.achievements.length > 0 && (
+                          <View style={styles.bulletList}>
+                            {exp.achievements
+                              .filter(a => a && a.trim())
+                              .map((achievement, idx) => (
+                                <Text key={idx} style={styles.achievementText}>✓ {achievement.trim()}</Text>
+                              ))}
+                          </View>
+                        )}
                       </View>
-                    )}
-                    {exp.achievements && exp.achievements.length > 0 && (
-                      <View style={styles.bulletList}>
-                        {exp.achievements.map((achievement, idx) => (
-                          <Text key={idx} style={styles.achievementText}>✓ {achievement}</Text>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                ))}
+                    );
+                  })}
               </View>
             )}
 
             {/* Education */}
-            {userdata.education.length > 0 && (
+            {userdata.education && userdata.education.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Formation</Text>
-                {userdata.education.map((edu, index) => (
-                  <View key={index} style={styles.experienceItem}>
-                    <View style={styles.experienceHeader}>
-                      <Text style={styles.jobTitle}>{filterNA(edu.degree)}</Text>
-                      <Text style={styles.jobPeriod}>{filterNA(edu.graduationYear)}</Text>
-                    </View>
-                    <Text style={styles.company}>{filterNA(edu.institution)}, {filterNA(edu.location)}</Text>
-                    {edu.gpa && <Text style={styles.bulletPoint}>• GPA: {edu.gpa}</Text>}
-                    {edu.relevantCourses && edu.relevantCourses.length > 0 && (
-                      <View style={styles.bulletList}>
-                        {edu.relevantCourses.map((course, idx) => (
-                          <Text key={idx} style={styles.bulletPoint}>• {course}</Text>
-                        ))}
+                {userdata.education
+                  .filter(edu => hasContent(edu.degree) || hasContent(edu.institution))
+                  .map((edu, index) => {
+                    const institutionLocation = [filterEmpty(edu.institution), filterEmpty(edu.location)]
+                      .filter(i => i)
+                      .join(', ');
+
+                    return (
+                      <View key={index} style={styles.experienceItem}>
+                        <View style={styles.experienceHeader}>
+                          <Text style={styles.jobTitle}>{filterEmpty(edu.degree) || 'Degree'}</Text>
+                          {hasContent(edu.graduationYear) && (
+                            <Text style={styles.jobPeriod}>{filterEmpty(edu.graduationYear)}</Text>
+                          )}
+                        </View>
+                        {institutionLocation && <Text style={styles.company}>{institutionLocation}</Text>}
+                        {hasContent(edu.gpa) && <Text style={styles.bulletPoint}>• GPA: {edu.gpa}</Text>}
+                        {edu.relevantCourses && edu.relevantCourses.length > 0 && (
+                          <View style={styles.bulletList}>
+                            {edu.relevantCourses
+                              .filter(course => course && course.trim())
+                              .map((course, idx) => (
+                                <Text key={idx} style={styles.bulletPoint}>• {course.trim()}</Text>
+                              ))}
+                          </View>
+                        )}
                       </View>
-                    )}
-                  </View>
-                ))}
+                    );
+                  })}
               </View>
             )}
 
-            {/* Projects (optional) */}
+            {/* Projects */}
             {userdata.projects && userdata.projects.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Projets</Text>
-                {userdata.projects.map((project, index) => (
-                  <View key={index} style={styles.projectItem}>
-                    <Text style={styles.projectTitle}>{project.title}</Text>
-                    <Text style={styles.projectDescription}>{project.description}</Text>
-                    <View style={styles.projectTech}>
-                      {project.technologies.map((tech, idx) => (
-                        <Text key={idx} style={styles.projectTechItem}>{tech}</Text>
-                      ))}
+                {userdata.projects
+                  .filter(project => hasContent(project.title) || hasContent(project.description))
+                  .map((project, index) => (
+                    <View key={index} style={styles.projectItem}>
+                      <Text style={styles.projectTitle}>{filterEmpty(project.title) || 'Project'}</Text>
+                      {hasContent(project.description) && (
+                        <Text style={styles.projectDescription}>{filterEmpty(project.description)}</Text>
+                      )}
+                      {project.technologies && project.technologies.length > 0 && (
+                        <View style={styles.projectTech}>
+                          {project.technologies
+                            .filter(tech => tech && tech.trim())
+                            .map((tech, idx) => (
+                              <Text key={idx} style={styles.projectTechItem}>{tech.trim()}</Text>
+                            ))}
+                        </View>
+                      )}
+                      {hasContent(project.link) && (
+                        <Text style={styles.projectLink}>{filterEmpty(project.link)}</Text>
+                      )}
                     </View>
-                    {project.link && <Text style={styles.projectLink}>{project.link}</Text>}
-                  </View>
-                ))}
+                  ))}
               </View>
             )}
           </View>

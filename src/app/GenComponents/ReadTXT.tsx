@@ -1,31 +1,17 @@
-"use client";
-import React, { useContext, useState } from "react";
-import pdfToText from "react-pdftotext";
+"use client"
+import { useContext, useState } from "react"
+import pdfToText from "react-pdftotext"
 import { ReadContext } from "./ReadContext";
-import { FileUpload } from "@/components/ui/file-upload";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  AlertCircle, 
-  FileText, 
-  Loader2, 
-  Upload 
-} from "lucide-react";
-import { getFromStorage } from "@/Cookiesmv";
+import { FileUpload } from "@/components/ui/file-upload"
+import { Card, CardContent } from "@/components/ui/card"
+import { AlertCircle, Loader2 } from "lucide-react"
 
 function ReadTXT() {
-  const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [extractedImages, setExtractedImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { setUserData } = useContext(ReadContext);
+  const [extractedText, setExtractedText] = useState<string | null>(null)
+  const [extractedImages, setExtractedImages] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { setUserData } = useContext(ReadContext)
 
   const generateStructuredPrompt = (cvText: string) => {
     return `You are an advanced AI specialized in CV analysis and structured data extraction. Analyze the given CV text and return the extracted details strictly in JSON format.
@@ -162,7 +148,8 @@ function ReadTXT() {
           "description": "",
           "technologiesUsed": [],
           "github": "",
-          "role": ""
+          "role": "",
+          "image":""
         }
       ],
       "onlinePresence": {
@@ -181,67 +168,62 @@ function ReadTXT() {
 
     **CV Text:**  
     ${cvText}
-  `;
-  };
+  `
+  }
 
   const handleFileUpload = async (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
+    const file = files[0]
+    if (!file) return
 
-    setIsLoading(true);
-    setError(null);
-    setExtractedText(null);
-    setExtractedImages([]);
+    setIsLoading(true)
+    setError(null)
+    setExtractedText(null)
+    setExtractedImages([])
 
     try {
-      const text = await pdfToText(file);
-      
-      const formData = new FormData();
-      formData.append('file', file);
+      const text = await pdfToText(file)
+      setExtractedText(text)
 
-      // Extract images
-      const imageResponse = await axios.post("http://localhost:8000/extract-images/", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const formData = new FormData()
+      formData.append("file", file)
 
-      setExtractedText(text);
-      setExtractedImages(imageResponse.data.files || []);
-      
-      // Generate structured user data
+      const imageResponse = await fetch("/api/extract-images", {
+        method: "POST",
+        body: formData,
+      })
+
+      const imageData = await imageResponse.json()
+
+      if (!imageResponse.ok) {
+        throw new Error(imageData.error || "Failed to extract images")
+      }
+
+      const imageUrls = imageData.files?.map((file: { url: string }) => file.url) || []
+      setExtractedImages(imageUrls)
+      extractedImages
+
+
       setUserData({
-        text: generateStructuredPrompt(text) || "", 
-        image: imageResponse?.data?.files || []
-      });
-      
+        text: generateStructuredPrompt(text) || "",
+        image: imageUrls,
+      })
 
-      console.log("Extracted Text:", text);
-      console.log("Extracted Images:", imageResponse.data.files);
-    } catch (error: any) {
-      setError(error.message || "An error occurred during PDF processing");
-      console.error("PDF Processing Error:", error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred during PDF processing"
+      setError(errorMessage)
+      console.error("[v0] PDF Processing Error:", error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
-      {/* <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-6 h-6" />
-          Upload Resume
-        </CardTitle>
-        <CardDescription>
-          Upload a PDF to extract text and images
-        </CardDescription>
-      </CardHeader> */}
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="w-full border-gray-300 dark:border-gray-700 rounded-lg p-6">
           <FileUpload onChange={handleFileUpload} />
         </div>
-        
+
         {isLoading && (
           <div className="flex items-center justify-center mt-4">
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
@@ -255,17 +237,38 @@ function ReadTXT() {
             <p>{error}</p>
           </div>
         )}
+
         {extractedText && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-4">Extracted Text Preview</h3>
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg max-h-64 overflow-auto">
+            <div className="bg-muted p-4 rounded-lg max-h-64 overflow-auto">
               <pre className="text-sm whitespace-pre-wrap">{extractedText.slice(0, 500)}...</pre>
+            </div>
+          </div>
+        )}
+
+        {extractedImages.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Extracted Images ({extractedImages.length})</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {extractedImages.map((url, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+                >
+                  <img
+                    src={url || "/placeholder.svg"}
+                    alt={`Extracted image ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}
       </CardContent>
     </Card>
-  );
+  )
 }
 
-export default ReadTXT;
+export default ReadTXT

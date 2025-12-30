@@ -1,0 +1,41 @@
+2025-05-31 21:21:09,126 - src.app.api.pyimageextracter.server - INFO - [STARTUP] Testing Cloudinary connection...
+2025-05-31 21:21:09,127 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.cloudinary.com:443
+2025-05-31 21:21:10,306 - urllib3.connectionpool - DEBUG - https://api.cloudinary.com:443 "GET /v1_1/dledndpo5/ping HTTP/1.1" 200 None
+2025-05-31 21:21:10,308 - src.app.api.pyimageextracter.server - INFO - [STARTUP] Cloudinary connection test successful
+2025-05-31 21:22:24,749 - python_multipart.multipart - DEBUG - Calling on_part_begin with no data
+2025-05-31 21:22:24,749 - python_multipart.multipart - DEBUG - Calling on_header_field with data[42:61]
+2025-05-31 21:22:24,750 - python_multipart.multipart - DEBUG - Calling on_header_value with data[63:131]
+2025-05-31 21:22:24,751 - python_multipart.multipart - DEBUG - Calling on_header_end with no data
+2025-05-31 21:22:24,751 - python_multipart.multipart - DEBUG - Calling on_header_field with data[133:145]
+2025-05-31 21:22:24,751 - python_multipart.multipart - DEBUG - Calling on_header_value with data[147:162]
+2025-05-31 21:22:24,752 - python_multipart.multipart - DEBUG - Calling on_header_end with no data
+2025-05-31 21:22:24,752 - python_multipart.multipart - DEBUG - Calling on_headers_finished with no data
+2025-05-31 21:22:24,753 - python_multipart.multipart - DEBUG - Calling on_part_data with data[166:81920]
+2025-05-31 21:22:24,754 - python_multipart.multipart - DEBUG - Calling on_part_data with data[0:131072]
+2025-05-31 21:22:24,755 - python_multipart.multipart - DEBUG - Calling on_part_data with data[0:131072]
+2025-05-31 21:22:24,756 - python_multipart.multipart - DEBUG - Calling on_part_data with data[0:24274]
+2025-05-31 21:22:24,758 - python_multipart.multipart - DEBUG - Calling on_part_end with no data
+2025-05-31 21:22:24,758 - python_multipart.multipart - DEBUG - Calling on_end with no data
+2025-05-31 21:22:24,761 - src.app.api.pyimageextracter.server - INFO - [UPLOAD] Starting PDF processing: Simple Professional CV Resume.pdf
+2025-05-31 21:22:24,762 - src.app.api.pyimageextracter.server - INFO - [SETUP] Generated unique filename: 7409356c-0179-4a01-bb88-014fca1f711a_Simple Professional CV Resume.pdf
+2025-05-31 21:22:24,763 - src.app.api.pyimageextracter.server - INFO - [SETUP] PDF will be saved to: temp\7409356c-0179-4a01-bb88-014fca1f711a_Simple Professional CV Resume.pdf
+2025-05-31 21:22:24,763 - src.app.api.pyimageextracter.server - INFO - [SAVE] Saving uploaded PDF file...
+2025-05-31 21:22:24,766 - src.app.api.pyimageextracter.server - INFO - [FILE] PDF SAVED - 7409356c-0179-4a01-bb88-014fca1f711a_Simple Professional CV Resume.pdf | Size: 368172 bytes | Path: temp\7409356c-0179-4a01-bb88-014fca1f711a_Simple Professional CV Resume.pdf
+2025-05-31 21:22:24,767 - src.app.api.pyimageextracter.server - INFO - [SAVE] PDF file saved successfully
+2025-05-31 21:22:24,768 - src.app.api.pyimageextracter.server - INFO - [EXTRACT] Opening PDF document...
+2025-05-31 21:22:24,819 - src.app.api.pyimageextracter.server - INFO - [EXTRACT] PDF opened successfully - 1 pages found
+2025-05-31 21:22:24,819 - src.app.api.pyimageextracter.server - INFO - [PAGE] Processing page 1/1
+2025-05-31 21:22:24,831 - src.app.api.pyimageextracter.server - INFO - [PAGE] Page 1: Found 1 images
+2025-05-31 21:22:24,831 - src.app.api.pyimageextracter.server - INFO - [IMAGE] Processing image 1/1 on page 1
+2025-05-31 21:22:24,840 - src.app.api.pyimageextracter.server - INFO - [IMAGE] Image details - Format: jpeg, Size: 289733 bytes
+2025-05-31 21:22:24,841 - src.app.api.pyimageextracter.server - INFO - [IMAGE] Saving image as: page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583.jpeg
+2025-05-31 21:22:24,844 - src.app.api.pyimageextracter.server - INFO - [FILE] IMAGE SAVED - page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583.jpeg | Size: 289733 bytes | Path: output_images\page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583.jpeg
+2025-05-31 21:22:24,845 - src.app.api.pyimageextracter.server - INFO - [CLOUDINARY] Starting Cloudinary upload for: page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583.jpeg
+2025-05-31 21:22:24,846 - src.app.api.pyimageextracter.server - INFO - [CLOUDINARY] Public ID: pdf_images/page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583
+2025-05-31 21:22:24,951 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.cloudinary.com:443
+2025-05-31 21:22:26,564 - urllib3.connectionpool - DEBUG - https://api.cloudinary.com:443 "POST /v1_1/dledndpo5/auto/upload HTTP/1.1" 400 None
+2025-05-31 21:22:26,566 - src.app.api.pyimageextracter.server - INFO - [CLOUDINARY] Upload failed for page_1_img_1_89cf7c08-8aa3-40e7-951e-d7326f09f583.jpeg: Stale request - reported time is 2025-05-31 19:22:24 +0000 which is more than 1 hour ago
+2025-05-31 21:22:26,567 - src.app.api.pyimageextracter.server - INFO - [CLOUDINARY] Error type: BadRequest
+2025-05-31 21:22:26,575 - src.app.api.pyimageextracter.server - INFO - [EXTRACT] PDF document closed
+2025-05-31 21:22:26,584 - src.app.api.pyimageextracter.server - INFO - [CLEANUP] Starting cleanup process...
+2025-05-31 21:22:26,693 - src.app.api.pyimageextracter.server - INFO - [CLEANUP] Temporary PDF file deleted: temp\7409356c-0179-4a01-bb88-014fca1f711a_Simple Professional CV Resume.pdf

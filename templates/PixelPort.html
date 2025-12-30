@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <style>
+        .download-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: var(--pixel-bg-light);
+    border: 3px solid var(--pixel-primary);
+    color: var(--pixel-accent);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--pixel-dark);
+    transition: all 0.1s;
+    z-index: 1000;
+}
+
+.download-btn:hover {
+    background: var(--pixel-primary);
+    color: var(--pixel-dark);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--pixel-dark);
+}
+
+.download-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+        :root {
+            --pixel-bg: #0f380f;
+            --pixel-bg-light: #306230;
+            --pixel-primary: #9bbc0f;
+            --pixel-secondary: #8bac0f;
+            --pixel-accent: #fbf7e8;
+            --pixel-dark: #0f380f;
+            --pixel-red: #ff0044;
+            --pixel-blue: #00ccff;
+            --pixel-yellow: #ffd700;
+        }
+
+        body.dark-mode {
+            --pixel-bg: #1a1a2e;
+            --pixel-bg-light: #16213e;
+            --pixel-primary: #00ff88;
+            --pixel-secondary: #00ccff;
+            --pixel-accent: #ffffff;
+            --pixel-red: #ff0066;
+            --pixel-blue: #00ccff;
+            --pixel-yellow: #ffdd00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: var(--pixel-bg);
+            color: var(--pixel-accent);
+            line-height: 1.8;
+            font-size: 10px;
+            overflow-x: hidden;
+        }
+
+        .pixel-border {
+            border: 4px solid var(--pixel-primary);
+            border-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><rect width="2" height="2" fill="%239bbc0f"/><rect x="2" width="2" height="2" fill="%239bbc0f"/><rect x="4" width="2" height="2" fill="%239bbc0f"/><rect y="2" width="2" height="2" fill="%239bbc0f"/><rect x="4" y="2" width="2" height="2" fill="%239bbc0f"/><rect y="4" width="2" height="2" fill="%239bbc0f"/><rect x="2" y="4" width="2" height="2" fill="%239bbc0f"/><rect x="4" y="4" width="2" height="2" fill="%239bbc0f"/></svg>') 2;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--pixel-bg-light);
+            border-bottom: 4px solid var(--pixel-primary);
+            z-index: 1000;
+            box-shadow: 0 4px 0 var(--pixel-dark);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo .logo-text {
+            font-size: 14px;
+            color: var(--pixel-primary);
+            text-shadow: 2px 2px 0 var(--pixel-dark);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--pixel-accent);
+            text-decoration: none;
+            font-size: 10px;
+            position: relative;
+            padding: 8px 12px;
+            transition: all 0.1s;
+        }
+
+        .nav-link:hover {
+            color: var(--pixel-primary);
+            background: var(--pixel-bg);
+            box-shadow: inset 0 0 0 2px var(--pixel-primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--pixel-primary);
+            background: var(--pixel-bg);
+            color: var(--pixel-primary);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.1s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--pixel-primary);
+            color: var(--pixel-bg);
+            transform: scale(1.1);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 4px;
+            background: var(--pixel-primary);
+            transition: all 0.2s;
+        }
+
+        section {
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .greeting {
+            font-size: 12px;
+            color: var(--pixel-yellow);
+            margin-bottom: 10px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .hero-name {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--pixel-primary);
+            text-shadow: 3px 3px 0 var(--pixel-dark);
+            line-height: 1.4;
+        }
+
+        .hero-title {
+            font-size: 14px;
+            color: var(--pixel-secondary);
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 var(--pixel-dark);
+        }
+
+        .hero-description {
+            font-size: 11px;
+            color: var(--pixel-accent);
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 10px;
+            transition: all 0.1s;
+            display: inline-block;
+            border: 3px solid var(--pixel-primary);
+            background: var(--pixel-bg-light);
+            color: var(--pixel-accent);
+            box-shadow: 4px 4px 0 var(--pixel-dark);
+            position: relative;
+        }
+
+        .btn:hover {
+            background: var(--pixel-primary);
+            color: var(--pixel-dark);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--pixel-dark);
+        }
+
+        .btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--pixel-primary);
+            background: var(--pixel-bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pixel-primary);
+            font-size: 16px;
+            transition: all 0.1s;
+            text-decoration: none;
+        }
+
+        .social-link:hover {
+            background: var(--pixel-primary);
+            color: var(--pixel-dark);
+            transform: scale(1.1);
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border: 6px solid var(--pixel-primary);
+            background: var(--pixel-bg-light);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+            overflow: hidden;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: contrast(1.2) saturate(1.3);
+        }
+
+        .pixel-corners {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--pixel-primary);
+        }
+
+        .pixel-corners.tl { top: -3px; left: -3px; }
+        .pixel-corners.tr { top: -3px; right: -3px; }
+        .pixel-corners.bl { bottom: -3px; left: -3px; }
+        .pixel-corners.br { bottom: -3px; right: -3px; }
+
+        .section-title {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--pixel-primary);
+            text-shadow: 3px 3px 0 var(--pixel-dark);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::before {
+            content: '▶';
+            position: absolute;
+            left: -30px;
+            animation: pulse 1s infinite;
+        }
+
+        .section-title::after {
+            content: '◀';
+            position: absolute;
+            right: -30px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .about-section {
+            background: var(--pixel-bg-light);
+            border-top: 4px solid var(--pixel-primary);
+            border-bottom: 4px solid var(--pixel-primary);
+        }
+
+        .about-description {
+            font-size: 11px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 25px;
+            background: var(--pixel-bg);
+            border: 4px solid var(--pixel-primary);
+            box-shadow: 6px 6px 0 var(--pixel-dark);
+            transition: all 0.1s;
+        }
+
+        .stat-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            color: var(--pixel-yellow);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 var(--pixel-dark);
+        }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--pixel-accent);
+        }
+
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+
+        .skill-category {
+            background: var(--pixel-bg-light);
+            padding: 25px;
+            border: 4px solid var(--pixel-primary);
+            box-shadow: 6px 6px 0 var(--pixel-dark);
+            transition: all 0.1s;
+        }
+
+        .skill-category:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+        }
+
+        .category-title {
+            font-size: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--pixel-yellow);
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            padding: 8px 12px;
+            background: var(--pixel-bg);
+            border: 2px solid var(--pixel-secondary);
+            font-size: 9px;
+            color: var(--pixel-accent);
+            transition: all 0.1s;
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            background: var(--pixel-secondary);
+            color: var(--pixel-dark);
+            transform: scale(1.05);
+        }
+
+        .experience-section {
+            background: var(--pixel-bg-light);
+            border-top: 4px solid var(--pixel-primary);
+            border-bottom: 4px solid var(--pixel-primary);
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--pixel-primary);
+        }
+
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            grid-column: 2;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--pixel-yellow);
+            border: 4px solid var(--pixel-primary);
+            z-index: 1;
+            animation: coin-spin 2s infinite;
+        }
+
+        @keyframes coin-spin {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.2); }
+        }
+
+        .timeline-content {
+            background: var(--pixel-bg);
+            padding: 25px;
+            border: 4px solid var(--pixel-primary);
+            box-shadow: 6px 6px 0 var(--pixel-dark);
+            transition: all 0.1s;
+        }
+
+        .timeline-content:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+        }
+
+        .timeline-title {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: var(--pixel-primary);
+        }
+
+        .timeline-company {
+            font-size: 11px;
+            color: var(--pixel-yellow);
+            margin-bottom: 8px;
+        }
+
+        .timeline-date {
+            font-size: 9px;
+            color: var(--pixel-secondary);
+            margin-bottom: 15px;
+        }
+
+        .timeline-responsibilities {
+            list-style: none;
+        }
+
+        .timeline-responsibilities li {
+            padding-left: 20px;
+            margin-bottom: 8px;
+            position: relative;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+
+        .timeline-responsibilities li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--pixel-yellow);
+        }
+
+        .education-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .education-card {
+            background: var(--pixel-bg-light);
+            padding: 25px;
+            border: 4px solid var(--pixel-primary);
+            box-shadow: 6px 6px 0 var(--pixel-dark);
+            transition: all 0.1s;
+        }
+
+        .education-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+        }
+
+        .education-degree {
+            font-size: 11px;
+            margin-bottom: 10px;
+            color: var(--pixel-primary);
+        }
+
+        .education-institution {
+            font-size: 10px;
+            color: var(--pixel-yellow);
+            margin-bottom: 10px;
+        }
+
+        .education-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            font-size: 9px;
+            color: var(--pixel-secondary);
+        }
+
+        .projects-section {
+            background: var(--pixel-bg-light);
+            border-top: 4px solid var(--pixel-primary);
+            border-bottom: 4px solid var(--pixel-primary);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .project-card {
+            background: var(--pixel-bg);
+            border: 4px solid var(--pixel-primary);
+            overflow: hidden;
+            box-shadow: 6px 6px 0 var(--pixel-dark);
+            transition: all 0.1s;
+        }
+
+        .project-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--pixel-dark);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 4px solid var(--pixel-primary);
+            filter: contrast(1.2) saturate(1.3);
+        }
+
+        .project-content {
+            padding: 20px;
+        }
+
+        .project-title {
+            font-size: 11px;
+            margin-bottom: 12px;
+            color: var(--pixel-primary);
+        }
+
+        .project-description {
+            font-size: 9px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tech-tag {
+            padding: 6px 10px;
+            background: var(--pixel-bg-light);
+            border: 2px solid var(--pixel-secondary);
+            font-size: 8px;
+            color: var(--pixel-yellow);
+        }
+
+        .project-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .project-link {
+            padding: 8px 12px;
+            text-decoration: none;
+            font-size: 8px;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 2px solid var(--pixel-primary);
+            background: var(--pixel-bg-light);
+            color: var(--pixel-accent);
+        }
+
+        .project-link:hover {
+            background: var(--pixel-primary);
+            color: var(--pixel-dark);
+        }
+
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 50px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background: var(--pixel-bg-light);
+            border: 3px solid var(--pixel-primary);
+            transition: all 0.1s;
+        }
+
+        .contact-item:hover {
+            transform: translateX(4px);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--pixel-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pixel-dark);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .contact-details h3 {
+            font-size: 9px;
+            margin-bottom: 5px;
+            color: var(--pixel-yellow);
+        }
+
+        .contact-details p {
+            font-size: 8px;
+            color: var(--pixel-accent);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 12px;
+            border: 3px solid var(--pixel-primary);
+            background: var(--pixel-bg-light);
+            color: var(--pixel-accent);
+            font-size: 10px;
+            font-family: 'Press Start 2P', cursive;
+            transition: all 0.1s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: var(--pixel-bg);
+            box-shadow: inset 4px 4px 0 var(--pixel-dark);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: var(--pixel-bg-light);
+            padding: 25px 0;
+            border-top: 4px solid var(--pixel-primary);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-text {
+            font-size: 8px;
+            color: var(--pixel-accent);
+        }
+
+        .footer-name {
+            color: var(--pixel-yellow);
+        }
+
+        .level-bar {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 200px;
+            background: var(--pixel-bg);
+            border: 3px solid var(--pixel-primary);
+            padding: 10px;
+            z-index: 999;
+            box-shadow: 4px 4px 0 var(--pixel-dark);
+        }
+
+        .level-text {
+            font-size: 8px;
+            margin-bottom: 8px;
+            color: var(--pixel-yellow);
+        }
+
+        .progress-bar {
+            height: 15px;
+            background: var(--pixel-bg-light);
+            border: 2px solid var(--pixel-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--pixel-primary);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-menu {
+                position: fixed;
+                top: 65px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 65px);
+                background: var(--pixel-bg);
+                flex-direction: column;
+                padding: 30px;
+                transition: left 0.3s;
+                border-right: 4px solid var(--pixel-primary);
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-image {
+                order: -1;
+            }
+
+            .skills-container {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 0;
+            }
+
+            .timeline-item {
+                grid-template-columns: 1fr;
+                padding-left: 35px;
+            }
+
+            .timeline-item:nth-child(even) .timeline-content {
+                grid-column: 1;
+            }
+
+            .timeline-dot {
+                left: 0;
+            }
+
+            .contact-content {
+                grid-template-columns: 1fr;
+            }
+
+            .level-bar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 9px;
+            }
+
+            .hero-name {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .image-wrapper {
+                width: 200px;
+                height: 200px;
+            }
+        }
+    </style>
+
+    <canvas id="particles-canvas"></canvas>
+
+    <div class="level-bar">
+        <div class="level-text">SCROLL PROGRESS</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text"></span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link">HOME</a>
+                <a href="#about" class="nav-link">ABOUT</a>
+                <a href="#skills" class="nav-link">SKILLS</a>
+                <a href="#experience" class="nav-link">EXP</a>
+                <a href="#education" class="nav-link">EDU</a>
+                <a href="#projects" class="nav-link">PROJECTS</a>
+                <a href="#contact" class="nav-link">CONTACT</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="greeting">▶ PLAYER START</div>
+                    <h1 class="hero-name"></h1>
+                    <h2 class="hero-title"></h2>
+                    <p class="hero-description"></p>
+                    <div class="hero-buttons">
+                        <a href="#contact" class="btn">CONTACT</a>
+                        <a href="#projects" class="btn">PROJECTS</a>
+                    </div>
+                    <div class="social-links"></div>
+                </div>
+                <div class="hero-image">
+                    <div class="image-wrapper">
+                        <img src="" alt="Profile" class="profile-image">
+                        <div class="pixel-corners tl"></div>
+                        <div class="pixel-corners tr"></div>
+                        <div class="pixel-corners bl"></div>
+                        <div class="pixel-corners br"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title">ABOUT ME</h2>
+            <div class="about-content">
+                <p class="about-description"></p>
+                <div class="about-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">YEARS EXP</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">PROJECTS</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">TECH</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="skills-section">
+        <div class="container">
+            <h2 class="section-title">SKILLS</h2>
+            <div class="skills-container">
+                <div class="skill-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-code"></i>
+                        TECHNICAL
+                    </h3>
+                    <div class="skills-grid" id="technicalSkills"></div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-tools"></i>
+                        TOOLS
+                    </h3>
+                    <div class="skills-grid" id="toolsSkills"></div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-language"></i>
+                        LANGUAGES
+                    </h3>
+                    <div class="skills-grid" id="languageSkills"></div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="category-title">
+                        <i class="fas fa-users"></i>
+                        SOFT SKILLS
+                    </h3>
+                    <div class="skills-grid" id="softSkills"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="experience-section">
+        <div class="container">
+            <h2 class="section-title">EXPERIENCE</h2>
+            <div class="timeline" id="experienceTimeline"></div>
+        </div>
+    </section>
+
+    <section id="education" class="education-section">
+        <div class="container">
+            <h2 class="section-title">EDUCATION</h2>
+            <div class="education-grid" id="educationGrid"></div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects-section">
+        <div class="container">
+            <h2 class="section-title">PROJECTS</h2>
+            <div class="projects-grid" id="projectsGrid"></div>
+            <div class="no-projects" id="noProjects" style="display: none;">
+                <i class="fas fa-folder-open"></i>
+                <p>COMING SOON...</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">CONTACT</h2>
+            <div class="contact-content">
+                <div class="contact-info" id="contactInfo"></div>
+                <div class="contact-form-wrapper">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <input type="text" placeholder="NAME" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="EMAIL" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="SUBJECT" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="MESSAGE" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">SEND</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-text">© 2025 <span class="footer-name"></span></p>
+                <div class="footer-social"></div>
+            </div>
+        </div>
+    </footer>
+    <button class="download-btn" id="downloadBtn" aria-label="Download Portfolio">
+    dowload
+    </button>
+
+
+    <script>
+        function downloadPortfolioHTML() {
+    try {
+        // Get the main HTML structure
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${document.title}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        ${Array.from(document.querySelectorAll('style')).map(style => style.textContent).join('\n')}
+    </style>
+</head>
+<body class="${document.body.className}">
+    ${document.getElementById('particles-canvas').outerHTML}
+    ${document.querySelector('.level-bar').outerHTML}
+    ${document.querySelector('.navbar').outerHTML}
+    ${document.getElementById('home').outerHTML}
+    ${document.getElementById('about').outerHTML}
+    ${document.getElementById('skills').outerHTML}
+    ${document.getElementById('experience').outerHTML}
+    ${document.getElementById('education').outerHTML}
+    ${document.getElementById('projects').outerHTML}
+    ${document.getElementById('contact').outerHTML}
+    ${document.querySelector('.footer').outerHTML}
+    
+    <script>
+        // Simple initialization for the downloaded version
+        function initDownloadedPortfolio() {
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('dark-mode');
+                    const icon = this.querySelector('i');
+                    if (document.body.classList.contains('dark-mode')) {
+                        icon.classList.replace('fa-moon', 'fa-sun');
+                    } else {
+                        icon.classList.replace('fa-sun', 'fa-moon');
+                    }
+                });
+            }
+
+            // Mobile menu
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', function() {
+                    hamburger.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+            }
+
+            // Smooth scroll
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Scroll progress
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) {
+                window.addEventListener('scroll', function() {
+                    const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    progressFill.style.width = scrolled + '%';
+                });
+            }
+
+            // Contact form
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for your message! This is a demo form.');
+                    this.reset();
+                });
+            }
+
+            // Reinitialize particles if needed
+            setTimeout(initParticles, 100);
+        }
+
+        function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 30;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.floor(Math.random() * 3 + 2);
+                    this.speedX = Math.random() * 2 - 1;
+                    this.speedY = Math.random() * 2 - 1;
+                    this.color = ['#9bbc0f', '#8bac0f', '#fbf7e8', '#ffd700'][Math.floor(Math.random() * 4)];
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // Initialize when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDownloadedPortfolio);
+        } else {
+            initDownloadedPortfolio();
+        }
+    <\/script>
+</body>
+</html>`;
+
+        // Create and trigger download
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'portfolio.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+    } catch (error) {
+        console.error('Error downloading portfolio:', error);
+        // Fallback: download simple HTML
+        downloadSimpleHTML();
+    }
+}
+
+// Fallback function
+function downloadSimpleHTML() {
+    const simpleHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Portfolio</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Portfolio Download</h1>
+    <p>This is a simplified version of your portfolio.</p>
+    <p>Full HTML download requires additional setup.</p>
+</body>
+</html>`;
+    
+    const blob = new Blob([simpleHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'portfolio-simple.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+        function initDownloadButton() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            downloadBtn.addEventListener('click', () => {
+                if (!portfolioData) {
+                    alert('Portfolio data is still loading. Please wait a moment and try again.');
+                    return;
+                }
+                downloadPortfolioHTML();
+            });
+        }
+
+        let portfolioData = null;
+
+        async function loadPortfolioData() {
+            try {
+                const response = await fetch('http://localhost:3000/api/GettingUserData');
+                const jsonData = await response.json();
+                portfolioData = jsonData.data;
+                return portfolioData;
+            } catch (error) {
+                console.error('Error loading portfolio data:', error);
+                return null;
+            }
+        }
+
+        function initPixelParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 50;
+            const colors = ['#9bbc0f', '#8bac0f', '#fbf7e8', '#ffd700'];
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.floor(Math.random() * 3 + 2);
+                    this.speedX = Math.random() * 2 - 1;
+                    this.speedY = Math.random() * 2 - 1;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        function initThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+
+                if (document.body.classList.contains('dark-mode')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        function initMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+
+        function initScrollProgress() {
+            const progressFill = document.getElementById('progressFill');
+            
+            window.addEventListener('scroll', () => {
+                const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                progressFill.style.width = scrolled + '%';
+            });
+        }
+
+        function populateHero(data) {
+            const logoText = document.querySelector('.logo-text');
+            const heroName = document.querySelector('.hero-name');
+            const heroTitle = document.querySelector('.hero-title');
+            const heroDescription = document.querySelector('.hero-description');
+            const profileImage = document.querySelector('.profile-image');
+            const socialLinks = document.querySelector('.social-links');
+            const footerName = document.querySelector('.footer-name');
+
+            const firstName = data.personalInfo.fullName.split(' ')[0].toUpperCase();
+            logoText.textContent = firstName;
+            heroName.textContent = data.personalInfo.fullName.toUpperCase();
+            heroTitle.textContent = data.jobSearchTitle.toUpperCase();
+            heroDescription.textContent = data.professionalSummary;
+            footerName.textContent = data.personalInfo.fullName.toUpperCase();
+
+            if (data.image && data.image.length > 0) {
+                profileImage.src = data.image[0];
+            }
+
+            const socialLinksData = [];
+            if (data.personalInfo.github && data.personalInfo.github !== 'N/A') {
+                socialLinksData.push({ icon: 'fab fa-github', url: data.personalInfo.github });
+            }
+            if (data.personalInfo.linkedin && data.personalInfo.linkedin !== 'N/A') {
+                socialLinksData.push({ icon: 'fab fa-linkedin', url: data.personalInfo.linkedin });
+            }
+            if (data.onlinePresence?.twitter) {
+                socialLinksData.push({ icon: 'fab fa-twitter', url: data.onlinePresence.twitter });
+            }
+            if (data.personalInfo.email) {
+                socialLinksData.push({ icon: 'fas fa-envelope', url: `mailto:${data.personalInfo.email}` });
+            }
+
+            socialLinks.innerHTML = socialLinksData.map(social => `
+                <a href="${social.url}" class="social-link" target="_blank" rel="noopener noreferrer">
+                    <i class="${social.icon}"></i>
+                </a>
+            `).join('');
+
+            const footerSocial = document.querySelector('.footer-social');
+            footerSocial.innerHTML = socialLinks.innerHTML;
+        }
+
+        function populateAbout(data) {
+            const aboutDescription = document.querySelector('.about-description');
+            aboutDescription.textContent = data.professionalSummary;
+
+            const yearsExperience = data.experience?.length || 0;
+            const projectsCompleted = data.projects?.length || 0;
+            const technologiesCount = data.skills?.technical?.length || 0;
+
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const statValues = [yearsExperience, projectsCompleted, technologiesCount];
+
+            statNumbers.forEach((statNumber, index) => {
+                statNumber.setAttribute('data-count', statValues[index]);
+                animateCounter(statNumber, statValues[index]);
+            });
+        }
+
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 30);
+        }
+
+        function populateSkills(data) {
+            const technicalSkillsContainer = document.getElementById('technicalSkills');
+            const toolsSkillsContainer = document.getElementById('toolsSkills');
+            const languageSkillsContainer = document.getElementById('languageSkills');
+            const softSkillsContainer = document.getElementById('softSkills');
+
+            if (data.skills?.technical) {
+                technicalSkillsContainer.innerHTML = data.skills.technical.map(skill => `
+                    <span class="skill-tag">${skill.toUpperCase()}</span>
+                `).join('');
+            }
+
+            if (data.tools) {
+                toolsSkillsContainer.innerHTML = data.tools.map(tool => `
+                    <span class="skill-tag">${tool.toUpperCase()}</span>
+                `).join('');
+            }
+
+            if (data.skills?.languages) {
+                languageSkillsContainer.innerHTML = data.skills.languages.map(language => `
+                    <span class="skill-tag">${language.toUpperCase()}</span>
+                `).join('');
+            }
+
+            if (data.skills?.soft) {
+                softSkillsContainer.innerHTML = data.skills.soft.map(skill => `
+                    <span class="skill-tag">${skill.toUpperCase()}</span>
+                `).join('');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'PRESENT';
+            const [year, month] = dateString.split('-');
+            const date = new Date(year, parseInt(month) - 1);
+            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+        }
+
+        function populateExperience(data) {
+            const experienceTimeline = document.getElementById('experienceTimeline');
+
+            if (data.experience && data.experience.length > 0) {
+                experienceTimeline.innerHTML = data.experience.map(exp => `
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3 class="timeline-title">${exp.title.toUpperCase()}</h3>
+                            <div class="timeline-company">${exp.company.toUpperCase()}</div>
+                            <div class="timeline-date">
+                                <i class="fas fa-calendar"></i>
+                                ${formatDate(exp.startDate)} - ${formatDate(exp.endDate)}
+                            </div>
+                            <ul class="timeline-responsibilities">
+                                ${exp.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function populateEducation(data) {
+            const educationGrid = document.getElementById('educationGrid');
+
+            if (data.education && data.education.length > 0) {
+                educationGrid.innerHTML = data.education.map(edu => `
+                    <div class="education-card">
+                        <h3 class="education-degree">${edu.degree.toUpperCase()}</h3>
+                        <div class="education-institution">${edu.institution.toUpperCase()}</div>
+                        <div class="education-details">
+                            ${edu.location !== 'N/A' ? `
+                                <div class="education-detail">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    ${edu.location.toUpperCase()}
+                                </div>
+                            ` : ''}
+                            <div class="education-detail">
+                                <i class="fas fa-graduation-cap"></i>
+                                ${edu.graduationYear}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function populateProjects(data) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            const noProjects = document.getElementById('noProjects');
+
+            if (data.projects && data.projects.length > 0) {
+                projectsGrid.innerHTML = data.projects.map(project => `
+                    <div class="project-card">
+                        ${project.image ? `<img src="${project.image}" alt="${project.title}" class="project-image">` : ''}
+                        <div class="project-content">
+                            <h3 class="project-title">${project.title.toUpperCase()}</h3>
+                            <p class="project-description">${project.description || ''}</p>
+                            ${project.technologies ? `
+                                <div class="project-tech">
+                                    ${project.technologies.map(tech => `<span class="tech-tag">${tech.toUpperCase()}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="project-links">
+                                ${project.liveUrl ? `
+                                    <a href="${project.liveUrl}" class="project-link" target="_blank" rel="noopener noreferrer">
+                                        <i class="fas fa-external-link-alt"></i> DEMO
+                                    </a>
+                                ` : ''}
+                                ${project.githubUrl ? `
+                                    <a href="${project.githubUrl}" class="project-link" target="_blank" rel="noopener noreferrer">
+                                        <i class="fab fa-github"></i> CODE
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                noProjects.style.display = 'none';
+            } else {
+                projectsGrid.style.display = 'none';
+                noProjects.style.display = 'block';
+            }
+        }
+
+        function populateContact(data) {
+            const contactInfo = document.getElementById('contactInfo');
+
+            const contactItems = [];
+
+            if (data.personalInfo.email) {
+                contactItems.push({
+                    icon: 'fas fa-envelope',
+                    title: 'EMAIL',
+                    value: data.personalInfo.email
+                });
+            }
+
+            if (data.personalInfo.phone) {
+                contactItems.push({
+                    icon: 'fas fa-phone',
+                    title: 'PHONE',
+                    value: data.personalInfo.phone
+                });
+            }
+
+            if (data.personalInfo.location) {
+                contactItems.push({
+                    icon: 'fas fa-map-marker-alt',
+                    title: 'LOCATION',
+                    value: data.personalInfo.location.toUpperCase()
+                });
+            }
+
+            contactInfo.innerHTML = contactItems.map(item => `
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>${item.title}</h3>
+                        <p>${item.value}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initContactForm() {
+            const contactForm = document.getElementById('contactForm');
+
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('MESSAGE SENT! (DEMO)');
+                contactForm.reset();
+            });
+        }
+
+        async function init() {
+            const data = await loadPortfolioData();
+
+            if (!data) {
+                console.error('Failed to load portfolio data');
+                return;
+            }
+
+            populateHero(data);
+            populateAbout(data);
+            populateSkills(data);
+            populateExperience(data);
+            populateEducation(data);
+            populateProjects(data);
+            populateContact(data);
+
+            initPixelParticles();
+            initThemeToggle();
+            initDownloadButton();
+            initMobileMenu();
+            initScrollProgress();
+            initContactForm();
+
+            document.title = `${data.personalInfo.fullName.toUpperCase()} - PORTFOLIO`;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

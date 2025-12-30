@@ -118,17 +118,15 @@ async def get_image(filename: str):
     print(f"✅ Image found: {filename} (Size: {file_size} bytes)")
     
     try:
-        # Debug: Show current time before upload
-        current_time = datetime.utcnow()
-        print(f"🕐 Current UTC time: {current_time}")
+        # # Debug: Show current time before upload
+        # current_time = datetime.utcnow()
+        # print(f"🕐 Current UTC time: {current_time}")
         
         # Upload to Cloudinary with explicit timestamp
         print(f"☁️ Uploading to Cloudinary: {filename}")
-        upload_result = cloudinary.uploader.upload(
-            file_path,
-            timestamp=int(time.time()),  # Use current timestamp
-            resource_type="auto"
-        )
+        upload_result = cloudinary.uploader.upload(file_path)
+        # cloudinary.uploader.upload("https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg",
+        #                                    public_id="shoes")
         
         # Debug: Cloudinary upload success
         print(f"✅ Cloudinary upload successful:")
@@ -142,6 +140,7 @@ async def get_image(filename: str):
         
     except Exception as e:
         print(f"❌ Cloudinary upload failed: {str(e)}")
+        print(f"❌99 : {file_path}")
         
         # If Cloudinary fails, still return the local file
         print(f"📁 Returning local file instead")

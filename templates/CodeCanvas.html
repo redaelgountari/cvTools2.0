@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --bg-tertiary: #1d2d50;
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --accent-color: #64ffda;
+            --accent-hover: #52e3c2;
+            --border-color: #233554;
+            --shadow: rgba(2, 12, 27, 0.7);
+        }
+
+        body.light-mode {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #0a192f;
+            --text-secondary: #495057;
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            pointer-events: none;
+        }
+
+        .bg-animation::before,
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            filter: blur(100px);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-animation::before {
+            top: -250px;
+            left: -250px;
+            animation-delay: 0s;
+        }
+
+        .bg-animation::after {
+            bottom: -250px;
+            right: -250px;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(100px, -100px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-100px, 100px) scale(0.9);
+            }
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 0;
+            box-shadow: 0 2px 20px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 10px 0;
+            box-shadow: 0 5px 30px var(--shadow);
+        }
+
+        body.light-mode .navbar {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent-color);
+            font-family: 'Fira Code', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logo-text:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: 'Fira Code', monospace;
+            position: relative;
+        }
+
+        .nav-link::before {
+            content: '< ';
+            color: var(--accent-color);
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+        }
+
+        .nav-link::after {
+            content: ' />';
+            color: var(--accent-color);
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color);
+        }
+
+        .nav-link:hover::before,
+        .nav-link:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            transform: rotate(180deg);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 2px;
+            background: var(--accent-color);
+            transition: all 0.3s;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-text {
+            opacity: 0;
+            animation: fadeInUp 1s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text {
+            transform: translateY(30px);
+        }
+
+        .greeting {
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-color);
+            font-size: 18px;
+            font-weight: 400;
+            animation: fadeInUp 1s 0.2s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-name {
+            font-size: 50px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin-top: 10px;
+            animation: fadeInUp 1s 0.4s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-title {
+            font-size: 30px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.1;
+            animation: fadeInUp 1s 0.6s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-description {
+            max-width: 540px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-top: 15px;
+            animation: fadeInUp 1s 0.8s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+            animation: fadeInUp 1s 1s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            text-decoration: none;
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+            border-radius: 5px;
+            transition: all 0.3s;
+            display: inline-block;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(100, 255, 218, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background: rgba(100, 255, 218, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(100, 255, 218, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(136, 146, 176, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(136, 146, 176, 0.2);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            animation: fadeInUp 1s 1.2s forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 20px;
+            transition: all 0.3s;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .social-link::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--accent-color);
+            border-radius: 5px;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+
+        .social-link:hover::before {
+            transform: scale(1);
+        }
+
+        .social-link:hover {
+            color: var(--accent-color);
+            transform: translateY(-5px);
+        }
+
+        /* Profile Image */
+        .hero-image-wrapper {
+            display: flex;
+            justify-content: center;
+            animation: fadeInRight 1s 0.5s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-image-wrapper {
+            transform: translateX(50px);
+        }
+
+        .profile-image-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            max-width: 100%;
+        }
+
+        .profile-image-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 20px 40px var(--shadow);
+            position: relative;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-image-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-color);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .profile-image-container:hover .profile-image-frame {
+            transform: translate(-10px, -10px);
+        }
+
+        .profile-image-container:hover .profile-image-frame::before {
+            opacity: 0.1;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: all 0.3s;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .profile-image-container:hover .profile-image {
+            transform: scale(1.05);
+        }
+
+        .code-decoration {
+            position: absolute;
+            font-family: 'Fira Code', monospace;
+            color: var(--accent-color);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .code-decoration.top-left {
+            top: -20px;
+            left: -20px;
+        }
+
+        .code-decoration.bottom-right {
+            bottom: -20px;
+            right: -20px;
+        }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .section-title::before {
+            content: attr(data-number);
+            color: var(--accent-color);
+            font-size: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin-left: 20px;
+            max-width: 300px;
+        }
+
+        /* About Section */
+        .about-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.1), transparent);
+            transition: all 0.5s;
+        }
+
+        .stat-item:hover::before {
+            left: 100%;
+        }
+
+        .stat-item:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--accent-color);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Skills Section */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+
+        .skill-category {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .skill-category:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .category-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-title i {
+            color: var(--accent-color);
+            transition: all 0.3s;
+        }
+
+        .skill-category:hover .category-title i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            padding: 8px 16px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.2);
+        }
+
+        /* Experience Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 50px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -45px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            border: 3px solid var(--bg-primary);
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        .timeline-item:hover .timeline-dot {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+
+        .timeline-content {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 10px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .timeline-content:hover {
+            border-color: var(--accent-color);
+            transform: translateX(10px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .timeline-content:hover::before {
+            border-right-color: var(--accent-color);
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .timeline-company {
+            color: var(--accent-color);
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-date {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 15px;
+        }
+
+        .timeline-responsibilities {
+            list-style: none;
+        }
+
+        .timeline-responsibilities li {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .timeline-responsibilities li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            transition: all 0.3s;
+        }
+
+        .timeline-responsibilities li:hover {
+            color: var(--text-primary);
+            padding-left: 25px;
+        }
+
+        .timeline-responsibilities li:hover::before {
+            transform: translateX(5px);
+        }
+
+        /* Education Cards */
+        .education-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .education-card {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-color);
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .education-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.05), transparent);
+            transition: all 0.5s;
+        }
+
+        .education-card:hover::before {
+            left: 100%;
+        }
+
+        .education-card:hover {
+            border-color: var(--accent-color);
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .education-degree {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .education-institution {
+            color: var(--accent-color);
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .education-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .education-detail {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .project-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .project-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover .project-image {
+            transform: scale(1.1);
+        }
+
+        .project-content {
+            padding: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .project-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .project-card:hover .project-title {
+            color: var(--accent-color);
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tech-tag {
+            padding: 5px 10px;
+            background: var(--bg-primary);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: 'Fira Code', monospace;
+            transition: all 0.3s;
+        }
+
+        .tech-tag:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+
+        .project-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .project-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .project-link:hover {
+            color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        /* Contact Section */
+        .contact-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            color: var(--accent-color);
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .contact-item:hover .contact-icon {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            transform: rotate(360deg);
+        }
+
+        .contact-details h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .contact-details p {
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 30px 0;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .footer-name {
+            color: var(--accent-color);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Scroll Progress Bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+            z-index: 10000;
+            transition: width 0.1s ease;
+        }
+
+        /* Scroll to Top Button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            color: var(--accent-color);
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            transform: translateY(-5px);
+        }
+
+        /* Cursor Effect */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s ease;
+        }
+
+        .cursor-outline {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: var(--bg-primary);
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 40px 20px;
+                transition: left 0.3s;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-image-wrapper {
+                order: -1;
+                display: flex;
+                justify-content: center;
+            }
+
+            .profile-image-container {
+                width: 280px;
+                height: 280px;
+            }
+
+            .hero-name {
+                font-size: 50px;
+            }
+
+            .hero-title {
+                font-size: 35px;
+            }
+
+            .skills-container {
+                grid-template-columns: 1fr;
+            }
+
+            .about-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .cursor-dot,
+            .cursor-outline {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-image-container {
+                width: 240px;
+                height: 240px;
+            }
+
+            .hero-name {
+                font-size: 40px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .section-title {
+                font-size: 26px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-image-container {
+                width: 200px;
+                height: 200px;
+            }
+
+            .hero-name {
+                font-size: 32px;
+            }
+
+            .hero-title {
+                font-size: 24px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation"></div>
+    <div class="scroll-progress"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text"></span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#skills" class="nav-link">Skills</a>
+                <a href="#experience" class="nav-link">Experience</a>
+                <a href="#education" class="nav-link">Education</a>
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="greeting">Hello, I'm</div>
+                    <h1 class="hero-name"></h1>
+                    <h2 class="hero-title"></h2>
+                    <p class="hero-description"></p>
+                    <div class="hero-buttons">
+                        <a href="#contact" class="btn btn-primary">Get In Touch</a>
+                        <a href="#projects" class="btn btn-secondary">View Projects</a>
+                    </div>
+                    <div class="social-links"></div>
+                </div>
+                <div class="hero-image-wrapper">
+                    <div class="profile-image-container">
+                        <div class="code-decoration top-left">&lt;img&gt;</div>
+                        <div class="profile-image-frame">
+                            <img src="" alt="Profile" class="profile-image">
+                        </div>
+                        <div class="code-decoration bottom-right">&lt;/img&gt;</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="01.">About Me</h2>
+            <div class="about-content">
+                <p class="about-description reveal"></p>
+                <div class="about-stats reveal">
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">Projects Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-count="0">0</div>
+                        <div class="stat-label">Technologies</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="skills-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="02.">Skills & Expertise</h2>
+            <div class="skills-container">
+                <div class="skill-category reveal">
+                    <h3 class="category-title">
+                        <i class="fas fa-code"></i>
+                        Technical Skills
+                    </h3>
+                    <div class="skills-grid" id="technicalSkills"></div>
+                </div>
+                <div class="skill-category reveal">
+                    <h3 class="category-title">
+                        <i class="fas fa-tools"></i>
+                        Tools & Technologies
+                    </h3>
+                    <div class="skills-grid" id="toolsSkills"></div>
+                </div>
+                <div class="skill-category reveal">
+                    <h3 class="category-title">
+                        <i class="fas fa-language"></i>
+                        Languages
+                    </h3>
+                    <div class="skills-grid" id="languageSkills"></div>
+                </div>
+                <div class="skill-category reveal">
+                    <h3 class="category-title">
+                        <i class="fas fa-users"></i>
+                        Soft Skills
+                    </h3>
+                    <div class="skills-grid" id="softSkills"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="experience-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="03.">Work Experience</h2>
+            <div class="timeline" id="experienceTimeline"></div>
+        </div>
+    </section>
+
+    <section id="education" class="education-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="04.">Education</h2>
+            <div class="education-grid" id="educationGrid"></div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="05.">Projects</h2>
+            <div class="projects-grid" id="projectsGrid"></div>
+            <div class="no-projects" id="noProjects" style="display: none;">
+                <i class="fas fa-folder-open"></i>
+                <p>Projects coming soon...</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title reveal" data-number="06.">Get In Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info reveal" id="contactInfo"></div>
+                <form class="contact-form reveal" id="contactForm">
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Subject" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-text">© 2025 <span class="footer-name"></span>. All rights reserved.</p>
+                <div class="footer-social"></div>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <button class="download-btn" id="downloadBtn" aria-label="Download Portfolio">
+        <i class="fas fa-download"></i>
+    </button>
+
+    <script>
+        function downloadPortfolioHTML() {
+            if (!portfolioData) {
+                alert('Portfolio data is still loading. Please wait a moment and try again.');
+                return;
+            }
+
+            // Get the original HTML template from the current document
+            const originalDoc = document.implementation.createHTMLDocument('Portfolio');
+            
+            // Get clean styles
+            const styles = Array.from(document.querySelectorAll('style'))
+                .map(style => style.textContent)
+                .join('\n');
+            
+            // Get current theme state
+            const isLightMode = document.body.classList.contains('light-mode');
+            const themeIconClass = isLightMode ? 'fa-moon' : 'fa-sun';
+            const bodyClass = isLightMode ? 'class="light-mode"' : '';
+            
+            // Get all content sections (remove 'active' class so animations can replay)
+            const getCleanSection = (selector) => {
+                const section = document.querySelector(selector);
+                if (!section) return '';
+                const clone = section.cloneNode(true);
+                // Remove all 'active' classes so scroll reveal animations work
+                clone.querySelectorAll('.reveal.active').forEach(el => {
+                    el.classList.remove('active');
+                });
+                return clone.outerHTML;
+            };
+            
+            // Build complete standalone HTML
+            const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${portfolioData.personalInfo.fullName} - Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>${styles}</style>
+</head>
+<body ${bodyClass}>
+    ${document.querySelector('.bg-animation').outerHTML}
+    <div class="scroll-progress"></div>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">${document.querySelector('.logo-text').textContent}</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                ${document.querySelector('.nav-menu').innerHTML}
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas ${themeIconClass}"></i>
+                </button>
+                <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    ${getCleanSection('#home')}
+    ${getCleanSection('#about')}
+    ${getCleanSection('#skills')}
+    ${getCleanSection('#experience')}
+    ${getCleanSection('#education')}
+    ${getCleanSection('#projects')}
+    ${getCleanSection('#contact')}
+    ${getCleanSection('.footer')}
+    
+    <button class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Scroll Progress Bar
+        function updateScrollProgress() {
+            const scrollProgress = document.querySelector('.scroll-progress');
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = (scrollTop / scrollHeight) * 100;
+            scrollProgress.style.width = scrollPercentage + '%';
+        }
+
+        // Scroll to Top Button
+        function initScrollTop() {
+            const scrollTopBtn = document.getElementById('scrollTop');
+
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+            });
+
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Scroll Reveal Animation
+        function initScrollReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+
+            const revealOnScroll = () => {
+                reveals.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementVisible = 150;
+
+                    if (elementTop < window.innerHeight - elementVisible) {
+                        element.classList.add('active');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); // Initial check
+        }
+
+        // Navbar Scroll Effect
+        function initNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // Custom Cursor
+        function initCustomCursor() {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+
+            if (window.innerWidth > 1024) {
+                document.addEventListener('mousemove', (e) => {
+                    cursorDot.style.left = e.clientX + 'px';
+                    cursorDot.style.top = e.clientY + 'px';
+
+                    cursorOutline.style.left = e.clientX + 'px';
+                    cursorOutline.style.top = e.clientY + 'px';
+                });
+
+                document.querySelectorAll('a, button').forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        cursorDot.style.transform = 'scale(1.5)';
+                        cursorOutline.style.transform = 'scale(1.5)';
+                    });
+
+                    el.addEventListener('mouseleave', () => {
+                        cursorDot.style.transform = 'scale(1)';
+                        cursorOutline.style.transform = 'scale(1)';
+                    });
+                });
+            }
+        }
+
+        function initThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            if (!themeToggle) return;
+            
+            const themeIcon = themeToggle.querySelector('i');
+            if (!themeIcon) return;
+
+            // Check for saved theme preference or default to current state
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+
+                if (document.body.classList.contains('light-mode')) {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        }
+
+        function initMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+
+        function initContactForm() {
+            const contactForm = document.getElementById('contactForm');
+
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Thank you for your message! This is a demo form.');
+                contactForm.reset();
+            });
+        }
+
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Initialize all functions when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initThemeToggle();
+                initMobileMenu();
+                initScrollTop();
+                initScrollReveal();
+                initNavbarScroll();
+                initCustomCursor();
+                initContactForm();
+                initSmoothScroll();
+                window.addEventListener('scroll', updateScrollProgress);
+            });
+        } else {
+            initThemeToggle();
+            initMobileMenu();
+            initScrollTop();
+            initScrollReveal();
+            initNavbarScroll();
+            initCustomCursor();
+            initContactForm();
+            initSmoothScroll();
+            window.addEventListener('scroll', updateScrollProgress);
+        }
+    <\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `portfolio-${portfolioData.personalInfo.fullName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function initDownloadButton() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            downloadBtn.addEventListener('click', () => {
+                if (!portfolioData) {
+                    alert('Portfolio data is still loading. Please wait a moment and try again.');
+                    return;
+                }
+                downloadPortfolioHTML();
+            });
+        }
+
+        let portfolioData = null;
+
+        async function loadPortfolioData() {
+            try {
+                const response = await fetch('http://localhost:3000/api/GettingUserData', {
+                    headers: {
+                        'Authorization': `Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..vxgLalpa7sbpb4r0.EGRYKN3y8cpJXqx6IH3dzZGylBX1wOIoObEWGAofqmlzjgHakl1e3GLzFZTzjgcJo6W51IVsWx0byEk3olKe7ctTOTBzck8v6rgLBmB9A823qoJW-2Y0lKi8bqhlyzl307tgVQfnRixdQ0TOoMwi8lExDCdCTO2jtrFo_yLc_GgdVpLFyxM2VsdkMyrrMjjyhX4ZshbZ2H6LTOTae8qKa7xnMt2oIQ0Fs0TTRxCjEvil.Mc9n0PMbijzDpXW9CnIGng`
+                    }
+                });
+                const jsonData = await response.json();
+                portfolioData = jsonData.data;
+                return portfolioData;
+            } catch (error) {
+                console.error('Error loading portfolio data:', error);
+                return null;
+            }
+        }
+
+        // Scroll Progress Bar
+        function updateScrollProgress() {
+            const scrollProgress = document.querySelector('.scroll-progress');
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = (scrollTop / scrollHeight) * 100;
+            scrollProgress.style.width = scrollPercentage + '%';
+        }
+
+        // Scroll to Top Button
+        function initScrollTop() {
+            const scrollTopBtn = document.getElementById('scrollTop');
+
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+            });
+
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // Scroll Reveal Animation
+        function initScrollReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+
+            const revealOnScroll = () => {
+                reveals.forEach(element => {
+                    const elementTop = element.getBoundingClientRect().top;
+                    const elementVisible = 150;
+
+                    if (elementTop < window.innerHeight - elementVisible) {
+                        element.classList.add('active');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); // Initial check
+        }
+
+        // Navbar Scroll Effect
+        function initNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // Custom Cursor
+        function initCustomCursor() {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+
+            if (window.innerWidth > 1024) {
+                document.addEventListener('mousemove', (e) => {
+                    cursorDot.style.left = e.clientX + 'px';
+                    cursorDot.style.top = e.clientY + 'px';
+
+                    cursorOutline.style.left = e.clientX + 'px';
+                    cursorOutline.style.top = e.clientY + 'px';
+                });
+
+                document.querySelectorAll('a, button').forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        cursorDot.style.transform = 'scale(1.5)';
+                        cursorOutline.style.transform = 'scale(1.5)';
+                    });
+
+                    el.addEventListener('mouseleave', () => {
+                        cursorDot.style.transform = 'scale(1)';
+                        cursorOutline.style.transform = 'scale(1)';
+                    });
+                });
+            }
+        }
+
+        function initThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-mode');
+
+                if (document.body.classList.contains('light-mode')) {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                } else {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                }
+            });
+        }
+
+        function initMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navMenu.classList.toggle('active');
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navMenu.classList.remove('active');
+                });
+            });
+        }
+
+        function populateHero(data) {
+            const logoText = document.querySelector('.logo-text');
+            const heroName = document.querySelector('.hero-name');
+            const heroTitle = document.querySelector('.hero-title');
+            const heroDescription = document.querySelector('.hero-description');
+            const profileImage = document.querySelector('.profile-image');
+            const socialLinks = document.querySelector('.social-links');
+            const footerName = document.querySelector('.footer-name');
+
+            const firstName = data.personalInfo.fullName.split(' ')[0];
+            logoText.textContent = `<${firstName} />`;
+            heroName.textContent = data.personalInfo.fullName;
+            heroTitle.textContent = data.jobSearchTitle;
+            heroDescription.textContent = data.professionalSummary;
+            footerName.textContent = data.personalInfo.fullName;
+
+            if (data.image && data.image.length > 0) {
+                profileImage.src = data.image[0];
+            }
+
+            const socialLinksData = [];
+            if (data.personalInfo.github && data.personalInfo.github !== 'N/A') {
+                socialLinksData.push({ icon: 'fab fa-github', url: data.personalInfo.github });
+            }
+            if (data.personalInfo.linkedin && data.personalInfo.linkedin !== 'N/A') {
+                socialLinksData.push({ icon: 'fab fa-linkedin', url: data.personalInfo.linkedin });
+            }
+            if (data.onlinePresence?.twitter) {
+                socialLinksData.push({ icon: 'fab fa-twitter', url: data.onlinePresence.twitter });
+            }
+            if (data.personalInfo.email) {
+                socialLinksData.push({ icon: 'fas fa-envelope', url: `mailto:${data.personalInfo.email}` });
+            }
+
+            socialLinks.innerHTML = socialLinksData.map(social => `
+                <a href="${social.url}" class="social-link" target="_blank" rel="noopener noreferrer">
+                    <i class="${social.icon}"></i>
+                </a>
+            `).join('');
+
+            const footerSocial = document.querySelector('.footer-social');
+            footerSocial.innerHTML = socialLinks.innerHTML;
+        }
+
+        function populateAbout(data) {
+            const aboutDescription = document.querySelector('.about-description');
+            aboutDescription.textContent = data.professionalSummary;
+
+            const yearsExperience = data.experience?.length || 0;
+            const projectsCompleted = data.projects?.length || 0;
+            const technologiesCount = data.skills?.technical?.length || 0;
+
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const statValues = [yearsExperience, projectsCompleted, technologiesCount];
+
+            statNumbers.forEach((statNumber, index) => {
+                statNumber.setAttribute('data-count', statValues[index]);
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && statNumber.textContent === '0') {
+                            animateCounter(statNumber, statValues[index]);
+                        }
+                    });
+                });
+
+                observer.observe(statNumber);
+            });
+        }
+
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 30);
+        }
+
+        function populateSkills(data) {
+            const technicalSkillsContainer = document.getElementById('technicalSkills');
+            const toolsSkillsContainer = document.getElementById('toolsSkills');
+            const languageSkillsContainer = document.getElementById('languageSkills');
+            const softSkillsContainer = document.getElementById('softSkills');
+
+            if (data.skills?.technical) {
+                technicalSkillsContainer.innerHTML = data.skills.technical.map(skill => `
+                    <span class="skill-tag">${skill}</span>
+                `).join('');
+            }
+
+            if (data.tools) {
+                toolsSkillsContainer.innerHTML = data.tools.map(tool => `
+                    <span class="skill-tag">${tool}</span>
+                `).join('');
+            }
+
+            if (data.skills?.languages) {
+                languageSkillsContainer.innerHTML = data.skills.languages.map(language => `
+                    <span class="skill-tag">${language}</span>
+                `).join('');
+            }
+
+            if (data.skills?.soft) {
+                softSkillsContainer.innerHTML = data.skills.soft.map(skill => `
+                    <span class="skill-tag">${skill}</span>
+                `).join('');
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Present';
+            const [year, month] = dateString.split('-');
+            const date = new Date(year, parseInt(month) - 1);
+            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+
+        function populateExperience(data) {
+            const experienceTimeline = document.getElementById('experienceTimeline');
+
+            if (data.experience && data.experience.length > 0) {
+                experienceTimeline.innerHTML = data.experience.map(exp => `
+                    <div class="timeline-item reveal">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h3 class="timeline-title">${exp.title}</h3>
+                            <div class="timeline-company">${exp.company}</div>
+                            <div class="timeline-date">
+                                ${formatDate(exp.startDate)} - ${formatDate(exp.endDate)}
+                            </div>
+                            <ul class="timeline-responsibilities">
+                                ${exp.responsibilities.map(resp => `<li>${resp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function populateEducation(data) {
+            const educationGrid = document.getElementById('educationGrid');
+
+            if (data.education && data.education.length > 0) {
+                educationGrid.innerHTML = data.education.map(edu => `
+                    <div class="education-card reveal">
+                        <h3 class="education-degree">${edu.degree}</h3>
+                        <div class="education-institution">${edu.institution}</div>
+                        <div class="education-details">
+                            ${edu.location !== 'N/A' ? `<div class="education-detail">📍 ${edu.location}</div>` : ''}
+                            <div class="education-detail">🎓 ${edu.graduationYear}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function populateProjects(data) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            const noProjects = document.getElementById('noProjects');
+
+            if (data.projects && data.projects.length > 0) {
+                projectsGrid.innerHTML = data.projects.map(project => {
+                    // Get the first image from images array or fallback to image field
+                    const projectImage = (project.images && project.images.length > 0) 
+                        ? project.images[0] 
+                        : project.image;
+                    
+                    return `
+                    <div class="project-card reveal">
+                        ${projectImage ? `<img src="${projectImage}" alt="${project.title}" class="project-image">` : ''}
+                        <div class="project-content">
+                            <h3 class="project-title">${project.title}</h3>
+                            ${project.role ? `<div class="project-role" style="color: var(--accent-color); font-size: 13px; margin-bottom: 8px; font-family: 'Fira Code', monospace;">Role: ${project.role}</div>` : ''}
+                            <p class="project-description">${project.description || ''}</p>
+                            ${project.technologiesUsed && project.technologiesUsed.length > 0 ? `
+                                <div class="project-tech">
+                                    ${project.technologiesUsed.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div class="project-links">
+                                ${project.url ? `
+                                    <a href="${project.url}" class="project-link" target="_blank" rel="noopener noreferrer" title="Live Demo">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                ` : ''}
+                                ${project.github ? `
+                                    <a href="${project.github}" class="project-link" target="_blank" rel="noopener noreferrer" title="View Code">
+                                        <i class="fab fa-github"></i>
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+                noProjects.style.display = 'none';
+            } else {
+                projectsGrid.style.display = 'none';
+                noProjects.style.display = 'block';
+            }
+        }
+
+        function populateContact(data) {
+            const contactInfo = document.getElementById('contactInfo');
+
+            const contactItems = [];
+
+            if (data.personalInfo.email) {
+                contactItems.push({
+                    icon: 'fas fa-envelope',
+                    title: 'Email',
+                    value: data.personalInfo.email
+                });
+            }
+
+            if (data.personalInfo.phone) {
+                contactItems.push({
+                    icon: 'fas fa-phone',
+                    title: 'Phone',
+                    value: data.personalInfo.phone
+                });
+            }
+
+            if (data.personalInfo.location) {
+                contactItems.push({
+                    icon: 'fas fa-map-marker-alt',
+                    title: 'Location',
+                    value: data.personalInfo.location
+                });
+            }
+
+            contactInfo.innerHTML = contactItems.map(item => `
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h3>${item.title}</h3>
+                        <p>${item.value}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initContactForm() {
+            const contactForm = document.getElementById('contactForm');
+
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Thank you for your message! This is a demo form.');
+                contactForm.reset();
+            });
+        }
+
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        async function init() {
+            const data = await loadPortfolioData();
+
+            if (!data) {
+                console.error('Failed to load portfolio data');
+                return;
+            }
+
+            populateHero(data);
+            populateAbout(data);
+            populateSkills(data);
+            populateExperience(data);
+            populateEducation(data);
+            populateProjects(data);
+            populateContact(data);
+
+            initThemeToggle();
+            initMobileMenu();
+            initDownloadButton();
+            initContactForm();
+            initSmoothScroll();
+            initScrollReveal();
+            initScrollTop();
+            initNavbarScroll();
+            initCustomCursor();
+
+            window.addEventListener('scroll', updateScrollProgress);
+
+            document.title = `${data.personalInfo.fullName} - Portfolio`;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+
+</html>

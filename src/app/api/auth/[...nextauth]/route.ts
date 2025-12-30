@@ -1,12 +1,12 @@
-import NextAuth from "next-auth/next";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { mdb } from "@/lib/mongodb";
-import userShema from "@/lib/UsersShema";
+import userSchema from "@/lib/UsersShema";
 import bcrypt from "bcryptjs";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -28,7 +28,6 @@ const handler = NextAuth({
         }
 
         try {
-          await mdb();
           const db = await mdb();
           
           const user = await db.collection("users").findOne({ email: credentials.email });
@@ -57,7 +56,6 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       try {
-        await mdb();
         const db = await mdb();
 
         const email = user.email;
@@ -70,7 +68,7 @@ const handler = NextAuth({
         
         if (existingUser) {
           if (account?.provider && account.provider !== existingUser.provider) {
-            await userShema.updateOne(
+            await db.collection("users").updateOne(
               { email },
               { $set: { provider: account.provider } }
             );
@@ -78,10 +76,12 @@ const handler = NextAuth({
           return true;
         }
         
-        await userShema.create({
+        // Use db.collection for consistency or userSchema - pick one approach
+        await db.collection("users").insertOne({
           email,
           provider: account?.provider || 'credentials',
           verified: account?.provider ? true : false,
+          createdAt: new Date(),
         });
         
         return true;
@@ -111,6 +111,8 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

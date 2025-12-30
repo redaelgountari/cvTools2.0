@@ -1,0 +1,67 @@
+{
+  "page_1_img_1_6002bbc1-3887-4366-af67-7ac44f2aa3cf.jpeg": {
+    "filename": "page_1_img_1_6002bbc1-3887-4366-af67-7ac44f2aa3cf.jpeg",
+    "page": 1,
+    "image_index": 1,
+    "cloudinary_url": "https://res.cloudinary.com/dledndpo5/image/upload/v1750196437/pdf_extract_9a7fcd8f-c683-485e-8a04-881c86691f92.jpg",
+    "public_id": "pdf_extract_9a7fcd8f-c683-485e-8a04-881c86691f92",
+    "format": "jpg",
+    "size_bytes": 53825,
+    "width": 438,
+    "height": 438,
+    "local_path": "output_images\\page_1_img_1_6002bbc1-3887-4366-af67-7ac44f2aa3cf.jpeg",
+    "uploaded_at": "2025-06-17T22:40:36.683974"
+  },
+  "page_1_img_1_1f84b85c-64bf-443e-bab8-a5103d5efd01.jpeg": {
+    "filename": "page_1_img_1_1f84b85c-64bf-443e-bab8-a5103d5efd01.jpeg",
+    "page": 1,
+    "image_index": 1,
+    "cloudinary_url": "https://res.cloudinary.com/dledndpo5/image/upload/v1750196660/pdf_extract_e31fc5bc-09da-4dd2-9f9e-20334a3fb129.jpg",
+    "public_id": "pdf_extract_e31fc5bc-09da-4dd2-9f9e-20334a3fb129",
+    "format": "jpg",
+    "size_bytes": 53825,
+    "width": 438,
+    "height": 438,
+    "local_path": "output_images\\page_1_img_1_1f84b85c-64bf-443e-bab8-a5103d5efd01.jpeg",
+    "uploaded_at": "2025-06-17T22:44:19.551453"
+  },
+  "page_1_img_1_60c86357-716a-47ea-b2d7-dde3bb75bc6e.jpeg": {
+    "filename": "page_1_img_1_60c86357-716a-47ea-b2d7-dde3bb75bc6e.jpeg",
+    "page": 1,
+    "image_index": 1,
+    "cloudinary_url": "https://res.cloudinary.com/dledndpo5/image/upload/v1750196787/pdf_extract_c728b18f-ca86-4237-85f8-f0993d3e81a4.jpg",
+    "public_id": "pdf_extract_c728b18f-ca86-4237-85f8-f0993d3e81a4",
+    "format": "jpg",
+    "size_bytes": 289733,
+    "width": 1053,
+    "height": 1578,
+    "local_path": "output_images\\page_1_img_1_60c86357-716a-47ea-b2d7-dde3bb75bc6e.jpeg",
+    "uploaded_at": "2025-06-17T22:46:27.033375"
+  },
+  "page_1_img_1_525f10a6-6b72-49fa-b1e9-12696c4965eb.jpeg": {
+    "filename": "page_1_img_1_525f10a6-6b72-49fa-b1e9-12696c4965eb.jpeg",
+    "page": 1,
+    "image_index": 1,
+    "cloudinary_url": "https://res.cloudinary.com/dledndpo5/image/upload/v1750196806/pdf_extract_d337a042-8392-491d-902c-113b5c0d9f1a.jpg",
+    "public_id": "pdf_extract_d337a042-8392-491d-902c-113b5c0d9f1a",
+    "format": "jpg",
+    "size_bytes": 289733,
+    "width": 1053,
+    "height": 1578,
+    "local_path": "output_images\\page_1_img_1_525f10a6-6b72-49fa-b1e9-12696c4965eb.jpeg",
+    "uploaded_at": "2025-06-17T22:46:45.547319"
+  },
+  "page_1_img_1_4193d3c9-c52c-4b5d-8a99-cab77924e595.jpeg": {
+    "filename": "page_1_img_1_4193d3c9-c52c-4b5d-8a99-cab77924e595.jpeg",
+    "page": 1,
+    "image_index": 1,
+    "cloudinary_url": "https://res.cloudinary.com/dledndpo5/image/upload/v1750196916/pdf_extract_9da440bb-fafc-4a1f-86e8-ad3fe8075cf9.jpg",
+    "public_id": "pdf_extract_9da440bb-fafc-4a1f-86e8-ad3fe8075cf9",
+    "format": "jpg",
+    "size_bytes": 289733,
+    "width": 1053,
+    "height": 1578,
+    "local_path": "output_images\\page_1_img_1_4193d3c9-c52c-4b5d-8a99-cab77924e595.jpeg",
+    "uploaded_at": "2025-06-17T22:48:35.856756"
+  }
+}

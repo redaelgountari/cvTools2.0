@@ -105,6 +105,7 @@ const ResumeSchema = new mongoose.Schema({
   projects: { type: [ProjectSchema], default: [] },
   onlinePresence: { type: OnlinePresenceSchema, default: () => ({}) },
   hobbies: { type: [String], default: [] },
+  image: { type: [String], default: [] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

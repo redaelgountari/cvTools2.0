@@ -53,7 +53,6 @@ export async function POST(request: Request) {
       updatedAt: new Date()
     };
 
-    await db.createCollection("users")
     const result = await db.collection("users").insertOne(newUser);
 
     if (!result.acknowledged) {
