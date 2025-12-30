@@ -1,0 +1,394 @@
+"use client"
+
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import React, { useContext, useEffect, useState } from 'react';
+import { ReadContext } from './ReadContext';
+import { getFromStorage, saveToStorage } from '@/Cookiesmv';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+// Define Zod schemas for each section of the resume
+const personalInfoSchema = z.object({
+  fullName: z.string().min(2, { message: "Name is required and must be at least 2 characters" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  linkedin: z.string().url({ message: "Invalid LinkedIn URL" }).optional().or(z.literal('')),
+  website: z.string().url({ message: "Invalid website URL" }).optional().or(z.literal('')),
+  github: z.string().url({ message: "Invalid GitHub URL" }).optional().or(z.literal('')),
+  portfolio: z.string().url({ message: "Invalid portfolio URL" }).optional().or(z.literal('')),
+});
+
+const skillsSchema = z.object({
+  technical: z.array(z.string()).optional(),
+  soft: z.array(z.string()).optional(),
+  languages: z.array(z.string()).optional(),
+});
+
+const experienceItemSchema = z.object({
+  title: z.string().min(1, { message: "Job title is required" }),
+  company: z.string().min(1, { message: "Company name is required" }),
+  startDate: z.string().min(1, { message: "Start date is required" }),
+  endDate: z.string().optional(),
+  location: z.string().optional(),
+  responsibilities: z.array(z.string()).optional(),
+});
+
+const educationItemSchema = z.object({
+  degree: z.string().min(1, { message: "Degree is required" }),
+  institution: z.string().min(1, { message: "Institution is required" }),
+  location: z.string().optional(),
+  graduationYear: z.string().optional(),
+  relevantCourses: z.array(z.string()).optional(),
+});
+
+const certificationItemSchema = z.object({
+  name: z.string().min(1, { message: "Certification name is required" }),
+  issuer: z.string().min(1, { message: "Issuer is required" }),
+  year: z.string().optional(),
+});
+
+const publicationItemSchema = z.object({
+  title: z.string().min(1, { message: "Publication title is required" }),
+  publicationType: z.string().optional(),
+  year: z.string().optional(),
+  link: z.string().url({ message: "Invalid publication link" }).optional().or(z.literal('')),
+});
+
+const awardItemSchema = z.object({
+  name: z.string().min(1, { message: "Award name is required" }),
+  year: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const volunteerItemSchema = z.object({
+  role: z.string().min(1, { message: "Role is required" }),
+  organization: z.string().min(1, { message: "Organization is required" }),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  description: z.string().optional(),
+});
+
+const projectItemSchema = z.object({
+  title: z.string().min(1, { message: "Project title is required" }),
+  description: z.string().optional(),
+  technologiesUsed: z.array(z.string()).optional(),
+  github: z.string().url({ message: "Invalid GitHub URL" }).optional().or(z.literal('')),
+  role: z.string().optional(),
+});
+
+const onlinePresenceSchema = z.object({
+  twitter: z.string().url({ message: "Invalid Twitter URL" }).optional().or(z.literal('')),
+  stackOverflow: z.string().url({ message: "Invalid Stack Overflow URL" }).optional().or(z.literal('')),
+  medium: z.string().url({ message: "Invalid Medium URL" }).optional().or(z.literal('')),
+});
+
+// The main resume schema
+const resumeSchema = z.object({
+  personalInfo: personalInfoSchema.optional(),
+  professionalSummary: z.string().optional(),
+  skills: skillsSchema.optional(),
+  tools: z.array(z.string()).optional(),
+  experience: z.array(experienceItemSchema).optional(),
+  education: z.array(educationItemSchema).optional(),
+  certifications: z.array(certificationItemSchema).optional(),
+  publications: z.array(publicationItemSchema).optional(),
+  awards: z.array(awardItemSchema).optional(),
+  volunteerExperience: z.array(volunteerItemSchema).optional(),
+  projects: z.array(projectItemSchema).optional(),
+  onlinePresence: onlinePresenceSchema.optional(),
+  hobbies: z.array(z.string()).optional(),
+});
+
+// Define the Resume type based on the Zod schema
+export type Resume = z.infer<typeof resumeSchema>;
+
+export default function AnalyseResults() {
+  const [response, setResponse] = useState<Resume | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeSection, setActiveSection] = useState('personal');
+  const { AnlysedCV, setAnlysedCV, setUserData } = useContext(ReadContext);
+  const storedImages = getFromStorage('userImage');
+  const [userImages, setUserImages] = useState<string[]>(storedImages || []);
+
+  // Initialize useForm with Zod validation
+  const form = useForm<Resume>({
+    resolver: zodResolver(resumeSchema),
+    defaultValues: response || {},
+  });
+
+  useEffect(() => {
+    if (!AnlysedCV) {
+      const storedData = getFromStorage('userData');
+      if (storedData) {
+        console.log("storedData :", storedData);
+        setResponse(storedData);
+        form.reset(storedData);
+        setUserImages(getFromStorage('userImage') || []);
+      }
+    } else {
+      setResponse(AnlysedCV);
+      form.reset(AnlysedCV);
+    }
+  }, [AnlysedCV, form]);
+
+  const onSubmit = (data: Resume) => {
+    setLoading(true);
+    
+    try {
+      setAnlysedCV(data);
+      
+      saveToStorage('userData', data);
+      saveToStorage('userImage', userImages);
+      
+      setError('');
+    } catch (err) {
+      console.error("Error updating resume data:", err);
+      setError('Failed to update resume data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangeImage = (index: number) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+  
+    try {
+      const newImages = [...userImages];
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = () => {
+        if (reader.result) {
+          newImages[index] = reader.result as string;
+          
+          setUserImages(newImages);
+          setUserData(prev => ({
+            ...prev,
+            image: [file] 
+          }));
+          
+          saveToStorage('userImage', newImages);
+        }
+      };
+  
+      reader.onerror = () => {
+        throw new Error('Failed to read image file');
+      };
+      
+    } catch (error) {
+      console.error('Error updating image:', error);
+      setError('Failed to update image. Please try again.');
+    }
+  };
+
+  const handleAddMoreImages = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = () => {
+        if (reader.result) {
+          const newImages = [...userImages, reader.result as string];
+          setUserImages(newImages);
+          saveToStorage('userImage', newImages);
+          
+          setUserData(prev => ({
+            ...prev,
+            image: prev?.image ? [...prev?.image, file] : [file]
+          }));
+        }
+      };
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+  };
+
+  const handleAddImages = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = () => {
+        if (reader.result) {
+          const newImages = [reader.result as string];
+          setUserImages(newImages);
+          saveToStorage('userImage', newImages);
+          
+          setUserData(prev => ({
+            ...prev,
+            image: [file]
+          }));
+        }
+      };
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+  };
+
+  const handleMakePrimary = (index: number) => {
+    if (index === 0 || userImages.length <= 1) return;
+    
+    const newImages = [...userImages];
+    const selectedImage = newImages.splice(index, 1)[0];
+    newImages.unshift(selectedImage);
+    
+    setUserImages(newImages);
+    saveToStorage('userImage', newImages);
+    
+    setUserData(prev => {
+      if (!Array.isArray(prev?.image) || prev?.image.length <= 1) return prev;
+      
+      const updatedImages = [...prev?.image];
+      const selectedFile = updatedImages.splice(index, 1)[0];
+      updatedImages.unshift(selectedFile);
+      
+      return {
+        ...prev,
+        image: updatedImages
+      };
+    });
+  };
+  
+  const handleDeleteImage = (index: number) => {
+    const newImages = [...userImages];
+    newImages.splice(index, 1);
+    setUserImages(newImages);
+    saveToStorage('userImage', newImages);
+    
+    // Update userdata context accordingly
+    setUserData(prev => {
+      const updatedImages = Array.isArray(prev?.image) ? [...prev?.image] : [];
+      updatedImages.splice(index, 1);
+      return {
+        ...prev,
+        image: updatedImages
+      };
+    });
+  };
+
+  const sections = [
+    { id: 'image', label: 'Personal image' },
+    { id: 'personal', label: 'Personal Info' },
+    { id: 'summary', label: 'Summary' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'tools', label: 'Tools' },
+    { id: 'experience', label: 'Experience' },
+    { id: 'education', label: 'Education' },
+    { id: 'certifications', label: 'Certifications' },
+    { id: 'publications', label: 'Publications' },
+    { id: 'awards', label: 'Awards' },
+    { id: 'volunteer', label: 'Volunteer Experience' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'online', label: 'Online Presence' },
+    { id: 'hobbies', label: 'Hobbies' }
+  ];
+
+  if (!response) {
+    return (
+        <div className="flex flex-col items-center justify-center h-[200px] border-2 border-dashed rounded-md p-4">
+            <AlertCircle className="h-10 w-10 text-muted-foreground mb-4" />
+            <p className="text-center text-muted-foreground">
+                No CV data found. Please upload and analyze your CV first.
+            </p>
+        </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <Card>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardHeader>
+              <CardTitle>Resume Analysis</CardTitle>
+              <div className="flex gap-2 overflow-x-auto py-2">
+                {sections.map((section) => (
+                  <Button
+                    key={section.id}
+                    variant={activeSection === section.id ? "default" : "outline"}
+                    onClick={() => setActiveSection(section.id)}
+                    className="whitespace-nowrap"
+                    type="button"
+                  >
+                    {section.label}
+                  </Button>
+                ))}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {loading && (
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="animate-spin" />
+                  <span>Updating...</span>
+                </div>
+              )}
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Image Section */}
+              {activeSection === 'image' && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Professional Images</h3>
+                  
+                  {userImages && userImages.length > 0 ? (
+                <div>
+                  <div className={`${userImages.length > 1 ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" : "max-w-xs mx-auto"}`}>
+                    {userImages.map((base64Image, index) => (
+                      <div 
+                        key={index} 
+                        className={`relative group overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl ${index === 0 ? "ring-2 ring-blue-500" : ""}`}
+                      >
+                        <div className="aspect-square overflow-hidden">
+                          <img 
+                            src={base64Image} 
+                            alt={`Professional Image ${index + 1}`} 
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                        </div>
+                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-2">
+                          {index !== 0 && userImages.length > 1 && (
+                            <button 
+                              onClick={() => handleMakePrimary(index)}
+                              className="bg-blue-500 text-white p-1 rounded-full shadow hover:bg-blue-600"
+                              type="button"
+                              title="Make primary"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

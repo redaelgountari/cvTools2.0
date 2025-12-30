@@ -1,0 +1,75 @@
+"use client"
+
+import React, { useContext, useEffect, useState } from 'react'
+import { ReadContext } from './ReadContext';
+import { getFromStorage } from '@/Cookiesmv';
+import Theme1 from './Themes/Theme1';
+
+export default function Resume() {
+    interface PersonalInfo {
+        fullName: string;
+        email: string;
+        phone: string;
+        location: string;
+        linkedin: string;
+      }
+      
+      interface Skills {
+        technical: string[];
+        soft: string[];
+        languages: string[];
+      }
+      
+      interface Experience {
+        title: string;
+        company: string;
+        location: string;
+        startDate: string;
+        endDate: string;
+        responsibilities: string[];
+      }
+      
+      interface Education {
+        degree: string;
+        institution: string;
+        location: string;
+        graduationYear: string;
+        relevantCourses: string[];
+      }
+      
+      interface Certification {
+        name: string;
+        issuer: string;
+        year: string;
+      }
+      
+      interface Resume {
+        personalInfo: PersonalInfo;
+        professionalSummary: string;
+        skills: Skills;
+        experience: Experience[];
+        education: Education[];
+        certifications: Certification[];
+      }
+    const { AnlysedCV } = useContext(ReadContext);
+    const [storedData, setstoredData] = useState<Resume | null>(null);
+
+    useEffect(() => {
+        if (!AnlysedCV) {
+            const storedData1 = getFromStorage('userData');
+            if (storedData1) {
+                console.log("storedData :", storedData1);
+                setstoredData(storedData1 as Resume);
+            }
+        } else {
+            console.log("AnlysedCV :", AnlysedCV);
+        }
+    }, [AnlysedCV]);
+    
+    return (
+        <div>
+            {storedData ? <Theme1 userdata={storedData} /> : <p>Loading...</p>}
+        </div>
+    );
+    
+}
