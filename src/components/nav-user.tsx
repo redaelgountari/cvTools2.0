@@ -8,6 +8,7 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react"
+import Link from "next/link" // Import Next.js Link
 
 import {
   Avatar,
@@ -89,10 +90,13 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/Profile" className="flex items-center gap-2 cursor-pointer">
+                  <BadgeCheck />
+                  <span>Account</span>
+                </Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem>
                 <CreditCard />
                 Billing

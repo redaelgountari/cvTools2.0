@@ -1,258 +1,6 @@
-"use client"
 
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { Resume } from '@/app/types/resume';
-
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZg.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYMZg.ttf', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuDyYMZg.ttf', fontWeight: 700 },
-  ],
-});
-
-// Color palette
-const COLORS = {
-  primary: '#2563EB',
-  dark: '#1E293B',
-  medium: '#64748B',
-  light: '#E2E8F0',
-  background: '#F8FAFC'
-};
-
-// Create styles
-const styles = StyleSheet.create({
-  page: {
-    padding: 0,
-    fontFamily: 'Inter',
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  sidebar: {
-    width: '35%',
-    padding: 30,
-    paddingTop: 40,
-    backgroundColor: COLORS.dark,
-    color: 'white',
-  },
-  mainContent: {
-    width: '65%',
-    padding: 30,
-    paddingTop: 40,
-  },
-  header: {
-    marginBottom: 30,
-    alignItems: 'center',
-  },
-  headerWithImage: {
-    marginBottom: 30,
-    alignItems: 'center',
-  },
-  headerNoImage: {
-    marginBottom: 25,
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 15,
-    borderWidth: 3,
-    objectFit: "cover",
-    borderColor: 'white',
-  },
-  avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitials: {
-    fontSize: 32,
-    fontWeight: 700,
-    color: 'white',
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 700,
-    marginBottom: 5,
-    color: 'white',
-    textAlign: 'center',
-    lineHeight: 1.2,
-  },
-  title: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: COLORS.light,
-    textAlign: 'center',
-    opacity: 0.95,
-    lineHeight: 1.3,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sidebarSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 700,
-    marginBottom: 10,
-    color: COLORS.dark,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.primary,
-    paddingBottom: 5,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  sidebarTitle: {
-    fontSize: 12,
-    fontWeight: 700,
-    marginBottom: 10,
-    color: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.medium,
-    paddingBottom: 5,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  contactItem: {
-    marginBottom: 10,
-  },
-  contactText: {
-    fontSize: 10,
-    color: COLORS.light,
-    lineHeight: 1.4,
-  },
-  skillCategory: {
-    fontSize: 11,
-    fontWeight: 600,
-    marginBottom: 6,
-    marginTop: 2,
-    color: COLORS.light,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  skillItem: {
-    fontSize: 10,
-    marginBottom: 5,
-    color: COLORS.light,
-    lineHeight: 1.3,
-  },
-  bulletList: {
-    marginLeft: 0,
-  },
-  bulletItem: {
-    fontSize: 9.5,
-    marginBottom: 5,
-    color: COLORS.light,
-    paddingLeft: 12,
-    lineHeight: 1.4,
-  },
-  experienceItem: {
-    marginBottom: 16,
-  },
-  experienceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 4,
-    gap: 10,
-  },
-  jobTitle: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: COLORS.dark,
-    lineHeight: 1.3,
-    flex: 1,
-  },
-  jobPeriod: {
-    fontSize: 9,
-    fontWeight: 600,
-    color: COLORS.primary,
-    textAlign: 'right',
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-  },
-  company: {
-    fontSize: 10.5,
-    fontWeight: 600,
-    color: COLORS.medium,
-    marginBottom: 6,
-    lineHeight: 1.3,
-  },
-  jobDescription: {
-    fontSize: 9.5,
-    lineHeight: 1.5,
-    color: COLORS.dark,
-    marginBottom: 3,
-  },
-  educationItem: {
-    marginBottom: 12,
-  },
-  degree: {
-    fontSize: 11.5,
-    fontWeight: 700,
-    color: COLORS.dark,
-    marginBottom: 3,
-    lineHeight: 1.3,
-  },
-  institution: {
-    fontSize: 10,
-    color: COLORS.medium,
-    marginBottom: 2,
-    lineHeight: 1.3,
-  },
-  projectItem: {
-    marginBottom: 14,
-  },
-  projectTitle: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: COLORS.dark,
-    marginBottom: 4,
-    lineHeight: 1.3,
-  },
-  projectDescription: {
-    fontSize: 10,
-    color: COLORS.dark,
-    marginBottom: 6,
-    lineHeight: 1.5,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 4,
-  },
-  tag: {
-    fontSize: 8,
-    backgroundColor: COLORS.background,
-    color: COLORS.medium,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginRight: 5,
-    marginBottom: 5,
-    borderWidth: 1,
-    borderColor: COLORS.light,
-  },
-  professionalSummary: {
-    fontSize: 9.5,
-    lineHeight: 1.6,
-    color: COLORS.dark,
-    textAlign: 'justify',
-  },
-});
 
 interface Theme1Props {
   userdata: Resume;
@@ -282,14 +30,14 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (validItems.length === 0) return null;
 
     return (
-      <View style={styles.sidebarSection}>
-        <Text style={styles.sidebarTitle}>Contact</Text>
+      <div className="mb-6">
+        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Contact</h2>
         {validItems.map((item, index) => (
-          <View key={index} style={styles.contactItem}>
-            <Text style={styles.contactText}>{filterEmpty(item.value)}</Text>
-          </View>
+          <div key={index} className="mb-2.5">
+            <p className="text-xs text-gray-200 leading-snug">{filterEmpty(item.value)}</p>
+          </div>
         ))}
-      </View>
+      </div>
     );
   };
 
@@ -300,35 +48,35 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (!hasTechnical && !hasSoft) return null;
 
     return (
-      <View style={styles.sidebarSection}>
-        <Text style={styles.sidebarTitle}>Skills</Text>
+      <div className="mb-6">
+        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Skills</h2>
         
         {hasTechnical && (
-          <View>
-            <Text style={styles.skillCategory}>Technical</Text>
-            <View style={styles.bulletList}>
+          <div>
+            <h3 className="text-xs font-semibold mb-1.5 mt-0.5 text-gray-200 uppercase tracking-wide">Technical</h3>
+            <ul className="list-none pl-0">
               {userdata.skills.technical.map((skill, index) => (
                 skill && skill.trim() && (
-                  <Text key={index} style={styles.bulletItem}>• {skill.trim()}</Text>
+                  <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{skill.trim()}</li>
                 )
               ))}
-            </View>
-          </View>
+            </ul>
+          </div>
         )}
         
         {hasSoft && (
-          <View style={{ marginTop: hasTechnical ? 12 : 0 }}>
-            <Text style={styles.skillCategory}>Soft Skills</Text>
-            <View style={styles.bulletList}>
+          <div className={hasTechnical ? "mt-3" : ""}>
+            <h3 className="text-xs font-semibold mb-1.5 text-gray-200 uppercase tracking-wide">Soft Skills</h3>
+            <ul className="list-none pl-0">
               {userdata.skills.soft.map((skill, index) => (
                 skill && skill.trim() && (
-                  <Text key={index} style={styles.bulletItem}>• {skill.trim()}</Text>
+                  <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{skill.trim()}</li>
                 )
               ))}
-            </View>
-          </View>
+            </ul>
+          </div>
         )}
-      </View>
+      </div>
     );
   };
 
@@ -339,14 +87,14 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (validLanguages.length === 0) return null;
 
     return (
-      <View style={styles.sidebarSection}>
-        <Text style={styles.sidebarTitle}>Languages</Text>
-        <View style={styles.bulletList}>
+      <div className="mb-6">
+        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Languages</h2>
+        <ul className="list-none pl-0">
           {validLanguages.map((language, index) => (
-            <Text key={index} style={styles.bulletItem}>• {language.trim()}</Text>
+            <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{language.trim()}</li>
           ))}
-        </View>
-      </View>
+        </ul>
+      </div>
     );
   };
 
@@ -360,8 +108,8 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (validExperiences.length === 0) return null;
 
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Professional Experience</Text>
+      <div className="mb-5">
+        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Professional Experience</h2>
         {validExperiences.map((exp, index) => {
           const dateRange = [filterEmpty(exp.startDate), filterEmpty(exp.endDate)]
             .filter(d => d)
@@ -372,27 +120,27 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
             .join(' • ');
 
           return (
-            <View key={index} style={styles.experienceItem}>
-              <View style={styles.experienceHeader}>
-                <Text style={styles.jobTitle}>{filterEmpty(exp.title) || 'Position'}</Text>
-                {dateRange && <Text style={styles.jobPeriod}>{dateRange}</Text>}
-              </View>
+            <div key={index} className="mb-4">
+              <div className="flex justify-between items-start mb-1 gap-2.5">
+                <h3 className="text-xs font-bold text-gray-800 leading-snug flex-1">{filterEmpty(exp.title) || 'Position'}</h3>
+                {dateRange && <p className="text-[10px] font-semibold text-blue-600 text-right whitespace-nowrap shrink-0">{dateRange}</p>}
+              </div>
               {companyLocation && (
-                <Text style={styles.company}>{companyLocation}</Text>
+                <p className="text-[11px] font-semibold text-gray-500 mb-1.5 leading-snug">{companyLocation}</p>
               )}
               {exp.responsibilities && exp.responsibilities.length > 0 && (
-                <View style={styles.bulletList}>
+                <ul className="list-none pl-0">
                   {exp.responsibilities
                     .filter(r => r && r.trim())
                     .map((responsibility, idx) => (
-                      <Text key={idx} style={styles.jobDescription}>• {responsibility.trim()}</Text>
+                      <li key={idx} className="text-[10px] leading-relaxed text-gray-800 mb-1"> • {responsibility.trim()}</li>
                     ))}
-                </View>
+                </ul>
               )}
-            </View>
+            </div>
           );
         })}
-      </View>
+      </div>
     );
   };
 
@@ -406,29 +154,29 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (validEducation.length === 0) return null;
 
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Education</Text>
+      <div className="mb-5">
+        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Education</h2>
         {validEducation.map((edu, index) => {
           const institutionLocation = [filterEmpty(edu.institution), filterEmpty(edu.location)]
             .filter(i => i)
             .join(' • ');
 
           return (
-            <View key={index} style={styles.educationItem}>
-              <Text style={styles.degree}>{filterEmpty(edu.degree) || 'Degree'}</Text>
+            <div key={index} className="mb-3">
+              <h3 className="text-[12px] font-bold text-gray-800 mb-0.5 leading-snug">{filterEmpty(edu.degree) || 'Degree'}</h3>
               {institutionLocation && (
-                <Text style={styles.institution}>{institutionLocation}</Text>
+                <p className="text-xs text-gray-500 mb-0.5 leading-snug">{institutionLocation}</p>
               )}
               {hasContent(edu.graduationYear) && (
-                <Text style={styles.jobPeriod}>{filterEmpty(edu.graduationYear)}</Text>
+                <p className="text-[10px] font-semibold text-blue-600">{filterEmpty(edu.graduationYear)}</p>
               )}
               {hasContent(edu.gpa) && (
-                <Text style={styles.jobDescription}>GPA: {edu.gpa}</Text>
+                <p className="text-[10px] leading-relaxed text-gray-800 mb-1">GPA: {edu.gpa}</p>
               )}
-            </View>
+            </div>
           );
         })}
-      </View>
+      </div>
     );
   };
 
@@ -442,37 +190,33 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     if (validProjects.length === 0) return null;
 
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Projects</Text>
+      <div className="mb-5">
+        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Projects</h2>
         {validProjects.map((project, index) => (
-          <View key={index} style={styles.projectItem}>
-            <Text style={styles.projectTitle}>{filterEmpty(project.title) || 'Project'}</Text>
+          <div key={index} className="mb-3.5">
+            <h3 className="text-xs font-bold text-gray-800 mb-1 leading-snug">{filterEmpty(project.title) || 'Project'}</h3>
             {hasContent(project.description) && (
-              <Text style={styles.projectDescription}>{filterEmpty(project.description)}</Text>
+              <p className="text-xs text-gray-800 mb-1.5 leading-relaxed">{filterEmpty(project.description)}</p>
             )}
             {project.technologies && project.technologies.length > 0 && (
-              <View style={styles.tagContainer}>
+              <div className="flex flex-wrap mt-1">
                 {project.technologies
                   .filter(tech => tech && tech.trim())
                   .map((tech, idx) => (
-                    <Text key={idx} style={styles.tag}>{tech.trim()}</Text>
+                    <span key={idx} className="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1.5 mb-1.5 border border-gray-200">{tech.trim()}</span>
                   ))}
-              </View>
+              </div>
             )}
-          </View>
+          </div>
         ))}
-      </View>
+      </div>
     );
   };
 
-  // Get display name and job title
   const displayName = filterEmpty(userdata.personalInfo?.fullName) || 'Your Name';
   const displayTitle = filterEmpty(userdata.experience?.[0]?.title) || '';
-  
-  // Check if image exists and is valid
   const hasValidImage = userdata.image && userdata.image.length > 0 && hasContent(userdata.image[0]);
 
-  // Get initials for placeholder
   const getInitials = (name: string): string => {
     const parts = name.trim().split(' ').filter(p => p);
     if (parts.length === 0) return '?';
@@ -483,48 +227,46 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
   const initials = getInitials(displayName);
 
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.container}>
-          {/* Sidebar */}
-          <View style={styles.sidebar}>
-            <View style={hasValidImage ? styles.headerWithImage : styles.headerNoImage}>
-              {hasValidImage ? (
-                <Image style={styles.avatar} src={userdata.image[0]} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarInitials}>{initials}</Text>
-                </View>
-              )}
-              <Text style={styles.name}>{displayName}</Text>
-              {displayTitle && (
-                <Text style={styles.title}>{displayTitle}</Text>
-              )}
-            </View>
-
-            {renderContactInfo()}
-            {renderSkills()}
-            {renderLanguages()}
-          </View>
-
-          {/* Main Content */}
-          <View style={styles.mainContent}>
-            {hasContent(userdata.professionalSummary) && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Professional Profile</Text>
-                <Text style={styles.professionalSummary}>
-                  {filterEmpty(userdata.professionalSummary)}
-                </Text>
-              </View>
+    <div className="font-sans bg-white">
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-[35%] bg-gray-800 text-white p-8">
+          <div className={`text-center ${hasValidImage ? 'mb-8' : 'mb-6'}`}>
+            {hasValidImage ? (
+              <img className="w-24 h-24 rounded-full mb-4 border-2 object-cover border-white mx-auto" src={userdata.image[0]} alt="Avatar" />
+            ) : (
+              <div className="w-20 h-20 rounded-full mb-3 border-2 border-blue-600 bg-gray-500 flex items-center justify-center mx-auto">
+                <span className="text-3xl font-bold text-white">{initials}</span>
+              </div>
             )}
+            <h1 className="text-xl font-bold mb-1 text-white text-center leading-tight">{displayName}</h1>
+            {displayTitle && (
+              <p className="text-xs font-semibold text-gray-200 text-center opacity-95 leading-snug">{displayTitle}</p>
+            )}
+          </div>
 
-            {renderExperience()}
-            {renderEducation()}
-            {renderProjects()}
-          </View>
-        </View>
-      </Page>
-    </Document>
+          {renderContactInfo()}
+          {renderSkills()}
+          {renderLanguages()}
+        </div>
+
+        {/* Main Content */}
+        <div className="w-[65%] p-8">
+          {hasContent(userdata.professionalSummary) && (
+            <div className="mb-5">
+              <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Professional Profile</h2>
+              <p className="text-[10px] leading-relaxed text-gray-800 text-justify">
+                {filterEmpty(userdata.professionalSummary)}
+              </p>
+            </div>
+          )}
+
+          {renderExperience()}
+          {renderEducation()}
+          {renderProjects()}
+        </div>
+      </div>
+    </div>
   );
 };
 

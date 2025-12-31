@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ReadContext } from "./ReadContext";
 import {
   getFromStorage,
@@ -40,47 +40,77 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [AnlysedCV, setAnlysedCV] = useState<AnlysedCVType | null>(null);
   const { data: session } = useSession();
+  
+  const isDataLoaded = useRef(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousAnlysedCV = useRef<AnlysedCVType | null>(null);
 
+  // Save data with debouncing to prevent multiple rapid calls
   useEffect(() => {
-  const saveData = async () => {
-   
-    await saveToStorage(userinfos, AnlysedCV, 7);
+    if (!isDataLoaded.current || !AnlysedCV || !userinfos) return;
 
-    try {
-      await axios.post("/api/storeuserdata", {
-        userData: AnlysedCV,
-        userId: userinfos,
-      });
-    } catch (err) {
-      console.error("Error storing user data:", err);
+    const hasChanged = JSON.stringify(previousAnlysedCV.current) !== JSON.stringify(AnlysedCV);
+    
+    if (!hasChanged) {
+      return;
     }
-  };
 
-  saveData();
-}, [AnlysedCV, userinfos]);
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
 
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await saveToStorage(userinfos, AnlysedCV, 7);
+        
+        await axios.post("/api/storeuserdata", {
+          userData: AnlysedCV,
+          userId: userinfos,
+        });
+        
+        previousAnlysedCV.current = AnlysedCV;
+        
+        console.log("Data saved successfully");
+      } catch (err) {
+        console.error("Error storing user data:", err);
+      }
+    }, 1000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [AnlysedCV, userinfos]);
 
   useEffect(() => {
     const loadUserData = async () => {
-
       if (!userinfos) return;
+      
+      if (isDataLoaded.current) return;
+
       try {
-        const saved = null;
+        const saved = null; ;
 
         if (saved) {
           setAnlysedCV(normalizeData(saved));
+          previousAnlysedCV.current = normalizeData(saved);
         } else {
           const userId = userinfos;
           const { data } = await axios.get("/api/GettingUserData", {
             params: { userId },
           });
-          setAnlysedCV(normalizeData(data.data));
-          await saveToStorage(userinfos, normalizeData(data.data), 7);
-
+          const normalizedData = normalizeData(data.data);
+          setAnlysedCV(normalizedData);
+          previousAnlysedCV.current = normalizedData;
+          await saveToStorage(userinfos, normalizedData, 7);
         }
+        
+        isDataLoaded.current = true;
       } catch (err) {
         console.error("Error loading user data:", err);
         setAnlysedCV(normalizeData({}));
+        isDataLoaded.current = true;
       }
     };
 
@@ -91,7 +121,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
     const loadSettings = async () => {
       const saved = await getFromStorage("Settings");
       if (saved) setSettings(saved);
-      console.log("saved 11:", saved);
+      console.log("saved settings:", saved);
     };
 
     loadSettings();
