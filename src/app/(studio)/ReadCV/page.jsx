@@ -19,70 +19,59 @@ import Analyse from "../../GenComponents/Analyse"
 import ReadContextProvider from '../../GenComponents/ReadContextProvider'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import SearchResults from "../../GenComponents/SearchResults"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useTour } from "../TourProvider"
 
 export default function Page() {
   const [isAnalysisReady, setIsAnalysisReady] = useState(false)
-  
-  // This function would be passed to ReadTXT to notify when a file is uploaded
-  const handleFileUploaded = () => {
-    setIsAnalysisReady(true)
-  }
+  const { setSteps, autoStart } = useTour();
 
+  const handleFileUploaded = () => {
+    setIsAnalysisReady(true);
+  };
+
+  useEffect(() => {
+    setSteps([
+      {
+        target: '.upload-section',
+        content: 'Start by uploading your resume here. Click or drag and drop your PDF file.',
+        placement: 'right',
+        disableBeacon: true,
+      },
+      {
+        target: '.tips-card',
+        content: 'Check out these helpful tips to improve your resume before uploading.',
+        placement: 'right',
+        disableBeacon: true,
+      },
+      {
+        target: '.analysis-section',
+        content: 'Your analysis results will appear here after uploading your resume.',
+        placement: 'left',
+        disableBeacon: true,
+      },
+    ]);
+
+    const timer = setTimeout(() => {
+      autoStart();
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []); 
   return (
     <ReadContextProvider>
       <div className="flex min-h-screen flex-col bg-background">
-        {/* Header with Breadcrumbs */}
-        {/* <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-          <div className="container flex h-14 items-center">
-            <SidebarTrigger />
-            <Breadcrumb className="ml-4">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Resume Analyzer</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header> */}
-
         <div className="container flex-1 py-6 md:py-8">
           <div className="flex flex-col space-y-6">
-            {/* Page Title */}
-            {/* <div className="flex flex-col items-center justify-center space-y-2 text-center">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-                Resume Analyzer
-              </h1>
-              <p className="max-w-[700px] text-muted-foreground">
-                Upload your resume and get detailed analysis, insights, and improvement suggestions
-              </p>
-              <Separator className="mt-4" />
-            </div> */}
-
-            {/* Main Content */}
             <div className="grid gap-6 md:grid-cols-12">
               {/* Sidebar */}
               <div className="md:col-span-6 lg:col-span-5">
                 <div className="grid gap-4">
-                  {/* <Card>
-                    <CardHeader> */}
-                      {/* <CardTitle>Upload Resume</CardTitle> */}
-                    {/* </CardHeader>
-                    <CardContent> */}
-                      <ReadTXT onFileUploaded={handleFileUploaded} />
-                    {/* </CardContent>
-                    <CardFooter>
-                      <p className="text-xs text-muted-foreground">
-                        Supported formats: PDF, DOCX, TXT (Max size: 5MB)
-                      </p>
-                    </CardFooter>
-                  </Card> */}
+                  <div className="upload-section">
+                    <ReadTXT onFileUploaded={handleFileUploaded} />
+                  </div>
                   
-                  <Card className="hidden md:block">
+                  <Card className="hidden md:block tips-card">
                     <CardHeader>
                       <CardTitle>Tips</CardTitle>
                     </CardHeader>
@@ -101,17 +90,10 @@ export default function Page() {
               {/* Main Analysis Area */}
               <div className="md:col-span-6 lg:col-span-7">
                 <div className="grid gap-6">
-                  {/* Analysis Card */}
-                  {/* <Card>
-                    <CardHeader>
-                      <CardTitle>Analysis Results</CardTitle>
-                    </CardHeader>
-                    <CardContent> */}
-                      <Analyse />
-                    {/* </CardContent>
-                  </Card> */}
+                  <div className="analysis-section">
+                    <Analyse />
+                  </div>
                   
-                  {/* Search Results Card */}
                   <Card>
                     <CardHeader>
                       <CardTitle>Keyword Matches</CardTitle>
