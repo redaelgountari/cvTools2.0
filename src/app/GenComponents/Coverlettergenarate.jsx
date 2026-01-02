@@ -1,3 +1,5 @@
+"use client"
+
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,78 +48,99 @@ export default function CoverLetterGenerate() {
         setError('');
 
         try {
-            const prompt = `
-                You are a professional career advisor. Analyze the CV against the job announcement and provide:
-                
-                1. A match analysis in JSON format with these exact fields:
-                {
-                    "matchScore": <number 0-100>,
-                    "skillsMatch": <number 0-100>,
-                    "experienceMatch": <number 0-100>,
-                    "educationMatch": <number 0-100>
-                }
-                
-                2. A concise and tailored cover letter that:
-                   - Is no longer than ${lineLimit} lines
-                   - Highlights the most relevant skills and experiences from the CV that match the job requirements
-                   - Addresses the job announcement directly, showing enthusiasm for the role and company
-                   - Uses a professional and formal tone
-                   - Includes a strong opening and closing statement
-                   - Matches the language and style of the job announcement
+            const prompt = `You are a professional career advisor. Generate a cover letter and match analysis.
 
-                CV Data:
-                ${JSON.stringify(response)}
+CRITICAL INSTRUCTIONS - READ CAREFULLY:
+1. You MUST respond with ONLY valid JSON - no markdown, no code blocks, no explanations
+2. Do NOT wrap your response in \`\`\`json or \`\`\` tags
+3. Do NOT include any text before or after the JSON
+4. Your entire response should be parseable by JSON.parse()
 
-                Job Announcement:
-                ${jobAnnouncement}
+REQUIRED JSON STRUCTURE (copy this exactly):
+{
+  "analysis": {
+    "matchScore": 75,
+    "skillsMatch": 80,
+    "experienceMatch": 70,
+    "educationMatch": 75,
+    "skillsJustification": "Brief explanation of skills match",
+    "experienceJustification": "Brief explanation of experience match",
+    "educationJustification": "Brief explanation of education match"
+  },
+  "coverLetter": "The complete cover letter text goes here as a single string. Use \\n for line breaks if needed."
+}
 
-                Return your response in this exact JSON format:
-                {
-                    "analysis": {
-                        "matchScore": <number>,
-                        "skillsMatch": <number>,
-                        "experienceMatch": <number>,
-                        "educationMatch": <number>,
-                        "skillsJustification": "<brief explanation>",
-                        "experienceJustification": "<brief explanation>",
-                        "educationJustification": "<brief explanation>"
-                    },
-                    "coverLetter": "<the cover letter text>"
-                }
+COVER LETTER REQUIREMENTS:
+- Maximum ${lineLimit} lines
+- Professional and formal tone
+- Highlight relevant skills and experiences from CV
+- Show enthusiasm for the role
+- Strong opening and closing
 
-                Important: The cover letter must not exceed ${lineLimit} lines. Ensure it is concise and well-structured.
-            `;
+CV DATA:
+${typeof response === 'string' ? response : JSON.stringify(response)}
+
+JOB ANNOUNCEMENT:
+${jobAnnouncement}
+
+Remember: Return ONLY the JSON object, nothing else. Start with { and end with }`;
 
             const { data } = await axios.post("/api/gemini", {
                 userData: prompt,
                 useCase: 'cover-letter',
                 jobDescription: jobAnnouncement
             });
-            const cleanedData = data.text.replace(/```json|```/g, '').trim();
+            
+            // Clean the response - remove markdown code blocks, whitespace, and any preamble
+            let cleanedData = data.text
+                .replace(/```json\s*/gi, '')
+                .replace(/```\s*/g, '')
+                .trim();
+            
+            // Find the first { and last } to extract just the JSON
+            const firstBrace = cleanedData.indexOf('{');
+            const lastBrace = cleanedData.lastIndexOf('}');
+            
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                cleanedData = cleanedData.substring(firstBrace, lastBrace + 1);
+            }
+            
+            console.log('Cleaned response:', cleanedData);
 
-            // Try to parse as JSON first
             try {
                 const parsedData = JSON.parse(cleanedData);
+                
+                // Validate the structure
+                if (!parsedData.analysis || !parsedData.coverLetter) {
+                    throw new Error('Missing required fields: analysis or coverLetter');
+                }
+                
+                // Validate analysis fields
+                const requiredFields = ['matchScore', 'skillsMatch', 'experienceMatch', 'educationMatch'];
+                const missingFields = requiredFields.filter(field => 
+                    parsedData.analysis[field] === undefined || parsedData.analysis[field] === null
+                );
+                
+                if (missingFields.length > 0) {
+                    throw new Error(`Missing analysis fields: ${missingFields.join(', ')}`);
+                }
+                
+                // Set the data
                 setMatchData(parsedData.analysis);
                 setCoverLetter(parsedData.coverLetter);
+                
             } catch (parseError) {
-                // If not JSON, treat as plain text cover letter
-                console.log('Response is not JSON, treating as plain text');
-                setCoverLetter(cleanedData);
-                // Set default match data if not provided
-                setMatchData({
-                    matchScore: 0,
-                    skillsMatch: 0,
-                    experienceMatch: 0,
-                    educationMatch: 0,
-                    skillsJustification: '',
-                    experienceJustification: '',
-                    educationJustification: ''
-                });
+                console.error('Parse error:', parseError);
+                console.error('Attempted to parse:', cleanedData);
+                
+                // More informative error message
+                setError(`Unable to process the AI response. ${parseError.message || 'Invalid format'}. Please try again.`);
+                setCoverLetter('');
+                setMatchData(null);
             }
         } catch (error) {
             console.error('Error:', error);
-            setError(error instanceof Error ? error.message : 'An error occurred');
+            setError(error instanceof Error ? error.message : 'An error occurred while generating the cover letter');
         } finally {
             setLoading(false);
         }
@@ -141,7 +164,7 @@ export default function CoverLetterGenerate() {
         let y = margin;
         const lineHeight = 7;
 
-        lines.forEach((line, index) => {
+        lines.forEach((line) => {
             if (y + lineHeight > pageHeight - margin) {
                 pdf.addPage();
                 y = margin;
@@ -160,12 +183,6 @@ export default function CoverLetterGenerate() {
         return 'text-red-600 dark:text-red-400';
     };
 
-    const getScoreBgColor = (score) => {
-        if (score >= 80) return 'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800';
-        if (score >= 60) return 'from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800';
-        return 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-800';
-    };
-
     const getScoreLabel = (score) => {
         if (score >= 80) return 'Excellent';
         if (score >= 60) return 'Good';
@@ -175,19 +192,6 @@ export default function CoverLetterGenerate() {
     return (
         <div className="p-4 md:p-8">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                {/* <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center p-3 bg-blue-100 dark:bg-blue-900/30 rounded-2xl mb-4">
-                        <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-2">
-                        Cover Letter Generator
-                    </h1>
-                    <p className="text-muted-foreground text-lg">
-                        Create a professional cover letter tailored to your dream job
-                    </p>
-                </div> */}
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Input and Output */}
                     <div className="lg:col-span-2 space-y-6">
@@ -357,7 +361,6 @@ export default function CoverLetterGenerate() {
                                     <div className="flex flex-col items-center py-6">
                                         <div className="relative w-48 h-48">
                                             <svg className="w-48 h-48 transform -rotate-90">
-                                                {/* Background circle */}
                                                 <circle
                                                     cx="96"
                                                     cy="96"
@@ -367,7 +370,6 @@ export default function CoverLetterGenerate() {
                                                     fill="none"
                                                     className="text-gray-200 dark:text-gray-700"
                                                 />
-                                                {/* Progress circle */}
                                                 <circle
                                                     cx="96"
                                                     cy="96"
@@ -395,7 +397,7 @@ export default function CoverLetterGenerate() {
 
                                     <Separator />
 
-                                    {/* Metric Cards - Circular Diagrams */}
+                                    {/* Metric Cards */}
                                     <div className="space-y-6">
                                         {/* Skills Match */}
                                         <div className="border-2 rounded-xl overflow-hidden hover:shadow-md transition-all">
@@ -448,7 +450,7 @@ export default function CoverLetterGenerate() {
                                                 </div>
                                             </div>
                                             {expandedMetric === 'skills' && matchData.skillsJustification && (
-                                                <div className="px-4 pb-4 pt-2 bg-green-50/50 dark:bg-green-950/20 border-t animate-in slide-in-from-top">
+                                                <div className="px-4 pb-4 pt-2 bg-green-50/50 dark:bg-green-950/20 border-t">
                                                     <div className="flex gap-2">
                                                         <Info className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                                                         <p className="text-sm text-muted-foreground leading-relaxed">
@@ -510,7 +512,7 @@ export default function CoverLetterGenerate() {
                                                 </div>
                                             </div>
                                             {expandedMetric === 'experience' && matchData.experienceJustification && (
-                                                <div className="px-4 pb-4 pt-2 bg-orange-50/50 dark:bg-orange-950/20 border-t animate-in slide-in-from-top">
+                                                <div className="px-4 pb-4 pt-2 bg-orange-50/50 dark:bg-orange-950/20 border-t">
                                                     <div className="flex gap-2">
                                                         <Info className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
                                                         <p className="text-sm text-muted-foreground leading-relaxed">
@@ -572,7 +574,7 @@ export default function CoverLetterGenerate() {
                                                 </div>
                                             </div>
                                             {expandedMetric === 'education' && matchData.educationJustification && (
-                                                <div className="px-4 pb-4 pt-2 bg-purple-50/50 dark:bg-purple-950/20 border-t animate-in slide-in-from-top">
+                                                <div className="px-4 pb-4 pt-2 bg-purple-50/50 dark:bg-purple-950/20 border-t">
                                                     <div className="flex gap-2">
                                                         <Info className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                                                         <p className="text-sm text-muted-foreground leading-relaxed">

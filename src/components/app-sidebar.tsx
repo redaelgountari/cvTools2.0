@@ -1,10 +1,7 @@
 "use client"
-
+import { useContext, useMemo } from 'react';
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   SquareTerminal,
 } from "lucide-react"
 import { ModeToggle } from "./ModeToggle"
@@ -17,72 +14,81 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { ReadContext } from '@/app/GenComponents/ReadContext';
 
 const data = {
   user: {
     name: "RE",
     avatar: "/avatars/RE.jpg",
   },
-  teams: [
+}
+
+export function AppSidebar({ ...props }) {
+  const { AnlysedCV } = useContext(ReadContext);
+  
+  // Check if CV is properly analyzed by verifying essential fields exist
+  const isCVAnalyzed = useMemo(() => {
+    if (!AnlysedCV) return false;
+    
+    // Check if the object has more than just the basic fields (_id, userId, updatedAt)
+    const essentialFields = ['personalInfo', 'skills', 'experience', 'education'];
+    const hasEssentialData = essentialFields.some(field => 
+      AnlysedCV[field] && 
+      (Array.isArray(AnlysedCV[field]) ? AnlysedCV[field].length > 0 : Object.keys(AnlysedCV[field]).length > 0)
+    );
+    
+    return hasEssentialData;
+  }, [AnlysedCV]);
+
+  const navMain = useMemo(() => [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "creating",
+      title: "Creating",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "Read cv",
+          title: "Read CV",
           url: "/ReadCV",
+          disabled: false,
         },
         {
-          title: "Gneration cover letter",
-          url: "/CoverLetter",
+          title: "Cover Letter",
+          url: isCVAnalyzed ? "/CoverLetter" : "#",
+          disabled: !isCVAnalyzed,
+          tooltip: !isCVAnalyzed ? "Please analyze your CV first to unlock this feature" : undefined,
         },
         {
           title: "Resume",
-          url: "/Resume",
+          url: isCVAnalyzed ? "/Resume" : "#",
+          disabled: !isCVAnalyzed,
+          tooltip: !isCVAnalyzed ? "Please analyze your CV first to unlock this feature" : undefined,
         },
         {
           title: "Portfolio",
-          url: "/portfolios",
+          url: isCVAnalyzed ? "/portfolios" : "#",
+          disabled: !isCVAnalyzed,
+          tooltip: !isCVAnalyzed ? "Please analyze your CV first to unlock this feature" : undefined,
         },
         {
           title: "Settings",
           url: "/Settings",
+          disabled: false,
         }
       ],
     },
-  ],
-}
+  ], [isCVAnalyzed]);
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <div className="right-4">
-      <ModeToggle/>
+        <ModeToggle/>
       </div>
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>

@@ -4,9 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Mail, User, Shield } from 'lucide-react';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { requirePersonalInfo } from '@/lib/auth-check';
 
 export default async function Page() {
   const session = await getServerSession(authOptions);
+  await requirePersonalInfo();
 
   if (!session) {
     return (
