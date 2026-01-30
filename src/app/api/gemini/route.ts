@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { Groq } from 'groq-sdk'; 
 
 // Define all possible use cases for your app
 export type UseCase = 
@@ -16,7 +17,7 @@ export type UseCase =
 
 interface RequestBody {
   userData: string;
-  provider?: 'openrouter' | 'gemini';
+  provider?: 'openrouter' | 'gemini' | 'groq';
   useCase: UseCase;
   cvData?: any;
   jobDescription?: string;
@@ -198,21 +199,50 @@ export async function POST(request: Request) {
     // Construct secure prompt based on use case
     const securePrompt = constructSecurePrompt(body);
 
-    // Try providers
-    if (!provider || provider === 'gemini') {
+    // Try providers with priority order
+    if (!provider) {
+      // Try Gemini first (if specified or default)
       const geminiResult = await tryGemini(securePrompt, useCase);
       if (geminiResult) {
+        console.log('✓ Success with Gemini');
         return NextResponse.json(geminiResult);
+      }
+      
+      // Then try Groq (fast and reliable)
+      const groqResult = await tryGroq(securePrompt, useCase);
+      if (groqResult) {
+        console.log('✓ Success with Groq');
+        return NextResponse.json(groqResult);
+      }
+      
+      // Finally try OpenRouter
+      const openRouterResult = await tryOpenRouter(securePrompt, useCase);
+      if (openRouterResult) {
+        console.log('✓ Success with OpenRouter');
+        return NextResponse.json(openRouterResult);
+      }
+    } else {
+      // Specific provider requested
+      let result = null;
+      switch (provider) {
+        case 'gemini':
+          result = await tryGemini(securePrompt, useCase);
+          break;
+        case 'groq':
+          result = await tryGroq(securePrompt, useCase);
+          break;
+        case 'openrouter':
+          result = await tryOpenRouter(securePrompt, useCase);
+          break;
+      }
+      
+      if (result) {
+        return NextResponse.json(result);
       }
     }
 
-    const openRouterResult = await tryOpenRouter(securePrompt, useCase);
-    if (openRouterResult) {
-      return NextResponse.json(openRouterResult);
-    }
-
     return NextResponse.json(
-      { error: 'Service temporarily unavailable. Please try again later.' },
+      { error: 'All AI providers are currently unavailable. Please try again later.' },
       { status: 503 }
     );
 
@@ -405,14 +435,15 @@ async function tryOpenRouter(prompt: string, useCase: UseCase): Promise<APIRespo
       },
     });
 
-    const modelName = 'mistralai/mistral-7b-instruct:free';
+    // FIXED: Remove :free suffix or use correct model
+    const modelName = 'mistralai/mistral-7b-instruct'; // Correct model name
 
     const response = await openai.chat.completions.create({
       model: modelName,
       messages: [
         {
           role: 'system',
-          content: 'You are a professional career advisor. Only respond to career-related queries. Return structured data when requested.',
+          content: USE_CASE_PROMPTS[useCase], // Use your specific system prompt
         },
         {
           role: 'user',
@@ -465,7 +496,10 @@ async function tryGemini(prompt: string, useCase: UseCase): Promise<APIResponse 
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const modelName = 'gemini-2.0-flash-exp';
+    // FIXED: Use correct model name - either of these should work
+    const modelName = 'gemini-2.0-flash'; // Production model
+    // Alternative: 'gemini-1.5-flash-latest'
+    
     const model = genAI.getGenerativeModel({ 
       model: modelName,
       generationConfig: {
@@ -505,8 +539,78 @@ async function tryGemini(prompt: string, useCase: UseCase): Promise<APIResponse 
       model: modelName,
       useCase,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini API error:', error);
+    
+    // Check if it's a quota exhaustion error
+    if (error.status === 429 && error.message?.includes('limit: 0')) {
+      console.log('⚠️ Gemini free tier quota exhausted');
+    }
+    
+    return null;
+  }
+}
+
+async function tryGroq(prompt: string, useCase: UseCase): Promise<APIResponse | null> {
+  try {
+    if (!process.env.GROQ_API_KEY) {
+      return null;
+    }
+
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    // Free model with generous limits
+    const modelName = 'llama-3.2-3b-preview';
+    
+    const response = await groq.chat.completions.create({
+      model: modelName,
+      messages: [
+        {
+          role: 'system',
+          content: USE_CASE_PROMPTS[useCase], // Use your specific system prompt
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      max_tokens: SECURITY_CONFIG.maxOutputTokens,
+      temperature: 0.7,
+    });
+
+    const text = response.choices[0]?.message?.content;
+
+    if (!text) {
+      return null;
+    }
+
+    // Validate JSON structure for CV analysis and translation
+    if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
+      const cleanedText = text.replace(/```json|```/g, '').trim();
+      try {
+        JSON.parse(cleanedText);
+        return {
+          text: cleanedText,
+          provider: 'groq',
+          model: modelName,
+          useCase,
+        };
+      } catch (error) {
+        console.warn(`Invalid JSON response from Groq for ${useCase}:`, error);
+        return null;
+      }
+    }
+
+    return {
+      text: text.trim(),
+      provider: 'groq',
+      model: modelName,
+      useCase,
+    };
+  } catch (error) {
+    console.error('Groq API error:', error);
     return null;
   }
 }

@@ -1,221 +1,152 @@
-
 import React from 'react';
+import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { Resume } from '@/app/types/resume';
+import { DEFAULT_THEME_COLORS } from './themeDefaults';
+import { hasContent } from './contentVerification';
 
-interface Theme1Props {
-  userdata: Resume;
-}
+export default function Theme1({ userdata, colors = DEFAULT_THEME_COLORS.theme1 }: { userdata: Resume; colors?: any }) {
+  const styles = StyleSheet.create({
+    page: {
+      flexDirection: 'row',
+      backgroundColor: colors.background || '#FFFFFF',
+      fontFamily: 'Helvetica',
+    },
+    sidebar: {
+      width: '35%',
+      backgroundColor: colors.sidebar || '#1f2937',
+      color: '#FFFFFF',
+      padding: 30,
+    },
+    mainContent: {
+      width: '65%',
+      padding: 30,
+    },
+    profileImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 20,
+      borderWidth: 2,
+      borderColor: '#FFFFFF',
+      alignSelf: 'center',
+    },
+    initialsPlaceholder: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.primary || '#2563eb',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+      alignSelf: 'center',
+      borderWidth: 2,
+      borderColor: '#FFFFFF',
+    },
+    initialsText: {
+      fontSize: 32,
+      color: '#FFFFFF',
+      fontWeight: 'bold',
+    },
+    sidebarName: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      textAlign: 'center',
+      marginBottom: 5,
+    },
+    sidebarTitle: {
+      fontSize: 10,
+      color: '#e5e7eb',
+      textAlign: 'center',
+      marginBottom: 25,
+      opacity: 0.9,
+    },
+    sidebarSection: {
+      marginBottom: 20,
+    },
+    sidebarHeading: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      color: '#FFFFFF',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginBottom: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.accent || '#4b5563',
+      paddingBottom: 3,
+    },
+    contactText: {
+      fontSize: 9,
+      color: '#e5e7eb',
+      marginBottom: 6,
+    },
+    skillItem: {
+      fontSize: 9,
+      color: '#e5e7eb',
+      marginBottom: 4,
+    },
+    sectionHeading: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: colors.secondary || '#1f2937',
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+      marginBottom: 10,
+      borderBottomWidth: 2,
+      borderBottomColor: colors.primary || '#2563eb',
+      paddingBottom: 5,
+    },
+    summaryText: {
+      fontSize: 10,
+      color: colors.text || '#111827',
+      lineHeight: 1.5,
+      textAlign: 'justify',
+      marginBottom: 20,
+    },
+    experienceItem: {
+      marginBottom: 15,
+    },
+    itemHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 3,
+    },
+    itemTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: colors.secondary || '#1f2937',
+    },
+    itemDate: {
+      fontSize: 9,
+      color: colors.primary || '#2563eb',
+      fontWeight: 'bold',
+    },
+    itemSubtitle: {
+      fontSize: 10,
+      color: '#6b7280',
+      marginBottom: 5,
+    },
+    bulletItem: {
+      flexDirection: 'row',
+      marginBottom: 3,
+      paddingLeft: 5,
+    },
+    bullet: {
+      width: 10,
+      fontSize: 9,
+      color: colors.primary || '#2563eb',
+    },
+    bulletText: {
+      flex: 1,
+      fontSize: 9,
+      color: colors.text || '#111827',
+      lineHeight: 1.4,
+    }
+  });
 
-const filterEmpty = (value?: string | null): string => {
-  if (!value || value === 'N/A' || value.trim() === '') return '';
-  return value.trim();
-};
-
-const hasContent = (value?: string | null): boolean => {
-  return filterEmpty(value) !== '';
-};
-
-const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
-  const renderContactInfo = () => {
-    const contactItems = [
-      { value: userdata.personalInfo?.location, label: null },
-      { value: userdata.personalInfo?.phone, label: null },
-      { value: userdata.personalInfo?.email, label: null },
-      { value: userdata.personalInfo?.linkedin, label: 'LinkedIn' },
-      { value: userdata.personalInfo?.website, label: 'Website' },
-    ];
-
-    const validItems = contactItems.filter(item => hasContent(item.value));
-    
-    if (validItems.length === 0) return null;
-
-    return (
-      <div className="mb-6">
-        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Contact</h2>
-        {validItems.map((item, index) => (
-          <div key={index} className="mb-2.5">
-            <p className="text-xs text-gray-200 leading-snug">{filterEmpty(item.value)}</p>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const renderSkills = () => {
-    const hasTechnical = userdata.skills?.technical && userdata.skills.technical.length > 0;
-    const hasSoft = userdata.skills?.soft && userdata.skills.soft.length > 0;
-    
-    if (!hasTechnical && !hasSoft) return null;
-
-    return (
-      <div className="mb-6">
-        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Skills</h2>
-        
-        {hasTechnical && (
-          <div>
-            <h3 className="text-xs font-semibold mb-1.5 mt-0.5 text-gray-200 uppercase tracking-wide">Technical</h3>
-            <ul className="list-none pl-0">
-              {userdata.skills.technical.map((skill, index) => (
-                skill && skill.trim() && (
-                  <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{skill.trim()}</li>
-                )
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {hasSoft && (
-          <div className={hasTechnical ? "mt-3" : ""}>
-            <h3 className="text-xs font-semibold mb-1.5 text-gray-200 uppercase tracking-wide">Soft Skills</h3>
-            <ul className="list-none pl-0">
-              {userdata.skills.soft.map((skill, index) => (
-                skill && skill.trim() && (
-                  <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{skill.trim()}</li>
-                )
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderLanguages = () => {
-    if (!userdata.skills?.languages || userdata.skills.languages.length === 0) return null;
-    
-    const validLanguages = userdata.skills.languages.filter(lang => lang && lang.trim());
-    if (validLanguages.length === 0) return null;
-
-    return (
-      <div className="mb-6">
-        <h2 className="text-sm font-bold mb-2.5 text-white border-b border-gray-500 pb-1 uppercase tracking-wider">Languages</h2>
-        <ul className="list-none pl-0">
-          {validLanguages.map((language, index) => (
-            <li key={index} className="text-xs mb-1.5 text-gray-200 leading-tight pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-gray-200">{language.trim()}</li>
-          ))}
-        </ul>
-      </div>
-    );
-  };
-
-  const renderExperience = () => {
-    if (!userdata.experience || userdata.experience.length === 0) return null;
-    
-    const validExperiences = userdata.experience.filter(exp => 
-      hasContent(exp.title) || hasContent(exp.company)
-    );
-    
-    if (validExperiences.length === 0) return null;
-
-    return (
-      <div className="mb-5">
-        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Professional Experience</h2>
-        {validExperiences.map((exp, index) => {
-          const dateRange = [filterEmpty(exp.startDate), filterEmpty(exp.endDate)]
-            .filter(d => d)
-            .join(' - ') || '';
-          
-          const companyLocation = [filterEmpty(exp.company), filterEmpty(exp.location)]
-            .filter(c => c)
-            .join(' • ');
-
-          return (
-            <div key={index} className="mb-4">
-              <div className="flex justify-between items-start mb-1 gap-2.5">
-                <h3 className="text-xs font-bold text-gray-800 leading-snug flex-1">{filterEmpty(exp.title) || 'Position'}</h3>
-                {dateRange && <p className="text-[10px] font-semibold text-blue-600 text-right whitespace-nowrap shrink-0">{dateRange}</p>}
-              </div>
-              {companyLocation && (
-                <p className="text-[11px] font-semibold text-gray-500 mb-1.5 leading-snug">{companyLocation}</p>
-              )}
-              {exp.responsibilities && exp.responsibilities.length > 0 && (
-                <ul className="list-none pl-0">
-                  {exp.responsibilities
-                    .filter(r => r && r.trim())
-                    .map((responsibility, idx) => (
-                      <li key={idx} className="text-[10px] leading-relaxed text-gray-800 mb-1"> • {responsibility.trim()}</li>
-                    ))}
-                </ul>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderEducation = () => {
-    if (!userdata.education || userdata.education.length === 0) return null;
-    
-    const validEducation = userdata.education.filter(edu => 
-      hasContent(edu.degree) || hasContent(edu.institution)
-    );
-    
-    if (validEducation.length === 0) return null;
-
-    return (
-      <div className="mb-5">
-        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Education</h2>
-        {validEducation.map((edu, index) => {
-          const institutionLocation = [filterEmpty(edu.institution), filterEmpty(edu.location)]
-            .filter(i => i)
-            .join(' • ');
-
-          return (
-            <div key={index} className="mb-3">
-              <h3 className="text-[12px] font-bold text-gray-800 mb-0.5 leading-snug">{filterEmpty(edu.degree) || 'Degree'}</h3>
-              {institutionLocation && (
-                <p className="text-xs text-gray-500 mb-0.5 leading-snug">{institutionLocation}</p>
-              )}
-              {hasContent(edu.graduationYear) && (
-                <p className="text-[10px] font-semibold text-blue-600">{filterEmpty(edu.graduationYear)}</p>
-              )}
-              {hasContent(edu.gpa) && (
-                <p className="text-[10px] leading-relaxed text-gray-800 mb-1">GPA: {edu.gpa}</p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderProjects = () => {
-    if (!userdata.projects || userdata.projects.length === 0) return null;
-    
-    const validProjects = userdata.projects.filter(project => 
-      hasContent(project.title) || hasContent(project.description)
-    );
-    
-    if (validProjects.length === 0) return null;
-
-    return (
-      <div className="mb-5">
-        <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Projects</h2>
-        {validProjects.map((project, index) => (
-          <div key={index} className="mb-3.5">
-            <h3 className="text-xs font-bold text-gray-800 mb-1 leading-snug">{filterEmpty(project.title) || 'Project'}</h3>
-            {hasContent(project.description) && (
-              <p className="text-xs text-gray-800 mb-1.5 leading-relaxed">{filterEmpty(project.description)}</p>
-            )}
-            {project.technologies && project.technologies.length > 0 && (
-              <div className="flex flex-wrap mt-1">
-                {project.technologies
-                  .filter(tech => tech && tech.trim())
-                  .map((tech, idx) => (
-                    <span key={idx} className="text-[9px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full mr-1.5 mb-1.5 border border-gray-200">{tech.trim()}</span>
-                  ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const displayName = filterEmpty(userdata.personalInfo?.fullName) || 'Your Name';
-  const displayTitle = filterEmpty(userdata.experience?.[0]?.title) || '';
-  const hasValidImage = userdata.image && userdata.image.length > 0 && hasContent(userdata.image[0]);
+  const displayName = hasContent(userdata.personalInfo?.fullName) ? userdata.personalInfo.fullName.trim() : 'Your Name';
+  const displayTitle = hasContent(userdata.jobSearchTitle) ? userdata.jobSearchTitle.trim() : (hasContent(userdata.personalInfo?.title) ? userdata.personalInfo?.title?.trim() : 'Professional');
+  const hasValidImage = userdata.image && userdata.image[0] && hasContent(userdata.image[0]);
 
   const getInitials = (name: string): string => {
     const parts = name.trim().split(' ').filter(p => p);
@@ -224,50 +155,118 @@ const Theme1: React.FC<Theme1Props> = ({ userdata }) => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  const initials = getInitials(displayName);
-
   return (
-    <div className="font-sans bg-white">
-      <div className="flex">
+    <Document>
+      <Page size="A4" style={styles.page}>
         {/* Sidebar */}
-        <div className="w-[35%] bg-gray-800 text-white p-8">
-          <div className={`text-center ${hasValidImage ? 'mb-8' : 'mb-6'}`}>
-            {hasValidImage ? (
-              <img className="w-24 h-24 rounded-full mb-4 border-2 object-cover border-white mx-auto" src={userdata.image[0]} alt="Avatar" />
-            ) : (
-              <div className="w-20 h-20 rounded-full mb-3 border-2 border-blue-600 bg-gray-500 flex items-center justify-center mx-auto">
-                <span className="text-3xl font-bold text-white">{initials}</span>
-              </div>
-            )}
-            <h1 className="text-xl font-bold mb-1 text-white text-center leading-tight">{displayName}</h1>
-            {displayTitle && (
-              <p className="text-xs font-semibold text-gray-200 text-center opacity-95 leading-snug">{displayTitle}</p>
-            )}
-          </div>
-
-          {renderContactInfo()}
-          {renderSkills()}
-          {renderLanguages()}
-        </div>
-
-        {/* Main Content */}
-        <div className="w-[65%] p-8">
-          {hasContent(userdata.professionalSummary) && (
-            <div className="mb-5">
-              <h2 className="text-sm font-bold mb-2.5 text-gray-800 border-b-2 border-blue-600 pb-1 uppercase tracking-wider">Professional Profile</h2>
-              <p className="text-[10px] leading-relaxed text-gray-800 text-justify">
-                {filterEmpty(userdata.professionalSummary)}
-              </p>
-            </div>
+        <View style={styles.sidebar}>
+          {hasValidImage ? (
+            <Image style={styles.profileImage} src={userdata.image[0]} />
+          ) : (
+            <View style={styles.initialsPlaceholder}>
+              <Text style={styles.initialsText}>{getInitials(displayName)}</Text>
+            </View>
           )}
 
-          {renderExperience()}
-          {renderEducation()}
-          {renderProjects()}
-        </div>
-      </div>
-    </div>
-  );
-};
+          <Text style={styles.sidebarName}>{displayName}</Text>
+          <Text style={styles.sidebarTitle}>{displayTitle}</Text>
 
-export default Theme1;
+          <View style={styles.sidebarSection}>
+            <Text style={styles.sidebarHeading}>Contact</Text>
+            {hasContent(userdata.personalInfo?.email) && (
+              <Text style={styles.contactText}>{userdata.personalInfo.email.trim()}</Text>
+            )}
+            {hasContent(userdata.personalInfo?.phone) && (
+              <Text style={styles.contactText}>{userdata.personalInfo.phone.trim()}</Text>
+            )}
+            {hasContent(userdata.personalInfo?.location) && (
+              <Text style={styles.contactText}>{userdata.personalInfo.location.trim()}</Text>
+            )}
+          </View>
+
+          {userdata.skills.technical.some(hasContent) && (
+            <View style={styles.sidebarSection}>
+              <Text style={styles.sidebarHeading}>Skills</Text>
+              {userdata.skills.technical.filter(hasContent).map((skill, index) => (
+                <Text key={index} style={styles.skillItem}>• {skill.trim()}</Text>
+              ))}
+            </View>
+          )}
+
+          {userdata.skills.languages.some(hasContent) && (
+            <View style={styles.sidebarSection}>
+              <Text style={styles.sidebarHeading}>Languages</Text>
+              {userdata.skills.languages.filter(hasContent).map((lang, index) => (
+                <Text key={index} style={styles.skillItem}>• {lang.trim()}</Text>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Main Content */}
+        <View style={styles.mainContent}>
+          {hasContent(userdata.professionalSummary) && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.sectionHeading}>Professional Profile</Text>
+              <Text style={styles.summaryText}>{userdata.professionalSummary.trim()}</Text>
+            </View>
+          )}
+
+          {userdata.experience.some(exp => hasContent(exp.title) || hasContent(exp.company)) && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.sectionHeading}>Experience</Text>
+              {userdata.experience.filter(exp => hasContent(exp.title) || hasContent(exp.company)).map((exp, index) => (
+                <View key={index} style={styles.experienceItem}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemTitle}>{exp.title?.trim()}</Text>
+                    <Text style={styles.itemDate}>
+                      {[exp.startDate, exp.endDate].filter(hasContent).join(' - ') || (hasContent(exp.startDate) ? 'Present' : '')}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemSubtitle}>{exp.company?.trim()}</Text>
+                  {exp.responsibilities && exp.responsibilities.some(hasContent) && (
+                    <View>
+                      {exp.responsibilities.filter(hasContent).map((resp, idx) => (
+                        <View key={idx} style={styles.bulletItem}>
+                          <Text style={styles.bullet}>•</Text>
+                          <Text style={styles.bulletText}>{resp.trim()}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {userdata.education.some(edu => hasContent(edu.degree) || hasContent(edu.institution)) && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.sectionHeading}>Education</Text>
+              {userdata.education.filter(edu => hasContent(edu.degree) || hasContent(edu.institution)).map((edu, index) => (
+                <View key={index} style={styles.experienceItem}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.itemTitle}>{edu.degree?.trim()}</Text>
+                    <Text style={styles.itemDate}>{edu.graduationYear?.trim()}</Text>
+                  </View>
+                  <Text style={styles.itemSubtitle}>{edu.institution?.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {userdata.projects && userdata.projects.some(p => hasContent(p.title) || hasContent(p.description)) && (
+            <View>
+              <Text style={styles.sectionHeading}>Projects</Text>
+              {userdata.projects.filter(p => hasContent(p.title) || hasContent(p.description)).map((project, index) => (
+                <View key={index} style={styles.experienceItem}>
+                  <Text style={styles.itemTitle}>{project.title?.trim()}</Text>
+                  <Text style={styles.bulletText}>{project.description?.trim()}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      </Page>
+    </Document>
+  );
+}

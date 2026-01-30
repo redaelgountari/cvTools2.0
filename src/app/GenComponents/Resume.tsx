@@ -13,7 +13,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
+  CardDescription,
+  CardFooter
 } from '@/components/ui/card';
 import {
   AlertDialog,
@@ -32,7 +33,9 @@ import {
   Download,
   FileCode,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertCircle,
+  BarChart as ChartBar
 } from 'lucide-react';
 import Theme1 from './Themes/Theme1';
 import Theme2 from './Themes/Theme2';
@@ -45,6 +48,10 @@ import Theme8 from './Themes/Theme8';
 import Theme9 from './Themes/Theme9';
 import Theme10 from './Themes/Theme10';
 import Theme11 from './Themes/Theme11';
+import { AlertDialogCancel, AlertDialogTrigger } from '@radix-ui/react-alert-dialog';
+import MatchAnalysisStats from './MatchAnalysisStats';
+import { ColorPicker } from './ColorPicker';
+import { DEFAULT_THEME_COLORS } from './Themes/themeDefaults';
 
 export default function Resume() {
   // Types
@@ -94,11 +101,20 @@ export default function Resume() {
     certifications: Certification[];
   }
 
+  interface MatchData {
+    matchScore: number;
+    skillsMatch: number;
+    experienceMatch: number;
+    educationMatch: number;
+    skillsJustification?: string;
+    experienceJustification?: string;
+    educationJustification?: string;
+  }
+
   // Context and state
-  const { AnlysedCV, userData, Settings, setSettings } = useContext(ReadContext);
+  const { AnlysedCV, userData, settings: contextSettings, setSettings } = useContext(ReadContext);
   const [resumeData, setResumeData] = useState<Resume | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
-  const [resumeOutput, setResumeOutput] = useState('');
   const [jobAnnouncement, setJobAnnouncement] = useState('');
   const [activeTheme, setActiveTheme] = useState('theme2');
   const [showJobDescription, setShowJobDescription] = useState(false);
@@ -110,18 +126,23 @@ export default function Resume() {
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
+  const [showLowMatchWarning, setShowLowMatchWarning] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [pendingResumeData, setPendingResumeData] = useState<Resume | null>(null);
+  const [themeColors, setThemeColors] = useState(DEFAULT_THEME_COLORS[activeTheme] || {});
 
   // Load data from context or storage
   useEffect(() => {
-    const loadResumeData = () => {
+    const loadResumeData = async () => {
       try {
         if (AnlysedCV) {
           console.log("Loading data from context:", AnlysedCV);
-          setRawResponse(AnlysedCV);
+          setRawResponse(typeof AnlysedCV === 'string' ? AnlysedCV : JSON.stringify(AnlysedCV));
           const parsedData = typeof AnlysedCV === 'string' ? JSON.parse(AnlysedCV) : AnlysedCV;
           setResumeData(parsedData);
         } else {
-          const storedData = getFromStorage('userData');
+          const storedData = await getFromStorage('userData');
           if (storedData) {
             console.log("Loading data from storage:", storedData);
             setRawResponse(JSON.stringify(storedData));
@@ -133,7 +154,7 @@ export default function Resume() {
         if (userData && userData.image && userData.image[0]) {
           setUserImage(userData.image[0]);
         } else {
-          const storedImage = getFromStorage('userImage');
+          const storedImage = await getFromStorage('userImage');
           if (storedImage && storedImage[0]) {
             setUserImage(storedImage[0]);
           }
@@ -148,19 +169,34 @@ export default function Resume() {
   }, [AnlysedCV, userData]);
 
   useEffect(() => {
-    if (!Settings) {
-      const savedSettings = getFromStorage('Settings');
-      if (savedSettings) {
-        setSettings(savedSettings);
+    const loadSettings = async () => {
+      if (!contextSettings) {
+        const savedSettings = await getFromStorage('Settings');
+        if (savedSettings) {
+          setSettings(savedSettings);
+        }
       }
-    }
+    };
 
-    console.log("Settings:", Settings);
-  }, [Settings, setSettings]);
+    loadSettings();
+    console.log("Settings:", contextSettings);
+  }, [contextSettings, setSettings]);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Update colors when theme changes
+  useEffect(() => {
+    setThemeColors(DEFAULT_THEME_COLORS[activeTheme] || {});
+  }, [activeTheme]);
+
+  const handleColorChange = (key: string, value: string) => {
+    setThemeColors(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   // Dynamic import of PDFViewer with loading skeleton
   const PDFViewer = dynamic(() => import("@/app/GenComponents/PDFViewer"), {
@@ -199,9 +235,19 @@ export default function Resume() {
       setError('Please provide your CV data first before generating a resume.');
       return;
     }
-    if (!jobAnnouncement && resumeData) {
-      setResumeData(resumeData);
-      setShowSuccess(true);
+    if (!jobAnnouncement) {
+      if (rawResponse) {
+        try {
+          // Reset to original CV if no job description
+          const originalCV = JSON.parse(rawResponse);
+          setResumeData(originalCV);
+          setMatchData(null);
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 1500);
+        } catch (e) {
+          console.error("Failed to reset resume:", e);
+        }
+      }
       return;
     }
 
@@ -210,38 +256,79 @@ export default function Resume() {
 
     try {
       const prompt = `
-            You are a highly skilled professional resume writer specializing in crafting ${Settings?.atsOptimized ? 'ATS-optimized and' : ''
-        } modern, professional resumes that maximize job-seeker success.
-            
-            ### USER DATA:
-            ${rawResponse}
-            
-            ${jobAnnouncement ? `### JOB DESCRIPTION:\n${jobAnnouncement}\n` : ''}
-            
-            ### INSTRUCTIONS:
-            1. **Create a polished, professional, and modern${Settings?.atsOptimized ? ' ATS-optimized' : ''
-        } resume** based on the user's provided data.
-            2. **Highlight key skills, experiences, and achievements** that best align with the user's career goals.
-            3. **Use strong action verbs and quantify achievements** wherever possible to enhance impact.
-            4. **Ensure a logical and structured flow**, improving readability and eliminating redundancies.
-            5. **Format the resume into clear sections**, ensuring consistency in styling and structure.
-            ${jobAnnouncement ? '6. **Tailor the resume to match the provided job description** by emphasizing relevant qualifications.\n' : ''}
-            ${Settings?.showLineLimit ? `7. **Keep each bullet point within approximately ${Settings.lineLimit} words** to ensure clarity and conciseness.\n` : ''}
-            8. **Deliver the resume in a clean, structured JSON format** for easy conversion to PDF or Word.
-            9. **Make the resume compelling, concise, and results-oriented**, effectively showcasing the candidate's strengths.
-            10. **Write the resume in ${Settings?.selectedLanguage || 'French'}.**
+You are a highly skilled professional resume writer and career analyst.
 
-            ### SPECIAL HANDLING:
-            - **Include only valid and relevant information.**  
-            - **Remove placeholders or irrelevant entries** such as "[Your LinkedIn Profile URL]", "N/A", "null", or "Not Provided."  
-            - **If a section (e.g., Certifications, Portfolio) has no valid data, omit it entirely** rather than leaving it blank.  
-            
-            ### OUTPUT FORMAT:
-            **IMPORTANT: Return ONLY valid JSON. Do not wrap the response in markdown code blocks or add any text before or after the JSON.**
-            
-            The JSON structure should follow this format:
-            ${JSON.stringify(resumeData, null, 2)}
-            `;
+### TASK:
+1. Analyze the match between the CANDIDATE PROFILE (User Data) and the TARGET JOB (Job Description).
+2. ALWAYS generate a professional resume tailored to the job.
+   - If the match is strong, emphasize relevant experience and skills.
+   - If the match is weak, focus on transferable skills and soft skills. Do NOT lie, but present the candidate in the best possible light for this specific role.
+3. Calculate honest match statistics.
+
+### 1. CANDIDATE PROFILE (USER DATA):
+${rawResponse}
+
+${jobAnnouncement ? `### 2. TARGET JOB DESCRIPTION:\n${jobAnnouncement}\n` : ''}
+
+### CRITICAL RULES (VIOLATION = FAILURE):
+
+**A. MATCH ANALYSIS (HONESTY IS PARAMOUNT):**
+- Evaluate the match honestly.
+- If the candidate is a "Software Engineer" and the job is "Nurse", the Match Score should be low, but you MUST still generate the best possible resume (highlighting attention to detail, quick learning, etc.).
+
+**B. PERSONAL INFORMATION (STRICT PRESERVATION):**
+- **You must copy the following fields EXACTLY from the CANDIDATE PROFILE:**
+  - Full Name
+  - Email
+  - Phone Number
+  - Location/Address
+  - LinkedIn/Website Links
+- **DO NOT** change, "optimize", or "correct" the contact details.
+
+**C. RESUME CONTENT:**
+- **Tailoring:** Rewrite the Professional Summary and adapt the bullet points of Experience to align with the Job Description keywords where truthful.
+- **Language:** Write the resume in **${contextSettings?.selectedLanguage || 'French'}**.
+
+### OUTPUT FORMAT:
+
+**IMPORTANT: Return ONLY valid JSON.**
+The JSON structure must follow this format:
+
+{
+  "resume": {
+    "personalInfo": {
+      "fullName": "Exact string from input",
+      "email": "Exact string from input",
+      "phone": "Exact string from input",
+      "location": "Exact string from input",
+      "linkedin": "Exact string from input",
+      ...
+    },
+    "professionalSummary": "REWRITTEN summary tailored to the target job...",
+    "skills": { 
+        "technical": ["Relevant skill 1", "Relevant skill 2"],
+        ...
+    },
+    "experience": [ 
+        {
+            "title": "...",
+            "company": "...",
+            "responsibilities": ["REWRITTEN bullet point using keywords from job description...", "..."]
+        }
+    ],
+    // ... rest of resume structure
+  },
+  "analysis": {
+    "matchScore": 0,
+    "skillsMatch": 0,
+    "experienceMatch": 0,
+    "educationMatch": 0,
+    "skillsJustification": "Brief explanation...",
+    "experienceJustification": "Brief explanation...",
+    "educationJustification": "Brief explanation..."
+  }
+}
+`;
 
       const { data } = await axios.post("/api/gemini", {
         userData: prompt,
@@ -273,14 +360,47 @@ export default function Resume() {
       // Parse the JSON
       const parsedData = JSON.parse(cleanedData);
 
-      setResumeOutput(cleanedData);
-      setResumeData(parsedData);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
-      console.log("Parsed resume data:", parsedData);
-      console.log("Selected language:", Settings?.selectedLanguage);
+      // Extract resume and analysis data
+      let newResumeData = parsedData.resume;
+      const newAnalysisData = parsedData.analysis || null;
+
+      // Handle flat structure or missing resume field
+      if (!newResumeData && parsedData.personalInfo) {
+        newResumeData = parsedData;
+      }
+
+      // If we still don't have a valid resume structure, throw or handle error
+      if (!newResumeData || !newResumeData.personalInfo) {
+        console.warn("AI did not return a valid resume structure. Using original data.");
+        // Fallback: If no resume generated (rare with new prompt), keep using current but show analysis
+        newResumeData = resumeData;
+      }
+
+      // CRITICAL FIX: Preserve the image from the original data
+      // The AI often drops the 'image' field since it's not text. We must restore it.
+      if (newResumeData) {
+        if (resumeData && (resumeData as any).image) {
+          (newResumeData as any).image = (resumeData as any).image;
+        } else if (userImage) {
+          (newResumeData as any).image = [userImage];
+        }
+      }
+
+      if (newAnalysisData && newAnalysisData.matchScore < 50) {
+        setMatchData(newAnalysisData);
+        setPendingResumeData(newResumeData);
+        setShowLowMatchWarning(true);
+      } else {
+        setResumeData(newResumeData);
+        setMatchData(newAnalysisData);
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1500);
+      }
+
+      console.log("Parsed data:", parsedData);
+      console.log("Selected language:", contextSettings?.selectedLanguage);
 
     } catch (error) {
       console.error('Error generating resume:', error);
@@ -330,7 +450,7 @@ export default function Resume() {
   const renderThemeComponent = () => {
     if (!resumeData) return null;
 
-    const themeProps = { userdata: resumeData, userImage };
+    const themeProps = { userdata: resumeData, userImage, colors: themeColors };
 
     switch (activeTheme) {
       case 'theme1': return <Theme1 {...themeProps} />;
@@ -413,8 +533,8 @@ export default function Resume() {
                         <Card
                           key={`${theme.id}-${i}`}
                           className={`cursor-pointer transition-all duration-300 overflow-hidden ${isActive
-                              ? 'ring-2 ring-primary scale-100 opacity-100'
-                              : 'scale-75 sm:scale-90 opacity-30 sm:opacity-40'
+                            ? 'ring-2 ring-primary scale-100 opacity-100'
+                            : 'scale-75 sm:scale-90 opacity-30 sm:opacity-40'
                             } ${i === 0 || i === 2 ? 'hidden xs:block' : ''}`}
                           onClick={() => {
                             setCurrentThemeIndex(actualIndex);
@@ -423,8 +543,8 @@ export default function Resume() {
                         >
                           <CardContent className="p-0">
                             <div className={`relative ${isActive
-                                ? 'w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-48'
-                                : 'w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36'
+                              ? 'w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-48'
+                              : 'w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36'
                               }`}>
                               {/* Mock Resume Preview */}
                               <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-1.5 sm:p-2 md:p-3">
@@ -444,8 +564,8 @@ export default function Resume() {
                               </div>
                               {/* Theme Name Overlay */}
                               <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${isActive
-                                  ? 'from-primary/90 to-transparent'
-                                  : 'from-slate-900/60 to-transparent'
+                                ? 'from-primary/90 to-transparent'
+                                : 'from-slate-900/60 to-transparent'
                                 } p-1 sm:p-1.5 md:p-2`}>
                                 <span className="text-[7px] sm:text-[9px] md:text-[10px] font-semibold text-white block text-center leading-tight">
                                   {theme.name}
@@ -505,8 +625,8 @@ export default function Resume() {
                             </div>
                             {/* Theme Name Overlay */}
                             <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${activeTheme === theme.id
-                                ? 'from-primary/90 to-transparent'
-                                : 'from-slate-900/60 to-transparent'
+                              ? 'from-primary/90 to-transparent'
+                              : 'from-slate-900/60 to-transparent'
                               } p-0.5 sm:p-1 md:p-1.5`}>
                               <span className="text-[7px] sm:text-[8px] md:text-[9px] font-semibold text-white block text-center leading-tight">
                                 {theme.name}
@@ -637,12 +757,27 @@ export default function Resume() {
                     </Button>
                   )}
                 </div>
+
+                {matchData && (
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => setShowStatsModal(true)}
+                    >
+                      <ChartBar className="h-4 w-4" />
+                      Analysis Stats
+                    </Button>
+                  </div>
+                )}
+
               </CardHeader>
               <CardContent>
                 {resumeData ? (
                   <div className="overflow-hidden rounded-lg border-2 bg-background shadow-inner">
                     {typeof window !== 'undefined' && (
-                      <PDFViewer width="100%" height="800px">
+                      <PDFViewer key={JSON.stringify(resumeData) + activeTheme} width="100%" height="800px">
                         {renderThemeComponent()}
                       </PDFViewer>
                     )}
@@ -666,6 +801,13 @@ export default function Resume() {
                   </div>
                 )}
               </CardContent>
+              <CardFooter className="flex flex-col items-center justify-center border-t bg-muted/5 py-6">
+                <div className="text-center mb-4">
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Customize Theme Colors</h4>
+                  <p className="text-xs text-muted-foreground">Adjust the colors below to personalize this template</p>
+                </div>
+                <ColorPicker colors={themeColors} onChange={handleColorChange} />
+              </CardFooter>
             </Card>
           </div>
         </div>
@@ -687,6 +829,66 @@ export default function Resume() {
             <AlertDialogAction>
               Close
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Low Match Warning Dialog */}
+      <AlertDialog open={showLowMatchWarning} onOpenChange={setShowLowMatchWarning}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              Low Job Match Detected
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The generated resume has a low match score ({matchData?.matchScore}%) with the job description.
+              The result might not be optimal. Do you want to proceed with this resume or cancel to adjust your inputs?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="py-4">
+            <MatchAnalysisStats matchData={matchData} />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setPendingResumeData(null);
+              setMatchData(null);
+            }}>
+              Cancel & Adjust
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingResumeData) {
+                setResumeData(pendingResumeData);
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 1500);
+              }
+            }}>
+              Continue Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Stats Analysis Dialog */}
+      <AlertDialog open={showStatsModal} onOpenChange={setShowStatsModal}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <ChartBar className="h-5 w-5 text-primary" />
+              Resume Match Analysis
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Detailed breakdown of how well your profile matches the job description.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="py-4">
+            <MatchAnalysisStats matchData={matchData} />
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowStatsModal(false)}>Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

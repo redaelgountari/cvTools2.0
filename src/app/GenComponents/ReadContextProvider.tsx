@@ -7,32 +7,33 @@ import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
 import { SessionProvider, useSession } from "next-auth/react";
 
-interface AnlysedCVType {
-  [key: string]: string | number | boolean | null | undefined;
-}
+import { Resume, EmptyResume } from "@/app/types/resume";
 
 interface SettingsType {
   [key: string]: any;
 }
 
-const normalizeData = <T extends Record<string, any>>(data: T): T => {
-  if (!data || typeof data !== "object") return {} as T;
-
-  return Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [key, value ?? ""])
-  ) as T;
+const normalizeData = (data: any): any => {
+  if (data === null || data === undefined) return ' ';
+  if (Array.isArray(data)) return data.map(item => normalizeData(item));
+  if (typeof data === 'object' && data !== null) {
+    return Object.fromEntries(
+      Object.entries(data).map(([key, value]) => [key, normalizeData(value)])
+    );
+  }
+  return data;
 };
 
 function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
-  const [userData, setUserData] = useState<AnlysedCVType | null>(null);
+  const [userData, setUserData] = useState<Resume>(EmptyResume);
   const [userinfos, setUserinfos] = useState<string | null>(null);
   const [settings, setSettings] = useState<SettingsType | null>(null);
-  const [AnlysedCV, setAnlysedCV] = useState<AnlysedCVType | null>(null);
+  const [AnlysedCV, setAnlysedCV] = useState<Resume>(EmptyResume);
   const { data: session } = useSession();
 
   const isDataLoaded = useRef(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousAnlysedCV = useRef<AnlysedCVType | null>(null);
+  const previousAnlysedCV = useRef<Resume | null>(null);
 
   useEffect(() => {
     if (!isDataLoaded.current || !AnlysedCV || !userinfos) return;
@@ -93,7 +94,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
 
         isDataLoaded.current = true;
       } catch (err) {
-        setAnlysedCV(normalizeData({}));
+        setAnlysedCV(normalizeData(EmptyResume));
         isDataLoaded.current = true;
       }
     };

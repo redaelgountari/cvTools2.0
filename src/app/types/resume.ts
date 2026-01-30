@@ -3,10 +3,12 @@ export interface PersonalInfo {
   email: string;
   phone: string;
   location: string;
+  city?: string;
   linkedin: string;
   website: string;
   github: string;
   portfolio: string;
+  title?: string;
 }
 
 export interface Skills {
@@ -22,6 +24,7 @@ export interface Experience {
   startDate: string;
   endDate: string;
   responsibilities: string[];
+  achievements?: string[];
 }
 
 export interface Education {
@@ -29,6 +32,9 @@ export interface Education {
   institution: string;
   location: string;
   graduationYear: string;
+  endDate?: string;
+  fieldOfStudy?: string;
+  gpa?: string;
   relevantCourses: string[];
 }
 
@@ -36,18 +42,25 @@ export interface Certification {
   name: string;
   issuer: string;
   year: string;
+  expiryDate?: string;
 }
 
 export interface Publication {
   title: string;
   publicationType: string;
+  publisher?: string;
   year: string;
+  date?: string;
   link: string;
+  description?: string;
 }
 
 export interface Award {
   name: string;
+  title?: string;
+  issuer?: string;
   year: string;
+  date?: string;
   description: string;
 }
 
@@ -63,8 +76,12 @@ export interface Project {
   title: string;
   description: string;
   technologiesUsed: string[];
+  technologies?: string[];
   github: string;
   role: string;
+  url?: string;
+  link?: string;
+  images?: string[];
 }
 
 export interface OnlinePresence {
@@ -74,22 +91,19 @@ export interface OnlinePresence {
 }
 
 export interface UserData {
-    image: string;
-    name: string;
-    // Add other user properties
-  }
-  
-  // Define empty defaults to avoid null
-  const defaultUserData: UserData = {
-    image: '',
-    name: ''
-  }
-  
+  image: string;
+  name: string;
+}
 
-  
+const defaultUserData: UserData = {
+  image: '',
+  name: ''
+}
+
 export interface Resume {
   personalInfo: PersonalInfo;
   professionalSummary: string;
+  jobSearchTitle: string;
   skills: Skills;
   tools: string[];
   experience: Experience[];
@@ -101,4 +115,41 @@ export interface Resume {
   projects: Project[];
   onlinePresence: OnlinePresence;
   hobbies: string[];
+  image: string[];
 }
+
+export const EmptyResume: Resume = {
+  personalInfo: {
+    fullName: ' ',
+    email: ' ',
+    phone: ' ',
+    location: ' ',
+    city: ' ',
+    linkedin: ' ',
+    website: ' ',
+    github: ' ',
+    portfolio: ' ',
+  },
+  professionalSummary: ' ',
+  jobSearchTitle: ' ',
+  skills: {
+    technical: [],
+    soft: [],
+    languages: [],
+  },
+  tools: [],
+  experience: [],
+  education: [],
+  certifications: [],
+  publications: [],
+  awards: [],
+  volunteerExperience: [],
+  projects: [],
+  onlinePresence: {
+    twitter: ' ',
+    stackOverflow: ' ',
+    medium: ' ',
+  },
+  hobbies: [],
+  image: [],
+};

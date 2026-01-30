@@ -1,184 +1,176 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { Resume } from '@/app/types/resume';
+import { DEFAULT_THEME_COLORS } from './themeDefaults';
+import { hasContent } from './contentVerification';
 
-// Register custom fonts
-Font.register({
-  family: 'Montserrat',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/montserrat/v15/JTUSjIg1_i6t8kCHKm459Wlhzg.ttf', fontWeight: 'normal' },
-    { src: 'https://fonts.gstatic.com/s/montserrat/v15/JTURjIg1_i6t8kCHKm45_bZF3gnD-w.ttf', fontWeight: 'bold' },
-    { src: 'https://fonts.gstatic.com/s/montserrat/v15/JTURjIg1_i6t8kCHKm45_c5H3gnD-w.ttf', fontWeight: 'semibold' },
-    { src: 'https://fonts.gstatic.com/s/montserrat/v15/JTUQjIg1_i6t8kCHKm459WxRxy7j.ttf', fontStyle: 'italic' },
-  ],
-});
+export default function Theme8({ userdata, colors = DEFAULT_THEME_COLORS.theme8 }: { userdata: Resume; colors?: any }) {
+  const styles = StyleSheet.create({
+    page: {
+      padding: 30,
+      fontFamily: 'Helvetica',
+      backgroundColor: colors.background || '#FFFFFF',
+    },
+    header: {
+      marginBottom: 20,
+    },
+    name: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 5,
+      textTransform: 'uppercase',
+      color: colors.primary || '#000000',
+    },
+    title: {
+      fontSize: 14,
+      marginBottom: 5,
+      color: colors.secondary || '#4A5568',
+    },
+    contactInfo: {
+      marginBottom: 15,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      borderTopWidth: 1,
+      borderTopColor: colors.border || '#000',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border || '#000',
+      paddingTop: 8,
+      paddingBottom: 8,
+      flexWrap: 'wrap',
+      gap: 10
+    },
+    contactItem: {
+      fontSize: 10,
+      color: colors.text || '#4A5568',
+    },
+    section: {
+      marginBottom: 20,
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textTransform: 'uppercase',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border || '#000',
+      paddingBottom: 4,
+      color: colors.primary || '#000',
+    },
+    summary: {
+      fontSize: 10,
+      lineHeight: 1.5,
+      color: colors.text || '#4A5568',
+      marginBottom: 10,
+      textAlign: 'justify',
+    },
+    experienceItem: {
+      marginBottom: 12,
+    },
+    experienceHeader: {
+      marginBottom: 3,
+    },
+    dateLocation: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      fontSize: 10,
+      color: '#718096',
+      marginBottom: 4,
+    },
+    jobTitle: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: colors.primary || '#2D3748',
+    },
+    company: {
+      fontSize: 11,
+      marginBottom: 4,
+      color: colors.text || '#4A5568',
+    },
+    bulletList: {
+      marginLeft: 10,
+    },
+    bulletPoint: {
+      fontSize: 10,
+      marginBottom: 3,
+      color: colors.text || '#4A5568',
+    },
+    skillsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 15
+    },
+    skillItem: {
+      fontSize: 10,
+      color: colors.text || '#4A5568',
+    },
+    educationItem: {
+      marginBottom: 10,
+    },
+    degreeTitle: {
+      fontSize: 11,
+      fontWeight: 'bold',
+      color: colors.primary || '#2D3748',
+    },
+    institution: {
+      fontSize: 10,
+      color: colors.text || '#4A5568',
+    },
+    hobbiesText: {
+      fontSize: 10,
+      color: colors.text || '#4A5568',
+    }
+  });
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 30,
-    fontFamily: 'Montserrat',
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    marginBottom: 20,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontSize: 14,
-    marginBottom: 5,
-    color: '#4A5568',
-  },
-  contactInfo: {
-    marginBottom: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTop: '1px solid #000',
-    borderBottom: '1px solid #000',
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  contactItem: {
-    fontSize: 10,
-    color: '#4A5568',
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    borderBottom: '1px solid #000',
-    paddingBottom: 4,
-  },
-  summary: {
-    fontSize: 10,
-    lineHeight: 1.5,
-    color: '#4A5568',
-    marginBottom: 10,
-    textAlign: 'justify',
-  },
-  experienceItem: {
-    marginBottom: 12,
-  },
-  experienceHeader: {
-    marginBottom: 3,
-  },
-  dateLocation: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    fontSize: 10,
-    color: '#718096',
-    marginBottom: 4,
-  },
-  jobTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#2D3748',
-  },
-  company: {
-    fontSize: 11,
-    marginBottom: 4,
-    color: '#4A5568',
-  },
-  bulletList: {
-    marginLeft: 10,
-  },
-  bulletPoint: {
-    fontSize: 10,
-    marginBottom: 3,
-    color: '#4A5568',
-  },
-  skillsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  skillItem: {
-    fontSize: 10,
-    marginRight: 20,
-    marginBottom: 5,
-    color: '#4A5568',
-  },
-  educationItem: {
-    marginBottom: 10,
-  },
-  degreeTitle: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#2D3748',
-  },
-  institution: {
-    fontSize: 10,
-    color: '#4A5568',
-  },
-  hobbiesText: {
-    fontSize: 10,
-    color: '#4A5568',
-  }
-});
+  const displayName = hasContent(userdata.personalInfo?.fullName) ? userdata.personalInfo.fullName.trim() : 'Your Name';
+  const displayTitle = hasContent(userdata.jobSearchTitle) ? userdata.jobSearchTitle.trim() : (hasContent(userdata.personalInfo?.title) ? userdata.personalInfo.title.trim() : 'Professional');
 
-// Helper function to filter out N/A values
-const filterNA = (value: string | undefined): string => (value && value !== 'N/A' ? value : '');
-
-export default function Theme8({ userdata, userImage }: { userdata: Resume; userImage: any }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header with name and title */}
         <View style={styles.header}>
-          <Text style={styles.name}>{filterNA(userdata.personalInfo.fullName)}</Text>
-          {userdata.experience[0]?.title && <Text style={styles.title}>{userdata.experience[0].title}</Text>}
+          <Text style={styles.name}>{displayName}</Text>
+          <Text style={styles.title}>{displayTitle}</Text>
         </View>
 
-        {/* Contact Information */}
         <View style={styles.contactInfo}>
-          {filterNA(userdata.personalInfo.location) && (
-            <Text style={styles.contactItem}>{userdata.personalInfo.location}</Text>
+          {hasContent(userdata.personalInfo?.location) && (
+            <Text style={styles.contactItem}>{userdata.personalInfo.location.trim()}</Text>
           )}
-          {filterNA(userdata.personalInfo.phone) && (
-            <Text style={styles.contactItem}>{userdata.personalInfo.phone}</Text>
+          {hasContent(userdata.personalInfo?.phone) && (
+            <Text style={styles.contactItem}>{userdata.personalInfo.phone.trim()}</Text>
           )}
-          {filterNA(userdata.personalInfo.email) && (
-            <Text style={styles.contactItem}>{userdata.personalInfo.email}</Text>
+          {hasContent(userdata.personalInfo?.email) && (
+            <Text style={styles.contactItem}>{userdata.personalInfo.email.trim()}</Text>
           )}
-          {filterNA(userdata.personalInfo.linkedin) && (
-            <Text style={styles.contactItem}>{userdata.personalInfo.linkedin}</Text>
+          {hasContent(userdata.personalInfo?.linkedin) && (
+            <Text style={styles.contactItem}>LinkedIn</Text>
           )}
         </View>
 
-        {/* Professional Summary */}
-        {filterNA(userdata.professionalSummary) && (
+        {hasContent(userdata.professionalSummary) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>About Me</Text>
-            <Text style={styles.summary}>{userdata.professionalSummary}</Text>
+            <Text style={styles.summary}>{userdata.professionalSummary.trim()}</Text>
           </View>
         )}
 
-        {/* Experience */}
-        {userdata.experience.length > 0 && (
+        {userdata.experience.some(exp => hasContent(exp.title) || hasContent(exp.company)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Professional Experience</Text>
-            {userdata.experience.map((exp, index) => (
+            {userdata.experience.filter(exp => hasContent(exp.title) || hasContent(exp.company)).map((exp, index) => (
               <View key={index} style={styles.experienceItem}>
                 <View style={styles.experienceHeader}>
-                  <Text style={styles.jobTitle}>{filterNA(exp.title)}</Text>
-                  <Text style={styles.company}>{filterNA(exp.company)}</Text>
+                  <Text style={styles.jobTitle}>{exp.title?.trim()}</Text>
+                  <Text style={styles.company}>{exp.company?.trim()}</Text>
                   <View style={styles.dateLocation}>
-                    <Text>{filterNA(exp.startDate)} - {filterNA(exp.endDate)}</Text>
-                    <Text>{filterNA(exp.location)}</Text>
+                    <Text>{[exp.startDate, exp.endDate].filter(hasContent).join(' - ') || (hasContent(exp.startDate) ? 'Present' : '')}</Text>
+                    <Text>{exp.location?.trim() || ''}</Text>
                   </View>
                 </View>
-                {exp.responsibilities.length > 0 && (
+                {exp.responsibilities && exp.responsibilities.some(hasContent) && (
                   <View style={styles.bulletList}>
-                    {exp.responsibilities.map((responsibility, idx) => (
-                      <Text key={idx} style={styles.bulletPoint}>• {responsibility}</Text>
+                    {exp.responsibilities.filter(hasContent).map((responsibility, idx) => (
+                      <Text key={idx} style={styles.bulletPoint}>• {responsibility.trim()}</Text>
                     ))}
                   </View>
                 )}
@@ -187,98 +179,64 @@ export default function Theme8({ userdata, userImage }: { userdata: Resume; user
           </View>
         )}
 
-        {/* Education */}
-        {userdata.education.length > 0 && (
+        {userdata.education.some(edu => hasContent(edu.degree) || hasContent(edu.institution)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
-            {userdata.education.map((edu, index) => (
+            {userdata.education.filter(edu => hasContent(edu.degree) || hasContent(edu.institution)).map((edu, index) => (
               <View key={index} style={styles.educationItem}>
-                <Text style={styles.degreeTitle}>{filterNA(edu.degree)}</Text>
-                <Text style={styles.institution}>{filterNA(edu.institution)}, {filterNA(edu.location)}</Text>
-                <Text style={styles.institution}>{filterNA(edu.graduationYear)}</Text>
-                {edu.relevantCourses && edu.relevantCourses.length > 0 && (
-                  <View style={styles.bulletList}>
-                    {edu.relevantCourses.map((course, idx) => (
-                      <Text key={idx} style={styles.bulletPoint}>• {course}</Text>
-                    ))}
-                  </View>
-                )}
+                <Text style={styles.degreeTitle}>{edu.degree?.trim()}</Text>
+                <Text style={styles.institution}>{[edu.institution, edu.location].filter(hasContent).join(', ')}</Text>
+                <Text style={styles.institution}>{edu.graduationYear?.trim() || ''}</Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* Skills Section */}
-        {(userdata.skills.technical.length > 0 || userdata.skills.soft.length > 0) && (
+        {(userdata.skills.technical.some(hasContent) || userdata.skills.soft.some(hasContent) || userdata.skills.languages.some(hasContent)) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Skills</Text>
-            
-            {userdata.skills.technical.length > 0 && (
-              <View style={styles.skillsContainer}>
-                {userdata.skills.technical.map((skill, index) => (
-                  <Text key={index} style={styles.skillItem}>• {skill}</Text>
-                ))}
-              </View>
-            )}
-            
-            {userdata.skills.soft.length > 0 && (
-              <View style={styles.skillsContainer}>
-                {userdata.skills.soft.map((skill, index) => (
-                  <Text key={index} style={styles.skillItem}>• {skill}</Text>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Languages */}
-        {userdata.skills.languages.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Languages</Text>
+            <Text style={styles.sectionTitle}>Skills & Languages</Text>
             <View style={styles.skillsContainer}>
-              {userdata.skills.languages.map((language, index) => (
-                <Text key={index} style={styles.skillItem}>• {language}</Text>
+              {[...userdata.skills.technical, ...userdata.skills.soft, ...userdata.skills.languages].filter(hasContent).map((skill, index) => (
+                <Text key={index} style={styles.skillItem}>• {skill.trim()}</Text>
               ))}
             </View>
           </View>
         )}
-        
-        {/* Hobbies */}
-        {userdata.hobbies.length > 0 && (
+
+        {userdata.hobbies.some(hasContent) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Interests</Text>
             <Text style={styles.hobbiesText}>
-              {userdata.hobbies.join(', ')}
+              {userdata.hobbies.filter(hasContent).join(', ')}
             </Text>
           </View>
         )}
 
-        {/* Certifications */}
-        {userdata.certifications && userdata.certifications.length > 0 && (
+        {userdata.certifications.some(cert => hasContent(cert.name)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Certifications</Text>
-            {userdata.certifications.map((cert, index) => (
+            {userdata.certifications.filter(cert => hasContent(cert.name)).map((cert, index) => (
               <View key={index} style={styles.educationItem}>
-                <Text style={styles.degreeTitle}>{filterNA(cert.name)}</Text>
+                <Text style={styles.degreeTitle}>{cert.name.trim()}</Text>
                 <Text style={styles.institution}>
-                  {filterNA(cert.issuer)}, {filterNA(cert.year)}
-                  {cert.expiryDate && ` - ${cert.expiryDate}`}
+                  {[cert.issuer, cert.year].filter(hasContent).join(', ')}
+                  {hasContent(cert.expiryDate) && ` - ${cert.expiryDate.trim()}`}
                 </Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* Projects (optional) */}
-        {userdata.projects && userdata.projects.length > 0 && (
+        {userdata.projects && userdata.projects.some(p => hasContent(p.title) || hasContent(p.description)) && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Projects</Text>
-            {userdata.projects.map((project, index) => (
+            {userdata.projects.filter(p => hasContent(p.title) || hasContent(p.description)).map((project, index) => (
               <View key={index} style={styles.experienceItem}>
-                <Text style={styles.jobTitle}>{project.title}</Text>
-                <Text style={styles.bulletPoint}>{project.description}</Text>
-                <Text style={styles.institution}>Technologies: {project.technologies.join(', ')}</Text>
-                {project.link && <Text style={styles.institution}>Link: {project.link}</Text>}
+                <Text style={styles.jobTitle}>{project.title?.trim()}</Text>
+                <Text style={styles.bulletPoint}>{project.description?.trim()}</Text>
+                {(project.technologies || project.technologiesUsed) && (
+                  <Text style={styles.institution}>Technologies: {(project.technologies || project.technologiesUsed).filter(hasContent).join(', ')}</Text>
+                )}
               </View>
             ))}
           </View>

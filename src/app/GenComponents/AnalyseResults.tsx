@@ -2,13 +2,102 @@
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Loader2, Plus, Trash2, Image as ImageIcon, Star } from 'lucide-react';
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  User,
+  FileText,
+  Zap,
+  Wrench,
+  Briefcase,
+  GraduationCap,
+  Scroll,
+  BookOpen,
+  Award,
+  HeartHandshake,
+  Rocket,
+  Globe,
+  Palette,
+  Star,
+  X
+} from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { ReadContext } from './ReadContext';
 import { Resume } from '../types/resume';
+import { useToast } from '@/hooks/use-toast';
+import { ResumeSchema } from '../types/resumeSchema';
+import { z } from 'zod';
+import { Skeleton } from '@/components/ui/skeleton';
+import LoadingState from './LoadingState';
+
+interface TagInputProps {
+  tags: string[];
+  onTagsChange: (newTags: string[]) => void;
+  placeholder?: string;
+}
+
+const TagInput = ({ tags = [], onTagsChange, placeholder }: TagInputProps) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const addTag = () => {
+    const trimmed = inputValue.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      onTagsChange([...tags, trimmed]);
+      setInputValue('');
+    }
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    onTagsChange(tags.filter((_, index) => index !== indexToRemove));
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2 mb-2">
+        {tags.map((tag, index) => (
+          <Badge key={index} variant="secondary" className="px-2 py-1 flex items-center gap-1">
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(index)}
+              className="hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder || "Type and press Enter or add button..."}
+          className="flex-1"
+        />
+        <Button onClick={addTag} type="button" size="icon" variant="outline">
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 export default function AnalyseResults() {
   const [response, setResponse] = useState<Resume | null>(null);
@@ -18,68 +107,109 @@ export default function AnalyseResults() {
   const { AnlysedCV, setAnlysedCV, userData, setUserData } = useContext(ReadContext);
   const [userImages, setUserImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [showNoData, setShowNoData] = useState(false);
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     if (AnlysedCV) {
       setResponse(AnlysedCV);
       setUserImages(AnlysedCV?.image || []);
+      setInitialLoading(false);
+    } else {
+      // Set a timeout to show "No CV data found" after 10 seconds
+      timeoutId = setTimeout(() => {
+        setInitialLoading(false);
+        setShowNoData(true);
+      }, 10000);
     }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [AnlysedCV]);
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
-  setLoading(true);
-  try {
-    // Merge the response data with the images from userData
-    const updatedResume = {
-      ...response,
-      image: userImages // Use the current userImages state
-    };
-    
-    setAnlysedCV(updatedResume);
-    
-    // Also update userData to ensure consistency
-    setUserData(prev => ({
-      ...prev,
-      ...updatedResume
-    }));
-    
-    console.log("Updated resume with images:", updatedResume);
-  } catch (err) {
-    console.error("Error updating resume data:", err);
-    setError('Failed to update resume data. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-const uploadToCloudinary = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append('file', file);
+    try {
+      // Merge the response data with the images from userData
+      const updatedResume = {
+        ...response,
+        image: userImages // Use the current userImages state
+      };
 
-  try {
-    const response = await fetch("/api/extract-images", {
-      method: "POST",
-      body: formData,
-    });
+      // Validate using Zod
+      const validatedData = ResumeSchema.parse(updatedResume);
 
-    if (!response.ok) {
-      throw new Error(`Failed to upload image: ${response.statusText}`);
+      setAnlysedCV(validatedData as Resume);
+
+      // Also update userData to ensure consistency
+      setUserData(prev => ({
+        ...prev,
+        ...validatedData
+      }));
+
+      console.log("Updated resume with images:", validatedData);
+
+      toast({
+        title: "Success",
+        description: "Your resume has been updated successfully.",
+        variant: "default",
+        className: "bg-green-500 text-white border-none"
+      });
+
+    } catch (err) {
+      console.error("Error updating resume data:", err);
+      let errorMessage = "Failed to update resume data. Please try again.";
+
+      if (err instanceof z.ZodError) {
+        // Create a more user-friendly error message from Zod validation issues
+        errorMessage = `Validation Error: ${err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+      }
+
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    const data = await response.json();
-    
-    // Make sure the response structure matches what you expect
-    if (data.files && data.files[0] && data.files[0].url) {
-      return data.files[0].url;
-    } else {
-      throw new Error('Invalid response format from image upload');
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch("/api/extract-images", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload image: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Make sure the response structure matches what you expect
+      if (data.files && data.files[0] && data.files[0].url) {
+        return data.files[0].url;
+      } else {
+        throw new Error('Invalid response format from image upload');
+      }
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Cloudinary upload error:', error);
-    throw error;
-  }
-};
+  };
 
   const handleChangeImage = (index: number) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,52 +342,56 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
 
 
   const sections = [
-    { id: 'image', label: 'Images', icon: '🖼️' },
-    { id: 'personal', label: 'Personal Info', icon: '👤' },
-    { id: 'summary', label: 'Summary', icon: '📝' },
-    { id: 'skills', label: 'Skills', icon: '⚡' },
-    { id: 'tools', label: 'Tools', icon: '🛠️' },
-    { id: 'experience', label: 'Experience', icon: '💼' },
-    { id: 'education', label: 'Education', icon: '🎓' },
-    { id: 'certifications', label: 'Certifications', icon: '📜' },
-    { id: 'publications', label: 'Publications', icon: '📚' },
-    { id: 'awards', label: 'Awards', icon: '🏆' },
-    { id: 'volunteer', label: 'Volunteer', icon: '🤝' },
-    { id: 'projects', label: 'Projects', icon: '🚀' },
-    { id: 'online', label: 'Online Presence', icon: '🌐' },
-    { id: 'hobbies', label: 'Hobbies', icon: '🎨' }
+    { id: 'image', label: 'Images', icon: <ImageIcon className="w-4 h-4" /> },
+    { id: 'personal', label: 'Personal Info', icon: <User className="w-4 h-4" /> },
+    { id: 'summary', label: 'Summary', icon: <FileText className="w-4 h-4" /> },
+    { id: 'skills', label: 'Skills', icon: <Zap className="w-4 h-4" /> },
+    { id: 'tools', label: 'Tools', icon: <Wrench className="w-4 h-4" /> },
+    { id: 'experience', label: 'Experience', icon: <Briefcase className="w-4 h-4" /> },
+    { id: 'education', label: 'Education', icon: <GraduationCap className="w-4 h-4" /> },
+    { id: 'certifications', label: 'Certifications', icon: <Scroll className="w-4 h-4" /> },
+    { id: 'publications', label: 'Publications', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'awards', label: 'Awards', icon: <Award className="w-4 h-4" /> },
+    { id: 'volunteer', label: 'Volunteer', icon: <HeartHandshake className="w-4 h-4" /> },
+    { id: 'projects', label: 'Projects', icon: <Rocket className="w-4 h-4" /> },
+    { id: 'online', label: 'Online Presence', icon: <Globe className="w-4 h-4" /> },
+    { id: 'hobbies', label: 'Hobbies', icon: <Palette className="w-4 h-4" /> }
   ];
 
-  if (!response) {
+  if (initialLoading) {
+    return <LoadingState />;
+  }
+
+  if (!response && showNoData) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-gray-300 rounded-xl p-8 bg-gray-50">
-        <AlertCircle className="h-16 w-16 text-gray-400 mb-4" />
-        <p className="text-center text-gray-600 text-lg font-medium mb-2">
+      <div className="flex flex-col items-center justify-center h-96 border border-dashed rounded-xl p-8 bg-muted/50">
+        <AlertCircle className="h-16 w-16 text-muted-foreground mb-4" />
+        <p className="text-center text-lg font-medium mb-2">
           No CV data found
         </p>
-        <p className="text-center text-gray-500 text-sm">
+        <p className="text-center text-muted-foreground text-sm">
           Please upload and analyze your CV first to get started.
         </p>
       </div>
     );
   }
 
+  if (!response) return null;
+
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6">
-      <Card className="shadow-xl border-1 bg-gradient-to-br border-white">
+      <Card className="shadow-lg">
         <form onSubmit={handleSubmit}>
-          <CardHeader className="space-y-4 pb-6 border-b bg-gradient-to-r">
-            <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+          <CardHeader className="space-y-4 pb-6 border-b">
+            <div className="flex gap-2 overflow-x-auto py-2 scrollbar-none">
               {sections.map((section) => (
                 <Button
                   key={section.id}
-                  variant={activeSection === section.id ? "default" : "outline"}
+                  variant={activeSection === section.id ? "default" : "ghost"}
                   onClick={() => setActiveSection(section.id)}
-                  className={`whitespace-nowrap transition-all duration-200 ${activeSection === section.id
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg scale-105'
-                      : 'hover:bg-gray-100'
-                    }`}
+                  className="whitespace-nowrap"
                   type="button"
+                  size="sm"
                 >
                   <span className="mr-2">{section.icon}</span>
                   {section.label}
@@ -268,21 +402,21 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
 
           <CardContent className="space-y-6 pt-8">
             {loading && (
-              <div className="flex items-center justify-center space-x-3 p-4 bg-blue-50 rounded-lg">
-                <Loader2 className="animate-spin text-blue-600" />
-                <span className="text-blue-700 font-medium">Updating your resume...</span>
+              <div className="flex items-center justify-center space-x-3 p-4 bg-primary/10 rounded-lg">
+                <Loader2 className="animate-spin text-primary" />
+                <span className="text-primary font-medium">Updating your resume...</span>
               </div>
             )}
 
             {uploading && (
-              <div className="flex items-center justify-center space-x-3 p-4 bg-green-50 rounded-lg">
-                <Loader2 className="animate-spin text-green-600" />
-                <span className="text-green-700 font-medium">Uploading images...</span>
+              <div className="flex items-center justify-center space-x-3 p-4 bg-muted rounded-lg">
+                <Loader2 className="animate-spin text-muted-foreground" />
+                <span className="text-muted-foreground font-medium">Uploading images...</span>
               </div>
             )}
 
             {error && (
-              <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -291,57 +425,60 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Image Section */}
             {activeSection === 'image' && (
               <div className="space-y-6">
-                <div className="flex items-center space-x-3 pb-3 border-b-2 border-gray-200">
-                  <ImageIcon className="h-6 w-6 text-blue-600" />
-                  <h3 className="text-2xl font-bold text-gray-800">Professional Images</h3>
+                <div className="flex items-center space-x-3 pb-3 border-b">
+                  <ImageIcon className="h-6 w-6 text-primary" />
+                  <h3 className="text-2xl font-bold">Professional Images</h3>
                 </div>
 
                 {userImages && userImages.length > 0 ? (
                   <div>
                     <div className={`${userImages.length > 1 ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" : "max-w-sm mx-auto"}`}>
                       {userImages.map((imageUrl, index) => (
-                        <div
+                        <Card
                           key={index}
-                          className={`relative group overflow-hidden rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${index === 0 ? "ring-4 ring-blue-500 ring-offset-2" : ""
-                            }`}
+                          className={`relative group overflow-hidden transition-all ${index === 0 ? "ring-2 ring-primary ring-offset-2" : ""}`}
                         >
                           {index === 0 && (
-                            <div className="absolute top-2 left-2 z-10 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-1 shadow-lg">
-                              <Star className="h-3 w-3 fill-white" />
-                              <span>Primary</span>
+                            <div className="absolute top-2 left-2 z-10">
+                              <Badge variant="default" className="flex items-center space-x-1 shadow-sm">
+                                <Star className="h-3 w-3 fill-current" />
+                                <span>Primary</span>
+                              </Badge>
                             </div>
                           )}
 
-                          <div className="aspect-square overflow-hidden bg-gray-100">
+                          <div className="aspect-square overflow-hidden bg-muted">
                             <img
                               src={imageUrl}
                               alt={`Professional ${index + 1}`}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                           </div>
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                          <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                            <div className="flex justify-center space-x-2">
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                            <div className="flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                               {index !== 0 && userImages.length > 1 && (
-                                <button
+                                <Button
                                   onClick={() => handleMakePrimary(index)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors"
+                                  size="icon"
+                                  variant="secondary"
                                   type="button"
                                   title="Make primary"
+                                  className="h-8 w-8 rounded-full"
                                 >
                                   <Star className="h-4 w-4" />
-                                </button>
+                                </Button>
                               )}
-                              <button
+                              <Button
                                 onClick={() => document.getElementById(`file-input-${index}`)?.click()}
-                                className="bg-white hover:bg-gray-100 text-gray-800 p-2 rounded-full shadow-lg transition-colors"
+                                size="icon"
+                                variant="secondary"
                                 type="button"
                                 title="Change image"
+                                className="h-8 w-8 rounded-full"
                               >
                                 <ImageIcon className="h-4 w-4" />
-                              </button>
+                              </Button>
                               <input
                                 type="file"
                                 id={`file-input-${index}`}
@@ -349,50 +486,50 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                                 accept="image/*"
                                 style={{ display: 'none' }}
                               />
-                              <button
+                              <Button
                                 onClick={() => handleDeleteImage(index)}
-                                className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg transition-colors"
+                                size="icon"
+                                variant="destructive"
                                 type="button"
                                 title="Delete image"
+                                className="h-8 w-8 rounded-full"
                               >
                                 <Trash2 className="h-4 w-4" />
-                              </button>
+                              </Button>
                             </div>
                           </div>
-                        </div>
+                        </Card>
                       ))}
                     </div>
 
                     <div className="mt-6 flex justify-center">
-                      <button
+                      <Button
                         onClick={handleAddMoreImages}
                         type="button"
                         disabled={uploading}
-                        className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Plus className="h-5 w-5 mr-2" />
+                        <Plus className="h-4 w-4 mr-2" />
                         {uploading ? 'Uploading...' : 'Add More Images'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300">
-                    <ImageIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 text-lg font-medium mb-2">
+                  <div className="text-center py-16 bg-muted/30 rounded-lg border border-dashed">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-lg font-medium mb-2">
                       No professional images uploaded
                     </p>
-                    <p className="text-gray-500 text-sm mb-6">
+                    <p className="text-muted-foreground text-sm mb-6">
                       Add your professional photos to personalize your resume
                     </p>
-                    <button
+                    <Button
                       onClick={handleAddImages}
                       type="button"
                       disabled={uploading}
-                      className="flex items-center mx-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Plus className="h-5 w-5 mr-2" />
+                      <Plus className="h-4 w-4 mr-2" />
                       {uploading ? 'Uploading...' : 'Upload Images'}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -401,7 +538,7 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Personal Info Section */}
             {activeSection === 'personal' && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Personal Information</h3>
+                <h3 className="text-2xl font-bold pb-3 border-b">Personal Information</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   {[
                     { label: 'Full Name', key: 'fullName', type: 'text' },
@@ -415,7 +552,7 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                     { label: 'Portfolio', key: 'portfolio', type: 'url' },
                   ].map(field => (
                     <div key={field.key} className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">{field.label}</label>
+                      <Label>{field.label}</Label>
                       <Input
                         type={field.type}
                         value={response.personalInfo?.[field.key] || ''}
@@ -426,7 +563,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                           })
                         }
                         placeholder={`Enter ${field.label.toLowerCase()}`}
-                        className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
                       />
                     </div>
                   ))}
@@ -437,13 +573,12 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Professional Summary */}
             {activeSection === 'summary' && (
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Professional Summary</h3>
+                <h3 className="text-2xl font-bold pb-3 border-b">Professional Summary</h3>
                 <Textarea
                   value={response.professionalSummary || ''}
                   onChange={(e) => setResponse({ ...response, professionalSummary: e.target.value })}
                   placeholder="Write a compelling professional summary that highlights your key achievements and career goals..."
                   rows={8}
-                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none"
                 />
               </div>
             )}
@@ -451,30 +586,27 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Skills Section */}
             {activeSection === 'skills' && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Skills</h3>
+                <h3 className="text-2xl font-bold pb-3 border-b">Skills</h3>
                 {[
-                  { label: 'Technical Skills', key: 'technical', placeholder: 'React, Node.js, Python, SQL...' },
-                  { label: 'Soft Skills', key: 'soft', placeholder: 'Communication, Leadership, Problem Solving...' },
-                  { label: 'Languages', key: 'languages', placeholder: 'English, French, Spanish...' },
+                  { label: 'Technical Skills', key: 'technical', placeholder: 'Add a technical skill...' },
+                  { label: 'Soft Skills', key: 'soft', placeholder: 'Add a soft skill...' },
+                  { label: 'Languages', key: 'languages', placeholder: 'Add a language...' },
                 ].map(skill => (
                   <div key={skill.key} className="space-y-2">
-                    <label className="text-sm font-semibold text-gray-700">{skill.label}</label>
-                    <Textarea
-                      value={response.skills?.[skill.key]?.join(', ') || ''}
-                      onChange={(e) =>
+                    <Label>{skill.label}</Label>
+                    <TagInput
+                      tags={response.skills?.[skill.key] || []}
+                      onTagsChange={(newTags) =>
                         setResponse({
                           ...response,
                           skills: {
                             ...response.skills,
-                            [skill.key]: e.target.value.split(',').map(s => s.trim()).filter(s => s)
+                            [skill.key]: newTags
                           },
                         })
                       }
                       placeholder={skill.placeholder}
-                      rows={3}
-                      className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
                     />
-                    <p className="text-xs text-gray-500">Separate skills with commas</p>
                   </div>
                 ))}
               </div>
@@ -483,29 +615,26 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Tools Section */}
             {activeSection === 'tools' && (
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Tools & Technologies</h3>
-                <Textarea
-                  value={response.tools?.join(', ') || ''}
-                  onChange={(e) =>
+                <h3 className="text-2xl font-bold pb-3 border-b">Tools & Technologies</h3>
+                <TagInput
+                  tags={response.tools || []}
+                  onTagsChange={(newTags) =>
                     setResponse({
                       ...response,
-                      tools: e.target.value.split(',').map(t => t.trim()).filter(t => t),
+                      tools: newTags,
                     })
                   }
-                  placeholder="Git, Docker, VS Code, Figma, Jira..."
-                  rows={4}
-                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                  placeholder="Add a tool (e.g. Git, Figma)..."
                 />
-                <p className="text-xs text-gray-500">Separate tools with commas</p>
               </div>
             )}
 
             {/* Experience Section */}
             {activeSection === 'experience' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Work Experience</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Work Experience</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -520,19 +649,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Experience
-                  </button>
+                  </Button>
                 </div>
 
                 {response.experience && response.experience.map((exp, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-blue-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Experience #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Experience #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -540,16 +669,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Job Title</label>
+                          <Label>Job Title</Label>
                           <Input
                             value={exp.title || ''}
                             onChange={(e) => {
@@ -558,11 +689,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, experience: updated });
                             }}
                             placeholder="Senior Developer"
-                            className="border-gray-300 focus:border-blue-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Company</label>
+                          <Label>Company</Label>
                           <Input
                             value={exp.company || ''}
                             onChange={(e) => {
@@ -571,11 +701,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, experience: updated });
                             }}
                             placeholder="Tech Corp"
-                            className="border-gray-300 focus:border-blue-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Start Date</label>
+                          <Label>Start Date</Label>
                           <Input
                             value={exp.startDate || ''}
                             onChange={(e) => {
@@ -584,11 +713,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, experience: updated });
                             }}
                             placeholder="2020-01"
-                            className="border-gray-300 focus:border-blue-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">End Date</label>
+                          <Label>End Date</Label>
                           <Input
                             value={exp.endDate || ''}
                             onChange={(e) => {
@@ -597,11 +725,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, experience: updated });
                             }}
                             placeholder="Present"
-                            className="border-gray-300 focus:border-blue-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Location</label>
+                          <Label>Location</Label>
                           <Input
                             value={exp.location || ''}
                             onChange={(e) => {
@@ -610,11 +737,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, experience: updated });
                             }}
                             placeholder="City, Country"
-                            className="border-gray-300 focus:border-blue-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Responsibilities</label>
+                          <Label>Responsibilities</Label>
                           <Textarea
                             value={exp.responsibilities?.join('\n') || ''}
                             onChange={(e) => {
@@ -624,9 +750,8 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             }}
                             placeholder="• Led development of feature X&#10;• Managed team of 5 developers&#10;• Improved performance by 40%"
                             rows={5}
-                            className="border-gray-300 focus:border-blue-500"
                           />
-                          <p className="text-xs text-gray-500">One responsibility per line</p>
+                          <p className="text-xs text-muted-foreground">One responsibility per line</p>
                         </div>
                       </div>
                     </CardContent>
@@ -638,9 +763,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Education Section */}
             {activeSection === 'education' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Education</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Education</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -654,19 +779,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Education
-                  </button>
+                  </Button>
                 </div>
 
                 {response.education && response.education.map((edu, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-purple-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Education #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Education #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -674,16 +799,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Degree</label>
+                          <Label>Degree</Label>
                           <Input
                             value={edu.degree || ''}
                             onChange={(e) => {
@@ -692,11 +819,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, education: updated });
                             }}
                             placeholder="Bachelor of Science"
-                            className="border-gray-300 focus:border-purple-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Institution</label>
+                          <Label>Institution</Label>
                           <Input
                             value={edu.institution || ''}
                             onChange={(e) => {
@@ -705,11 +831,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, education: updated });
                             }}
                             placeholder="University Name"
-                            className="border-gray-300 focus:border-purple-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Location</label>
+                          <Label>Location</Label>
                           <Input
                             value={edu.location || ''}
                             onChange={(e) => {
@@ -718,11 +843,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, education: updated });
                             }}
                             placeholder="City, Country"
-                            className="border-gray-300 focus:border-purple-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Graduation Year</label>
+                          <Label>Graduation Year</Label>
                           <Input
                             value={edu.graduationYear || ''}
                             onChange={(e) => {
@@ -731,11 +855,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, education: updated });
                             }}
                             placeholder="2024"
-                            className="border-gray-300 focus:border-purple-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Relevant Courses</label>
+                          <Label>Relevant Courses</Label>
                           <Textarea
                             value={edu.relevantCourses?.join('\n') || ''}
                             onChange={(e) => {
@@ -745,9 +868,8 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             }}
                             placeholder="Data Structures&#10;Algorithms&#10;Web Development"
                             rows={4}
-                            className="border-gray-300 focus:border-purple-500"
                           />
-                          <p className="text-xs text-gray-500">One course per line</p>
+                          <p className="text-xs text-muted-foreground">One course per line</p>
                         </div>
                       </div>
                     </CardContent>
@@ -759,9 +881,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Certifications Section */}
             {activeSection === 'certifications' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Certifications</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Certifications</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -773,19 +895,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Certification
-                  </button>
+                  </Button>
                 </div>
 
                 {response.certifications && response.certifications.map((cert, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-amber-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Certification #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Certification #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -793,16 +915,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Certification Name</label>
+                          <Label>Certification Name</Label>
                           <Input
                             value={cert.name || ''}
                             onChange={(e) => {
@@ -811,11 +935,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, certifications: updated });
                             }}
                             placeholder="AWS Certified Solutions Architect"
-                            className="border-gray-300 focus:border-amber-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Issuing Organization</label>
+                          <Label>Issuing Organization</Label>
                           <Input
                             value={cert.issuer || ''}
                             onChange={(e) => {
@@ -824,11 +947,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, certifications: updated });
                             }}
                             placeholder="Amazon Web Services"
-                            className="border-gray-300 focus:border-amber-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Year</label>
+                          <Label>Year</Label>
                           <Input
                             value={cert.year || ''}
                             onChange={(e) => {
@@ -837,7 +959,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, certifications: updated });
                             }}
                             placeholder="2024"
-                            className="border-gray-300 focus:border-amber-500"
                           />
                         </div>
                       </div>
@@ -850,9 +971,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Publications Section */}
             {activeSection === 'publications' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Publications</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Publications</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -865,19 +986,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Publication
-                  </button>
+                  </Button>
                 </div>
 
                 {response.publications && response.publications.map((pub, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-indigo-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Publication #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Publication #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -885,16 +1006,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Title</label>
+                          <Label>Title</Label>
                           <Input
                             value={pub.title || ''}
                             onChange={(e) => {
@@ -903,11 +1026,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, publications: updated });
                             }}
                             placeholder="Research Paper Title"
-                            className="border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Publication Type</label>
+                          <Label>Publication Type</Label>
                           <Input
                             value={pub.publicationType || ''}
                             onChange={(e) => {
@@ -916,11 +1038,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, publications: updated });
                             }}
                             placeholder="Journal Article, Conference Paper"
-                            className="border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Year</label>
+                          <Label>Year</Label>
                           <Input
                             value={pub.year || ''}
                             onChange={(e) => {
@@ -929,11 +1050,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, publications: updated });
                             }}
                             placeholder="2024"
-                            className="border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Link</label>
+                          <Label>Link</Label>
                           <Input
                             value={pub.link || ''}
                             onChange={(e) => {
@@ -942,7 +1062,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, publications: updated });
                             }}
                             placeholder="https://doi.org/..."
-                            className="border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                       </div>
@@ -955,9 +1074,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Awards Section */}
             {activeSection === 'awards' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Awards & Honors</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Awards & Honors</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -969,19 +1088,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Award
-                  </button>
+                  </Button>
                 </div>
 
                 {response.awards && response.awards.map((award, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-yellow-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Award #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Award #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -989,16 +1108,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Award Name</label>
+                          <Label>Award Name</Label>
                           <Input
                             value={award.name || ''}
                             onChange={(e) => {
@@ -1007,11 +1128,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, awards: updated });
                             }}
                             placeholder="Employee of the Year"
-                            className="border-gray-300 focus:border-yellow-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Year</label>
+                          <Label>Year</Label>
                           <Input
                             value={award.year || ''}
                             onChange={(e) => {
@@ -1020,11 +1140,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, awards: updated });
                             }}
                             placeholder="2024"
-                            className="border-gray-300 focus:border-yellow-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Description</label>
+                          <Label>Description</Label>
                           <Textarea
                             value={award.description || ''}
                             onChange={(e) => {
@@ -1034,7 +1153,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             }}
                             placeholder="Describe the achievement..."
                             rows={3}
-                            className="border-gray-300 focus:border-yellow-500"
                           />
                         </div>
                       </div>
@@ -1047,9 +1165,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Volunteer Experience Section */}
             {activeSection === 'volunteer' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Volunteer Experience</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Volunteer Experience</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -1063,19 +1181,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Volunteer Work
-                  </button>
+                  </Button>
                 </div>
 
                 {response.volunteerExperience && response.volunteerExperience.map((vol, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-green-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Volunteer #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Volunteer #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -1083,16 +1201,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Role</label>
+                          <Label>Role</Label>
                           <Input
                             value={vol.role || ''}
                             onChange={(e) => {
@@ -1101,11 +1221,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, volunteerExperience: updated });
                             }}
                             placeholder="Volunteer Coordinator"
-                            className="border-gray-300 focus:border-green-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Organization</label>
+                          <Label>Organization</Label>
                           <Input
                             value={vol.organization || ''}
                             onChange={(e) => {
@@ -1114,11 +1233,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, volunteerExperience: updated });
                             }}
                             placeholder="Non-profit Organization"
-                            className="border-gray-300 focus:border-green-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Start Date</label>
+                          <Label>Start Date</Label>
                           <Input
                             value={vol.startDate || ''}
                             onChange={(e) => {
@@ -1127,11 +1245,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, volunteerExperience: updated });
                             }}
                             placeholder="2023-01"
-                            className="border-gray-300 focus:border-green-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">End Date</label>
+                          <Label>End Date</Label>
                           <Input
                             value={vol.endDate || ''}
                             onChange={(e) => {
@@ -1140,11 +1257,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, volunteerExperience: updated });
                             }}
                             placeholder="Present"
-                            className="border-gray-300 focus:border-green-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Description</label>
+                          <Label>Description</Label>
                           <Textarea
                             value={vol.description || ''}
                             onChange={(e) => {
@@ -1154,7 +1270,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             }}
                             placeholder="Describe your volunteer contributions..."
                             rows={4}
-                            className="border-gray-300 focus:border-green-500"
                           />
                         </div>
                       </div>
@@ -1167,9 +1282,9 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Projects Section */}
             {activeSection === 'projects' && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between pb-3 border-b-2 border-gray-200">
-                  <h3 className="text-2xl font-bold text-gray-800">Projects</h3>
-                  <button
+                <div className="flex items-center justify-between pb-3 border-b">
+                  <h3 className="text-2xl font-bold">Projects</h3>
+                  <Button
                     onClick={() => {
                       setResponse({
                         ...response,
@@ -1184,19 +1299,19 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                       });
                     }}
                     type="button"
-                    className="flex items-center bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg shadow transition-all hover:shadow-lg"
+                    size="sm"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Project
-                  </button>
+                  </Button>
                 </div>
 
                 {response.projects && response.projects.map((proj, index) => (
-                  <Card key={index} className="shadow-md hover:shadow-lg transition-shadow border-l-4 border-cyan-500">
-                    <CardHeader className="bg-gray-50">
+                  <Card key={index} className="relative">
+                    <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg text-gray-800">Project #{index + 1}</CardTitle>
-                        <button
+                        <CardTitle className="text-lg">Project #{index + 1}</CardTitle>
+                        <Button
                           onClick={() => {
                             setResponse({
                               ...response,
@@ -1204,16 +1319,18 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             });
                           }}
                           type="button"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4" />
-                        </button>
+                        </Button>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Project Title</label>
+                          <Label>Project Title</Label>
                           <Input
                             value={proj.title || ''}
                             onChange={(e) => {
@@ -1222,180 +1339,187 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, projects: updated });
                             }}
                             placeholder="E-commerce Platform"
-                            className="border-gray-300 focus:border-cyan-500"
                           />
                         </div>
                         <div className="space-y-4 md:col-span-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold text-gray-700">Project Images</label>
-                <button
-                  onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
-                  type="button"
-                  disabled={uploading}
-                  className="flex items-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-3 py-1.5 rounded-lg text-sm shadow transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Images
-                </button>
-                <input
-                  type="file"
-                  id={`project-multiple-file-input-${index}`}
-                  onChange={async (e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length === 0) return;
-
-                    setUploading(true);
-                    try {
-                      const uploadPromises = files.map(file => uploadToCloudinary(file));
-                      const cloudinaryUrls = await Promise.all(uploadPromises);
-
-                      const updated = [...response.projects];
-                      updated[index].images = [...(updated[index].images || []), ...cloudinaryUrls];
-                      setResponse({ ...response, projects: updated });
-                      
-                    } catch (error) {
-                      console.error('Error uploading project images:', error);
-                      setError('Failed to upload project images. Please try again.');
-                    } finally {
-                      setUploading(false);
-                    }
-                  }}
-                  accept="image/*"
-                  multiple
-                  style={{ display: 'none' }}
-                />
-              </div>
-
-              {proj.images && proj.images.length > 0 ? (
-                <div>
-                  <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${proj.images.length === 1 ? 'max-w-md' : ''}`}>
-                    {proj.images.map((imageUrl, imageIndex) => (
-                      <div
-                        key={imageIndex}
-                        className="relative group overflow-hidden rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                      >
-                        {imageIndex === 0 && (
-                          <div className="absolute top-2 left-2 z-10 bg-cyan-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center space-x-1 shadow-lg">
-                            <Star className="h-3 w-3 fill-white" />
-                            <span>Primary</span>
-                          </div>
-                        )}
-
-                        <div className="aspect-video overflow-hidden bg-gray-100">
-                          <img
-                            src={imageUrl}
-                            alt={`Project ${index + 1} - Image ${imageIndex + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                        </div>
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                          <div className="flex justify-center space-x-1">
-                            {imageIndex !== 0 && proj.images.length > 1 && (
-                              <button
-                                onClick={() => {
-                                  const updated = [...response.projects];
-                                  const projectImages = [...updated[index].images];
-                                  const selectedImage = projectImages.splice(imageIndex, 1)[0];
-                                  projectImages.unshift(selectedImage);
-                                  updated[index].images = projectImages;
-                                  setResponse({ ...response, projects: updated });
-                                }}
-                                className="bg-cyan-600 hover:bg-cyan-700 text-white p-1.5 rounded-full shadow-lg transition-colors"
-                                type="button"
-                                title="Make primary"
-                              >
-                                <Star className="h-3 w-3" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => document.getElementById(`project-single-file-input-${index}-${imageIndex}`)?.click()}
-                              className="bg-white hover:bg-gray-100 text-gray-800 p-1.5 rounded-full shadow-lg transition-colors"
+                          <div className="flex items-center justify-between">
+                            <Label>Project Images</Label>
+                            <Button
+                              onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
                               type="button"
-                              title="Change image"
+                              disabled={uploading}
+                              size="sm"
+                              variant="outline"
                             >
-                              <ImageIcon className="h-3 w-3" />
-                            </button>
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Images
+                            </Button>
                             <input
                               type="file"
-                              id={`project-single-file-input-${index}-${imageIndex}`}
+                              id={`project-multiple-file-input-${index}`}
                               onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
+                                const files = Array.from(e.target.files || []);
+                                if (files.length === 0) return;
 
                                 setUploading(true);
                                 try {
-                                  const cloudinaryUrl = await uploadToCloudinary(file);
-                                  
+                                  const uploadPromises = files.map(file => uploadToCloudinary(file));
+                                  const cloudinaryUrls = await Promise.all(uploadPromises);
+
                                   const updated = [...response.projects];
-                                  updated[index].images[imageIndex] = cloudinaryUrl;
+                                  updated[index].images = [...(updated[index].images || []), ...cloudinaryUrls];
                                   setResponse({ ...response, projects: updated });
-                                  
+
                                 } catch (error) {
-                                  console.error('Error updating project image:', error);
-                                  setError('Failed to update project image. Please try again.');
+                                  console.error('Error uploading project images:', error);
+                                  setError('Failed to upload project images. Please try again.');
                                 } finally {
                                   setUploading(false);
                                 }
                               }}
                               accept="image/*"
+                              multiple
                               style={{ display: 'none' }}
                             />
-                            <button
-                              onClick={() => {
-                                const updated = [...response.projects];
-                                updated[index].images = updated[index].images.filter((_, i) => i !== imageIndex);
-                                setResponse({ ...response, projects: updated });
-                              }}
-                              className="bg-red-600 hover:bg-red-700 text-white p-1.5 rounded-full shadow-lg transition-colors"
-                              type="button"
-                              title="Delete image"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
 
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
-                      type="button"
-                      disabled={uploading}
-                      className="flex items-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg shadow transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      {uploading ? 'Uploading...' : 'Add More Images'}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border-2 border-dashed border-gray-300">
-                  <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600 text-sm font-medium mb-2">
-                    No project images uploaded
-                  </p>
-                  <p className="text-gray-500 text-xs mb-4">
-                    Add screenshots or visual representations of your project
-                  </p>
-                  <button
-                    onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
-                    type="button"
-                    disabled={uploading}
-                    className="flex items-center mx-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg shadow transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {uploading ? 'Uploading...' : 'Upload Project Images'}
-                  </button>
-                </div>
-              )}
-            </div>
+                          {proj.images && proj.images.length > 0 ? (
+                            <div>
+                              <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${proj.images.length === 1 ? 'max-w-md' : ''}`}>
+                                {proj.images.map((imageUrl, imageIndex) => (
+                                  <Card
+                                    key={imageIndex}
+                                    className="relative group overflow-hidden transition-all"
+                                  >
+                                    {imageIndex === 0 && (
+                                      <div className="absolute top-2 left-2 z-10">
+                                        <Badge variant="default" className="flex items-center space-x-1 shadow-sm">
+                                          <Star className="h-3 w-3 fill-current" />
+                                          <span>Primary</span>
+                                        </Badge>
+                                      </div>
+                                    )}
+
+                                    <div className="aspect-video overflow-hidden bg-muted">
+                                      <img
+                                        src={imageUrl}
+                                        alt={`Project ${index + 1} - Image ${imageIndex + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                      />
+                                    </div>
+
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                      <div className="flex justify-center space-x-1">
+                                        {imageIndex !== 0 && proj.images.length > 1 && (
+                                          <Button
+                                            onClick={() => {
+                                              const updated = [...response.projects];
+                                              const projectImages = [...updated[index].images];
+                                              const selectedImage = projectImages.splice(imageIndex, 1)[0];
+                                              projectImages.unshift(selectedImage);
+                                              updated[index].images = projectImages;
+                                              setResponse({ ...response, projects: updated });
+                                            }}
+                                            size="icon"
+                                            variant="secondary"
+                                            className="h-8 w-8 rounded-full"
+                                            type="button"
+                                            title="Make primary"
+                                          >
+                                            <Star className="h-3 w-3" />
+                                          </Button>
+                                        )}
+                                        <Button
+                                          onClick={() => document.getElementById(`project-single-file-input-${index}-${imageIndex}`)?.click()}
+                                          size="icon"
+                                          variant="secondary"
+                                          className="h-8 w-8 rounded-full"
+                                          type="button"
+                                          title="Change image"
+                                        >
+                                          <ImageIcon className="h-3 w-3" />
+                                        </Button>
+                                        <input
+                                          type="file"
+                                          id={`project-single-file-input-${index}-${imageIndex}`}
+                                          onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+
+                                            setUploading(true);
+                                            try {
+                                              const cloudinaryUrl = await uploadToCloudinary(file);
+
+                                              const updated = [...response.projects];
+                                              updated[index].images[imageIndex] = cloudinaryUrl;
+                                              setResponse({ ...response, projects: updated });
+
+                                            } catch (error) {
+                                              console.error('Error updating project image:', error);
+                                              setError('Failed to update project image. Please try again.');
+                                            } finally {
+                                              setUploading(false);
+                                            }
+                                          }}
+                                          accept="image/*"
+                                          style={{ display: 'none' }}
+                                        />
+                                        <Button
+                                          onClick={() => {
+                                            const updated = [...response.projects];
+                                            updated[index].images = updated[index].images.filter((_, i) => i !== imageIndex);
+                                            setResponse({ ...response, projects: updated });
+                                          }}
+                                          size="icon"
+                                          variant="destructive"
+                                          className="h-8 w-8 rounded-full"
+                                          type="button"
+                                          title="Delete image"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                ))}
+                              </div>
+
+                              <div className="mt-4 flex justify-center">
+                                <Button
+                                  onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
+                                  type="button"
+                                  disabled={uploading}
+                                  variant="outline"
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  {uploading ? 'Uploading...' : 'Add More Images'}
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed">
+                              <ImageIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                              <p className="text-sm font-medium mb-2">
+                                No project images uploaded
+                              </p>
+                              <p className="text-muted-foreground text-xs mb-4">
+                                Add screenshots or visual representations of your project
+                              </p>
+                              <Button
+                                onClick={() => document.getElementById(`project-multiple-file-input-${index}`)?.click()}
+                                type="button"
+                                disabled={uploading}
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                {uploading ? 'Uploading...' : 'Upload Project Images'}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Description</label>
+                          <Label>Description</Label>
                           <Textarea
                             value={proj.description || ''}
                             onChange={(e) => {
@@ -1405,26 +1529,22 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                             }}
                             placeholder="Describe the project and your contributions..."
                             rows={4}
-                            className="border-gray-300 focus:border-cyan-500"
                           />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <label className="text-sm font-semibold text-gray-700">Technologies Used</label>
-                          <Textarea
-                            value={proj.technologiesUsed?.join(', ') || ''}
-                            onChange={(e) => {
+                          <Label>Technologies Used</Label>
+                          <TagInput
+                            tags={proj.technologiesUsed || []}
+                            onTagsChange={(newTags) => {
                               const updated = [...response.projects];
-                              updated[index].technologiesUsed = e.target.value.split(',').map(t => t.trim()).filter(t => t);
+                              updated[index].technologiesUsed = newTags;
                               setResponse({ ...response, projects: updated });
                             }}
-                            placeholder="React, Node.js, MongoDB, AWS"
-                            rows={2}
-                            className="border-gray-300 focus:border-cyan-500"
+                            placeholder="Add technology..."
                           />
-                          <p className="text-xs text-gray-500">Separate technologies with commas</p>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">GitHub URL</label>
+                          <Label>GitHub URL</Label>
                           <Input
                             value={proj.github || ''}
                             onChange={(e) => {
@@ -1433,11 +1553,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, projects: updated });
                             }}
                             placeholder="https://github.com/..."
-                            className="border-gray-300 focus:border-cyan-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Project url</label>
+                          <Label>Project url</Label>
                           <Input
                             value={proj.url || ''}
                             onChange={(e) => {
@@ -1446,11 +1565,10 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, projects: updated });
                             }}
                             placeholder="https://project.com/..."
-                            className="border-gray-300 focus:border-cyan-500"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">Your Role</label>
+                          <Label>Your Role</Label>
                           <Input
                             value={proj.role || ''}
                             onChange={(e) => {
@@ -1459,7 +1577,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                               setResponse({ ...response, projects: updated });
                             }}
                             placeholder="Lead Developer"
-                            className="border-gray-300 focus:border-cyan-500"
                           />
                         </div>
                       </div>
@@ -1472,7 +1589,7 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Online Presence Section */}
             {activeSection === 'online' && (
               <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Online Presence</h3>
+                <h3 className="text-2xl font-bold pb-3 border-b">Online Presence</h3>
                 <div className="grid gap-6 md:grid-cols-2">
                   {[
                     { label: 'Twitter', key: 'twitter', placeholder: 'https://twitter.com/username' },
@@ -1480,7 +1597,7 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                     { label: 'Medium', key: 'medium', placeholder: 'https://medium.com/@username' },
                   ].map(field => (
                     <div key={field.key} className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">{field.label}</label>
+                      <Label>{field.label}</Label>
                       <Input
                         value={response.onlinePresence?.[field.key] || ''}
                         onChange={(e) =>
@@ -1490,7 +1607,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
                           })
                         }
                         placeholder={field.placeholder}
-                        className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
                       />
                     </div>
                   ))}
@@ -1501,20 +1617,17 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
             {/* Hobbies Section */}
             {activeSection === 'hobbies' && (
               <div className="space-y-4">
-                <h3 className="text-2xl font-bold text-gray-800 pb-3 border-b-2 border-gray-200">Hobbies & Interests</h3>
-                <Textarea
-                  value={response.hobbies?.join(', ') || ''}
-                  onChange={(e) =>
+                <h3 className="text-2xl font-bold pb-3 border-b">Hobbies & Interests</h3>
+                <TagInput
+                  tags={response.hobbies || []}
+                  onTagsChange={(newTags) =>
                     setResponse({
                       ...response,
-                      hobbies: e.target.value.split(',').map(h => h.trim()).filter(h => h),
+                      hobbies: newTags,
                     })
                   }
-                  placeholder="Photography, Hiking, Reading, Gaming, Cooking..."
-                  rows={4}
-                  className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                  placeholder="Add a hobby (e.g. Photography, Reading)..."
                 />
-                <p className="text-xs text-gray-500">Separate hobbies with commas</p>
               </div>
             )}
 
@@ -1522,7 +1635,7 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                size="lg"
               >
                 {loading ? (
                   <>

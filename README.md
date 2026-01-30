@@ -21,16 +21,81 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
+AI Resume Builder & Career Toolkit
 
-To learn more about Next.js, take a look at the following resources:
+This project is a Next.js application designed to help users build, optimize, and use their CV/resume in multiple powerful ways using AI. It combines resume creation, job matching, ATS-friendly templates, and personal website generation into one platform.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🚀 Features
+1. CV Import & Form-Based Editor
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Import an existing CV or create one by filling out a detailed resume form.
 
-## Deploy on Vercel
+The form contains all essential CV sections (personal info, experience, education, skills, etc.).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Easily update and manage your CV data for current or future use.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. Job-Specific Resume Generation & Matching
+
+Generate a customized resume tailored to a specific job offer.
+
+Get an AI-powered job matching score.
+
+Receive insights and statistics about how well your resume fits the job description.
+
+3. ATS-Friendly CV Templates with AI Optimization
+
+Choose from a range of ATS-friendly resume templates.
+
+Generate resumes using pre-designed templates optimized for applicant tracking systems.
+
+Use AI to:
+
+Improve your CV content
+
+Adapt it to a specific job offer
+
+View job matching stats and analysis
+
+4. Personal Website Generator
+
+Use your CV data to generate a personal website based on an existing HTML/CSS/JS template.
+
+Automatically inject your resume information into the website.
+
+Download the final website as a ready-to-use HTML file.
+
+5. Authentication
+
+Secure Sign In, Sign Up, and Sign Out functionality.
+
+User data and CVs are stored and managed securely.
+
+🛠️ Technologies Used
+
+Next.js – Frontend & backend framework
+
+MongoDB – Database for user and CV data
+
+Redis – Caching and performance optimization
+
+AI Model APIs –
+
+Resume generation
+
+CV analysis
+
+Job matching & scoring
+
+Resume optimization
+
+HTML / CSS / JavaScript – Website templates
+
+📌 Use Cases
+
+Students creating their first resume
+
+Job seekers optimizing CVs for specific job offers
+
+Professionals wanting ATS-friendly resumes
+
+Users who want a personal portfolio website generated from their CV
