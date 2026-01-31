@@ -22,6 +22,12 @@
             --accent-hover: #52e3c2;
             --border-color: #233554;
             --shadow: rgba(2, 12, 27, 0.7);
+
+            /* Canvas Pro Variables */
+            --font-size-base: 16px;
+            --line-height: 1.6;
+            --radius-base: 10px;
+            --particles-opacity: 0.03;
         }
 
         body.light-mode {
@@ -34,6 +40,12 @@
             --accent-hover: #059669;
             --border-color: #dee2e6;
             --shadow: rgba(0, 0, 0, 0.1);
+
+            /* Canvas Pro Variables Defaults */
+            --font-size-base: 16px;
+            --line-height: 1.6;
+            --radius-base: 10px;
+            --particles-opacity: 0.03;
         }
 
         * {
@@ -50,7 +62,8 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: var(--line-height);
+            font-size: var(--font-size-base);
             transition: all 0.3s ease;
             overflow-x: hidden;
         }
@@ -69,7 +82,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.03;
+            opacity: var(--particles-opacity);
             pointer-events: none;
         }
 
@@ -1311,6 +1324,10 @@
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
             <div class="nav-actions">
+                <button class="customizer-toggle" id="customizerToggle" title="Customize Theme"
+                    style="background: none; border: 2px solid var(--accent-color); color: var(--accent-color); width: 40px; height: 40px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; margin-right: 15px;">
+                    <i class="fas fa-palette"></i>
+                </button>
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <i class="fas fa-sun"></i>
                 </button>
@@ -1484,17 +1501,17 @@
 
             // Get the original HTML template from the current document
             const originalDoc = document.implementation.createHTMLDocument('Portfolio');
-            
+
             // Get clean styles
             const styles = Array.from(document.querySelectorAll('style'))
                 .map(style => style.textContent)
                 .join('\n');
-            
+
             // Get current theme state
             const isLightMode = document.body.classList.contains('light-mode');
             const themeIconClass = isLightMode ? 'fa-moon' : 'fa-sun';
             const bodyClass = isLightMode ? 'class="light-mode"' : '';
-            
+
             // Get all content sections (remove 'active' class so animations can replay)
             const getCleanSection = (selector) => {
                 const section = document.querySelector(selector);
@@ -1506,7 +1523,7 @@
                 });
                 return clone.outerHTML;
             };
-            
+
             // Build complete standalone HTML
             const html = `<!DOCTYPE html>
 <html lang="en">
@@ -1764,7 +1781,7 @@
 
         function initDownloadButton() {
             const downloadBtn = document.getElementById('downloadBtn');
-            
+
             downloadBtn.addEventListener('click', () => {
                 if (!portfolioData) {
                     alert('Portfolio data is still loading. Please wait a moment and try again.');
@@ -2084,10 +2101,10 @@
             if (data.projects && data.projects.length > 0) {
                 projectsGrid.innerHTML = data.projects.map(project => {
                     // Get the first image from images array or fallback to image field
-                    const projectImage = (project.images && project.images.length > 0) 
-                        ? project.images[0] 
+                    const projectImage = (project.images && project.images.length > 0)
+                        ? project.images[0]
                         : project.image;
-                    
+
                     return `
                     <div class="project-card reveal">
                         ${projectImage ? `<img src="${projectImage}" alt="${project.title}" class="project-image">` : ''}
@@ -2190,6 +2207,179 @@
             });
         }
 
+        class ThemeCustomizer {
+            constructor(config = {}) {
+                this.sections = config.sections || [];
+                this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                this.init();
+            }
+
+            init() {
+                this.createPanel();
+                this.bindEvents();
+                this.updateInputsFromDOM();
+            }
+
+            createPanel() {
+                if (document.getElementById('customizerPanel')) return;
+
+                const panelHtml = `
+                    <div id="customizerPanel" class="customizer-panel" style="width: 380px; right: -420px; background: var(--bg-secondary); border: 1px solid var(--border-color); box-shadow: 0 0 30px var(--shadow); backdrop-filter: blur(15px); position: fixed; top: 0; height: 100vh; z-index: 20000; transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1); padding: 40px; overflow-y: auto; color: var(--text-primary); font-family: 'Poppins', sans-serif;">
+                        <div class="customizer-header" style="border-bottom: 2px solid var(--accent-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px;">
+                            <h3 style="color: var(--accent-color); font-family: 'Fira Code', monospace; font-size: 18px; letter-spacing: -1px;">${this.panelTitle}</h3>
+                            <button id="closeCustomizer" type="button" style="color: var(--text-secondary); background: none; border: none; font-size: 24px; cursor: pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="customizer-body" style="display: flex; flex-direction: column; gap: 20px;">
+                            ${this.sections.map(section => `
+                                <div class="customizer-section" style="margin-bottom: 30px;">
+                                    <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; opacity: 0.8; text-transform: uppercase; font-family: 'Fira Code', monospace;">${section.name}</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                                        ${section.controls.map(control => this.renderControl(control)).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <button id="resetSettings" class="reset-colors" style="background: var(--accent-color); color: var(--bg-primary); border: none; padding: 15px; cursor: pointer; font-family: 'Fira Code'; font-size: 12px; font-weight: 600; text-transform: uppercase; border-radius: 5px; transition: all 0.3s;">Reset Configuration</button>
+                        </div>
+                    </div>
+                    <style>
+                        #customizerPanel.active { right: 0 !important; }
+                        #customizerPanel::-webkit-scrollbar { width: 6px; }
+                        #customizerPanel::-webkit-scrollbar-track { background: var(--bg-primary); }
+                        #customizerPanel::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+                        #customizerPanel input[type="range"] { height: 6px; -webkit-appearance: none; background: var(--bg-primary); border-radius: 10px; }
+                        #customizerPanel input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--accent-color); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--accent-color); }
+                    </style>
+                `;
+                document.body.insertAdjacentHTML('beforeend', panelHtml);
+                this.panel = document.getElementById('customizerPanel');
+                this.closeBtn = document.getElementById('closeCustomizer');
+                this.resetBtn = document.getElementById('resetSettings');
+                this.inputs = this.panel.querySelectorAll('input');
+
+                this.styleTag = document.getElementById('dynamic-theme-overrides');
+                if (!this.styleTag) {
+                    this.styleTag = document.createElement('style');
+                    this.styleTag.id = 'dynamic-theme-overrides';
+                    document.head.appendChild(this.styleTag);
+                }
+            }
+
+            renderControl(control) {
+                if (control.type === 'color') {
+                    return `
+                        <div class="color-item" style="display: flex; justify-content: space-between; align-items: center;">
+                            <label style="font-size: 14px; color: var(--text-secondary);">${control.name}</label>
+                            <div class="color-input-wrapper" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border-color); position: relative; background: ${control.var}; overflow: hidden;">
+                                <input type="color" data-var="${control.var}" data-type="color" style="position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; cursor: pointer; opacity: 0;">
+                            </div>
+                        </div>
+                    `;
+                } else if (control.type === 'range') {
+                    return `
+                        <div class="range-item" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 14px; color: var(--text-secondary);">${control.name}</label>
+                                <span class="range-val" style="font-size: 12px; font-family: 'Fira Code', monospace; color: var(--accent-color);"></span>
+                            </div>
+                            <input type="range" 
+                                data-var="${control.var}" 
+                                data-type="range"
+                                data-unit="${control.unit || ''}" 
+                                min="${control.min}" 
+                                max="${control.max}" 
+                                step="${control.step || 1}"
+                                style="width: 100%; cursor: pointer; accent-color: var(--accent-color);">
+                        </div>
+                    `;
+                }
+                return '';
+            }
+
+            bindEvents() {
+                const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                toggleBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.updateInputsFromDOM();
+                        this.panel.classList.toggle('active');
+                    });
+                });
+
+                if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                this.inputs.forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        this.applyChange(e.target);
+                    });
+                });
+
+                if (this.resetBtn) {
+                    this.resetBtn.addEventListener('click', () => {
+                        document.body.style = '';
+                        this.styleTag.textContent = '';
+                        this.updateInputsFromDOM();
+                    });
+                }
+            }
+
+            applyChange(input) {
+                const varName = input.getAttribute('data-var');
+                const type = input.getAttribute('data-type');
+                let value = input.value;
+
+                if (type === 'range') {
+                    const unit = input.getAttribute('data-unit') || '';
+                    value = value + unit;
+                    const valSpan = input.parentElement.querySelector('.range-val');
+                    if (valSpan) valSpan.textContent = value;
+                }
+
+                document.body.style.setProperty(varName, value);
+                this.updateStyleTag();
+            }
+
+            updateInputsFromDOM() {
+                const styles = getComputedStyle(document.body);
+                this.inputs.forEach(input => {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let color = styles.getPropertyValue(varName).trim();
+
+                    if (type === 'color') {
+                        if (color.startsWith('#')) {
+                            input.value = color;
+                        } else if (color.startsWith('rgb')) {
+                            const rgb = color.match(/\d+/g);
+                            if (rgb && rgb.length >= 3) {
+                                const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                input.value = hex;
+                            }
+                        }
+                    } else if (type === 'range') {
+                        const numericVal = parseFloat(color);
+                        if (!isNaN(numericVal)) {
+                            input.value = numericVal;
+                            const valSpan = input.parentElement.querySelector('.range-val');
+                            if (valSpan) valSpan.textContent = color;
+                        }
+                    }
+                });
+            }
+
+            updateStyleTag() {
+                let css = ':root { \n';
+                this.inputs.forEach(input => {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let val = input.value;
+                    if (type === 'range') val += input.getAttribute('data-unit') || '';
+                    css += `    ${varName}: ${val} !important;\n`;
+                });
+                css += '}\n';
+                this.styleTag.textContent = css;
+            }
+        }
+
         async function init() {
             const data = await loadPortfolioData();
 
@@ -2215,6 +2405,30 @@
             initScrollTop();
             initNavbarScroll();
             initCustomCursor();
+
+            new ThemeCustomizer({
+                panelTitle: 'Canvas Inspector',
+                sections: [
+                    {
+                        name: 'Core Spectrum',
+                        controls: [
+                            { type: 'color', name: 'Primary BG', var: '--bg-primary' },
+                            { type: 'color', name: 'Accent Bloom', var: '--accent-color' },
+                            { type: 'color', name: 'Text Primary', var: '--text-primary' },
+                            { type: 'color', name: 'Text Secondary', var: '--text-secondary' }
+                        ]
+                    },
+                    {
+                        name: 'Visual Geometry',
+                        controls: [
+                            { type: 'range', name: 'Font Base', var: '--font-size-base', min: 14, max: 20, unit: 'px' },
+                            { type: 'range', name: 'Line Density', var: '--line-height', min: 1.2, max: 2, step: 0.1 },
+                            { type: 'range', name: 'Border Weight', var: '--radius-base', min: 0, max: 30, unit: 'px' },
+                            { type: 'range', name: 'Atmosphere', var: '--particles-opacity', min: 0, max: 0.2, step: 0.01 }
+                        ]
+                    }
+                ]
+            });
 
             window.addEventListener('scroll', updateScrollProgress);
 

@@ -12,6 +12,13 @@
 </head>
 
 <body>
+    <!-- Persistent Customizer Trigger -->
+    <div style="position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 10002;">
+        <button class="customizer-toggle" id="customizerToggle" title="Customize Colors"
+            style="width: 60px; height: 60px; background: #ff3366; color: white; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 0 10px 10px 0; cursor: pointer; box-shadow: 4px 0 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+            <i class="fas fa-palette"></i>
+        </button>
+    </div>
     <style>
         :root {
             --bg: #FFFFFF;
@@ -25,6 +32,16 @@
             --shadow: rgba(0, 0, 0, 0.1);
             --card-bg: #FFFFFF;
             --nav-bg: rgba(255, 255, 255, 0.85);
+
+            /* Detailed Customization Variables */
+            --radius: 0px;
+            --shadow-depth: 10px;
+            --border-width: 3px;
+            --font-size-base: 16px;
+            --letter-spacing: -1.5px;
+            --blur: 12px;
+            --grid-opacity: 0.1;
+            --font-main: 'Space Grotesk', sans-serif;
         }
 
         body.dark-mode {
@@ -50,17 +67,34 @@
         html {
             scroll-behavior: smooth;
             scroll-padding-top: 100px;
+            font-size: var(--font-size-base);
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-main);
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            font-size: 16px;
             overflow-x: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
             cursor: none;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(var(--primary) 1px, transparent 1px),
+                linear-gradient(90deg, var(--primary) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: var(--grid-opacity);
+            z-index: -1;
+            pointer-events: none;
         }
 
         ::selection {
@@ -92,7 +126,7 @@
             border-radius: 50%;
             position: fixed;
             pointer-events: none;
-            z-index: 9999;
+            z-index: 30000;
             transition: transform 0.15s ease, border-color 0.2s ease;
             mix-blend-mode: difference;
         }
@@ -134,39 +168,62 @@
             box-shadow: 3px 3px 0 var(--accent);
         }
 
-        /* Color Customizer Styles */
+        .reset-colors {
+            margin-top: 15px;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: var(--bg);
+            border: 3px solid var(--primary);
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-colors:hover {
+            background: var(--bg);
+            color: var(--primary);
+            box-shadow: 5px 5px 0 var(--accent);
+            transform: translate(-3px, -3px);
+        }
+
+        /* Inline Customizer Styles for absolute reliability */
         .customizer-panel {
             position: fixed;
-            top: 100px;
-            right: -320px;
-            width: 300px;
-            background: var(--card-bg);
-            border: 3px solid var(--primary);
-            box-shadow: 10px 10px 0 var(--accent);
-            z-index: 1002;
-            transition: right 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            padding: 24px;
+            top: 20px;
+            right: -350px;
+            width: 320px;
+            background: var(--card-bg, #fff);
+            border: 4px solid var(--primary, #000);
+            box-shadow: 12px 12px 0 var(--accent, #ff3366);
+            z-index: 20000;
+            transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .customizer-panel.active {
-            right: 40px;
+            right: 20px !important;
         }
 
         .customizer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            border-bottom: 3px solid var(--primary);
-            padding-bottom: 12px;
+            margin-bottom: 25px;
+            border-bottom: 4px solid var(--primary, #000);
+            padding-bottom: 15px;
         }
 
         .customizer-header h3 {
             font-family: 'Archivo Black', sans-serif;
-            font-size: 16px;
-            color: var(--primary);
+            font-size: 18px;
+            color: var(--primary, #000);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            margin: 0;
         }
 
         #closeCustomizer {
@@ -174,18 +231,19 @@
             border: none;
             color: var(--primary);
             font-size: 20px;
-            cursor: none;
-            transition: color 0.3s;
+            cursor: pointer;
+            transition: transform 0.3s ease;
         }
 
         #closeCustomizer:hover {
+            transform: rotate(90deg);
             color: var(--accent);
         }
 
         .customizer-body {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 20px;
         }
 
         .color-item {
@@ -196,18 +254,18 @@
 
         .color-item label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text, #000);
             text-transform: uppercase;
         }
 
         .color-input-wrapper {
-            width: 45px;
-            height: 45px;
-            border: 3px solid var(--primary);
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--primary, #000);
             position: relative;
-            overflow: hidden;
+            background: #eee;
         }
 
         .color-input-wrapper input[type="color"] {
@@ -217,48 +275,35 @@
             width: calc(100% + 10px);
             height: calc(100% + 10px);
             border: none;
-            cursor: none;
-            background: none;
-        }
-
-        .customizer-toggle {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--primary);
-            background: transparent;
-            color: var(--primary);
-            cursor: none;
-            font-size: 20px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .customizer-toggle:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: var(--bg);
+            cursor: pointer;
+            visibility: visible;
         }
 
         .reset-colors {
-            margin-top: 10px;
-            padding: 12px;
-            background: var(--primary);
-            color: var(--bg);
-            border: 3px solid var(--primary);
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--primary, #000);
+            color: var(--bg, #fff);
+            border: 3px solid var(--primary, #000);
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
-            font-weight: 700;
-            cursor: none;
+            font-weight: 800;
+            cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .reset-colors:hover {
             background: transparent;
-            color: var(--primary);
+            color: var(--primary, #000);
+        }
+
+        #closeCustomizer {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary, #000);
         }
 
         .container {
@@ -278,9 +323,9 @@
             justify-content: space-between;
             align-items: center;
             background: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 2px solid var(--primary);
+            backdrop-filter: blur(var(--blur));
+            -webkit-backdrop-filter: blur(var(--blur));
+            border-bottom: var(--border-width) solid var(--primary);
         }
 
         .nav-logo {
@@ -325,7 +370,8 @@
             width: 50px;
             height: 50px;
             background: transparent;
-            border: 3px solid var(--primary);
+            border: var(--border-width) solid var(--primary);
+            border-radius: var(--radius);
             cursor: none;
             display: flex;
             flex-direction: column;
@@ -545,8 +591,9 @@
             width: 100%;
             height: 500px;
             overflow: hidden;
-            border: 8px solid var(--primary);
-            box-shadow: 20px 20px 0 var(--accent);
+            border: var(--border-width) solid var(--primary);
+            box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--accent);
+            border-radius: var(--radius);
             position: relative;
         }
 
@@ -560,7 +607,7 @@
             line-height: 1.1;
             margin-bottom: 30px;
             color: var(--primary);
-            letter-spacing: -3px;
+            letter-spacing: var(--letter-spacing);
             position: relative;
         }
 
@@ -1749,9 +1796,6 @@
     <nav class="navbar">
         <div class="nav-logo">PORTFOLIO.</div>
         <div class="nav-actions">
-            <button class="customizer-toggle" id="customizerToggle" title="Customize Colors">
-                <i class="fas fa-palette"></i>
-            </button>
             <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
                 <i class="fas fa-moon"></i>
             </button>
@@ -1762,47 +1806,6 @@
             </button>
         </div>
     </nav>
-
-    <!-- Color Customizer Panel -->
-    <div class="customizer-panel" id="customizerPanel">
-        <div class="customizer-header">
-            <h3>Customizer</h3>
-            <button id="closeCustomizer"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="customizer-body">
-            <div class="color-item">
-                <label>Background</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="color-bg" data-var="--bg">
-                </div>
-            </div>
-            <div class="color-item">
-                <label>Primary</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="color-primary" data-var="--primary">
-                </div>
-            </div>
-            <div class="color-item">
-                <label>Accent</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="color-accent" data-var="--accent">
-                </div>
-            </div>
-            <div class="color-item">
-                <label>Secondary</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="color-secondary" data-var="--secondary">
-                </div>
-            </div>
-            <div class="color-item">
-                <label>Text Main</label>
-                <div class="color-input-wrapper">
-                    <input type="color" id="color-text" data-var="--text">
-                </div>
-            </div>
-            <button class="reset-colors" id="resetColors">Reset Defaults</button>
-        </div>
-    </div>
 
     <div class="nav-menu" id="navMenu"></div>
 
@@ -1921,6 +1924,7 @@
         <i class="fas fa-download"></i> DOWNLOAD
     </button>
 
+
     <script>
         let portfolioData = null;
 
@@ -1945,7 +1949,7 @@
             }
             animateCursor();
 
-            document.querySelectorAll('a, button, .project-card, .skill-tag, .job-tag').forEach(el => {
+            document.querySelectorAll('a, button, input, select, .project-card, .skill-tag, .job-tag').forEach(el => {
                 el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
                 el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
             });
@@ -1954,8 +1958,10 @@
         async function loadPortfolioData() {
             try {
                 const response = await fetch('http://localhost:3000/api/GettingUserData');
+                if (!response.ok) throw new Error('Network response was not ok');
                 const jsonData = await response.json();
-                portfolioData = jsonData.data;
+                // Handle both wrapped and unwrapped data
+                portfolioData = jsonData.data || jsonData;
                 return portfolioData;
             } catch (error) {
                 console.error('Error loading portfolio data:', error);
@@ -1997,13 +2003,16 @@
             });
         }
 
+        let scrollListenerAdded = false;
         function initProgressIndicator() {
             const sections = document.querySelectorAll('section[id]');
             const progressIndicator = document.getElementById('progressIndicator');
+            progressIndicator.innerHTML = '';
             const dots = [];
 
             sections.forEach(section => {
-                if (section.style.display !== 'none') {
+                const isHidden = window.getComputedStyle(section).display === 'none';
+                if (section.id !== 'home' && !isHidden) {
                     const dot = document.createElement('div');
                     dot.className = 'progress-dot';
                     dot.setAttribute('data-section', section.id);
@@ -2012,24 +2021,28 @@
                 }
             });
 
-            window.addEventListener('scroll', () => {
-                let current = '';
-                sections.forEach(section => {
-                    if (section.style.display !== 'none') {
-                        const sectionTop = section.offsetTop;
-                        if (pageYOffset >= sectionTop - 200) {
-                            current = section.getAttribute('id');
+            if (!scrollListenerAdded) {
+                window.addEventListener('scroll', () => {
+                    let current = '';
+                    sections.forEach(section => {
+                        const isHidden = window.getComputedStyle(section).display === 'none';
+                        if (!isHidden) {
+                            const sectionTop = section.offsetTop;
+                            if (pageYOffset >= sectionTop - 250) {
+                                current = section.getAttribute('id');
+                            }
                         }
-                    }
-                });
+                    });
 
-                dots.forEach(dot => {
-                    dot.classList.remove('active');
-                    if (dot.getAttribute('data-section') === current) {
-                        dot.classList.add('active');
-                    }
+                    document.querySelectorAll('.progress-dot').forEach(dot => {
+                        dot.classList.remove('active');
+                        if (dot.getAttribute('data-section') === current) {
+                            dot.classList.add('active');
+                        }
+                    });
                 });
-            });
+                scrollListenerAdded = true;
+            }
         }
 
         function initBackToTop() {
@@ -2064,37 +2077,29 @@
 
         function buildNavigationMenu(data) {
             const navMenu = document.getElementById('navMenu');
-            const links = [
-                { href: '#home', text: 'HOME' },
-                { href: '#about', text: 'ABOUT' },
-                { href: '#skills', text: 'SKILLS' },
-                { href: '#experience', text: 'EXPERIENCE' },
-                { href: '#education', text: 'EDUCATION' }
+            const sections = [
+                { id: 'home', text: 'HOME' },
+                { id: 'about', text: 'ABOUT' },
+                { id: 'skills', text: 'SKILLS' },
+                { id: 'experience', text: 'EXPERIENCE' },
+                { id: 'education', text: 'EDUCATION' },
+                { id: 'projects', text: 'PROJECTS' },
+                { id: 'additional', text: 'ADDITIONAL' },
+                { id: 'contact', text: 'CONTACT' }
             ];
 
-            if (data.projects && data.projects.length > 0) {
-                links.push({ href: '#projects', text: 'PROJECTS' });
-            }
+            const visibleLinks = sections.filter(sec => {
+                const el = document.getElementById(sec.id);
+                return el && window.getComputedStyle(el).display !== 'none';
+            });
 
-            const hasAdditional = (data.certifications && data.certifications.length > 0) ||
-                (data.awards && data.awards.length > 0) ||
-                (data.publications && data.publications.length > 0) ||
-                (data.volunteerExperience && data.volunteerExperience.length > 0) ||
-                (data.hobbies && data.hobbies.length > 0);
-
-            if (hasAdditional) {
-                links.push({ href: '#additional', text: 'ADDITIONAL' });
-            }
-
-            links.push({ href: '#contact', text: 'CONTACT' });
-
-            navMenu.innerHTML = links.map(link =>
-                `<a href="${link.href}" class="nav-link">${link.text}</a>`
+            navMenu.innerHTML = visibleLinks.map(link =>
+                `<a href="#${link.id}" class="nav-link">${link.text}</a>`
             ).join('');
 
             const footerLinks = document.getElementById('footerLinks');
-            footerLinks.innerHTML = links.map(link =>
-                `<a href="${link.href}" class="footer-link">${link.text}</a>`
+            footerLinks.innerHTML = visibleLinks.map(link =>
+                `<a href="#${link.id}" class="footer-link">${link.text}</a>`
             ).join('');
         }
 
@@ -2530,85 +2535,7 @@
             `).join('');
         }
 
-        function initColorCustomizer() {
-            const toggle = document.getElementById('customizerToggle');
-            const panel = document.getElementById('customizerPanel');
-            const close = document.getElementById('closeCustomizer');
-            const reset = document.getElementById('resetColors');
-            const colorInputs = document.querySelectorAll('.customizer-body input[type="color"]');
-
-            // Create a dynamic style tag for color overrides if it doesn't exist
-            let styleTag = document.getElementById('dynamic-color-overrides');
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = 'dynamic-color-overrides';
-                document.head.appendChild(styleTag);
-            }
-
-            function updateInputs() {
-                const styles = getComputedStyle(document.body);
-                colorInputs.forEach(input => {
-                    const varName = input.getAttribute('data-var');
-                    const color = styles.getPropertyValue(varName).trim();
-                    // Basic check to ensure valid hex (though getComputedStyle might return rgb)
-                    if (color.startsWith('#')) {
-                        input.value = color;
-                    } else if (color.startsWith('rgb')) {
-                        // Convert RGB to HEX for input[type="color"]
-                        const rgb = color.match(/\d+/g);
-                        if (rgb && rgb.length >= 3) {
-                            const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
-                            input.value = hex;
-                        }
-                    }
-                });
-            }
-
-            toggle.addEventListener('click', () => {
-                panel.classList.toggle('active');
-                updateInputs();
-            });
-
-            close.addEventListener('click', () => {
-                panel.classList.remove('active');
-            });
-
-            colorInputs.forEach(input => {
-                input.addEventListener('input', (e) => {
-                    const varName = e.target.getAttribute('data-var');
-                    const value = e.target.value;
-                    document.body.style.setProperty(varName, value);
-                    updateStyleTag();
-                });
-            });
-
-            function updateStyleTag() {
-                let css = ':root { \n';
-                colorInputs.forEach(input => {
-                    const varName = input.getAttribute('data-var');
-                    const value = input.value;
-                    css += `    ${varName}: ${value} !important;\n`;
-                });
-                css += '}\n';
-
-                if (document.body.classList.contains('dark-mode')) {
-                    css += 'body.dark-mode { \n';
-                    colorInputs.forEach(input => {
-                        const varName = input.getAttribute('data-var');
-                        css += `    ${varName}: ${input.value} !important;\n`;
-                    });
-                    css += '}\n';
-                }
-
-                styleTag.textContent = css;
-            }
-
-            reset.addEventListener('click', () => {
-                document.body.style = '';
-                styleTag.textContent = '';
-                updateInputs();
-            });
-        }
+        // Color customizer is now handled by external theme-customizer.js
 
         function downloadPortfolioHTML() {
             try {
@@ -2740,30 +2667,360 @@
         async function init() {
             const data = await loadPortfolioData();
 
-            if (!data) {
-                console.error('Failed to load portfolio data');
+            if (!data || !data.personalInfo) {
+                console.error('Failed to load portfolio data or data is malformed');
+                const heroSection = document.getElementById('home');
+                if (heroSection) {
+                    heroSection.insertAdjacentHTML('afterbegin', `
+                        <div style="background: rgba(255,0,0,0.1); color: #ff0000; padding: 20px; border: 4px solid #ff0000; margin: 40px; text-align: center; font-family: 'Archivo Black', sans-serif; z-index: 10000; position: relative;">
+                            <i class="fas fa-exclamation-triangle"></i> ERROR: FAILED TO CONNECT TO DATA TERMINAL. 
+                            PLEASE ENSURE THE API SERVER IS RUNNING AT LOCALHOST:3000.
+                        </div>
+                    `);
+                }
                 return;
             }
 
-            buildNavigationMenu(data);
-            populateHero(data);
-            populateAbout(data);
-            populateSkills(data);
-            populateExperience(data);
-            populateEducation(data);
-            populateProjects(data);
-            populateAdditionalSections(data);
-            populateContact(data);
+            const safePopulate = (fn, name) => {
+                try {
+                    fn(data);
+                } catch (e) {
+                    console.error(`Error populating ${name}:`, e);
+                }
+            };
 
-            initCustomCursor();
+            safePopulate(buildNavigationMenu, 'Navigation');
+            safePopulate(populateHero, 'Hero');
+            safePopulate(populateAbout, 'About');
+            safePopulate(populateSkills, 'Skills');
+            safePopulate(populateExperience, 'Experience');
+            safePopulate(populateEducation, 'Education');
+            safePopulate(populateProjects, 'Projects');
+            safePopulate(populateAdditionalSections, 'Additional');
+            safePopulate(populateContact, 'Contact');
+
             initThemeToggle();
             initMobileMenu();
             initProgressIndicator();
             initBackToTop();
             initDownloadButton();
-            initColorCustomizer();
+
+            // Re-implementing customizer logic directly for maximum reliability
+            class ThemeCustomizer {
+                constructor(config = {}) {
+                    this.sections = config.sections || [];
+                    this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                    this.init();
+                }
+
+                init() {
+                    this.createPanel();
+                    this.bindEvents();
+                    this.updateInputsFromDOM();
+                }
+
+                createPanel() {
+                    if (document.getElementById('customizerPanel')) return;
+
+                    const panelHtml = `
+                        <div id="customizerPanel" class="customizer-panel">
+                            <div class="customizer-header">
+                                <h3>${this.panelTitle}</h3>
+                                <button id="closeCustomizer" type="button"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="customizer-body">
+                                ${this.sections.map(section => `
+                                    <div class="customizer-section" style="margin-bottom: 25px;">
+                                        <h4 style="font-size: 11px; color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; opacity: 0.8; text-transform: uppercase;">${section.name}</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                                            ${section.controls.map(control => this.renderControl(control)).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button id="resetSettings" class="reset-colors" type="button">Reset All Settings</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', panelHtml);
+                    this.panel = document.getElementById('customizerPanel');
+                    this.closeBtn = document.getElementById('closeCustomizer');
+                    this.resetBtn = document.getElementById('resetSettings');
+                    this.inputs = this.panel.querySelectorAll('input, select');
+
+                    this.styleTag = document.getElementById('dynamic-theme-overrides');
+                    if (!this.styleTag) {
+                        this.styleTag = document.createElement('style');
+                        this.styleTag.id = 'dynamic-theme-overrides';
+                        document.head.appendChild(this.styleTag);
+                    }
+                }
+
+                renderControl(control) {
+                    if (control.type === 'color') {
+                        return `
+                            <div class="color-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; color: var(--text-secondary);">${control.name}</label>
+                                <div class="color-input-wrapper" style="width: 42px; height: 42px; border: 3px solid var(--primary); position: relative; background: #fff;">
+                                    <input type="color" data-var="${control.var}" data-type="color" style="position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; cursor: pointer; visibility: visible; opacity: 1;">
+                                </div>
+                            </div>
+                        `;
+                    } else if (control.type === 'range') {
+                        return `
+                            <div class="range-item" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; color: var(--text-secondary);">${control.name}</label>
+                                    <span class="range-val" style="font-size: 10px; font-family: 'JetBrains Mono', monospace; background: var(--accent); color: white; padding: 2px 8px; font-weight: bold;"></span>
+                                </div>
+                                <input type="range" 
+                                    data-var="${control.var}" 
+                                    data-type="range"
+                                    data-unit="${control.unit || ''}" 
+                                    min="${control.min}" 
+                                    max="${control.max}" 
+                                    step="${control.step || 1}"
+                                    style="width: 100%; cursor: pointer; accent-color: var(--accent);">
+                            </div>
+                        `;
+                    } else if (control.type === 'select') {
+                        return `
+                            <div class="select-item" style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; color: var(--text-secondary);">${control.name}</label>
+                                <select data-var="${control.var}" data-type="select" style="width: 100%; padding: 10px; background: var(--bg); color: var(--primary); border: 2px solid var(--primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; border-radius: 0;">
+                                    ${control.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                </select>
+                            </div>
+                        `;
+                    } else if (control.type === 'section-manager') {
+                        const manageableSections = [
+                            { id: 'about', name: 'About', container: 'about' },
+                            { id: 'skills', name: 'Skills', container: 'skillsContainer' },
+                            { id: 'experience', name: 'Experience', container: 'experienceTimeline' },
+                            { id: 'education', name: 'Education', container: 'educationGrid' },
+                            { id: 'projects', name: 'Projects', container: 'projectsGrid' },
+                            { id: 'additional', name: 'Additional', container: 'additionalGrid' },
+                            { id: 'contact', name: 'Contact', container: 'contactMethods' }
+                        ];
+
+                        const listHtml = manageableSections.map(sec => {
+                            const el = document.getElementById(sec.id);
+                            const cont = document.getElementById(sec.container);
+                            const isHidden = el ? window.getComputedStyle(el).display === 'none' : true;
+                            const isEmpty = cont ? (cont.children.length === 0 && cont.textContent.trim() === '') : true;
+
+                            return `
+                                <div class="section-manager-item" data-id="${sec.id}" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 2px solid var(--primary); background: var(--bg); margin-bottom: 5px; opacity: ${isEmpty ? '0.6' : '1'}; transition: all 0.2s ease;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" ${isHidden ? '' : 'checked'} class="section-toggle" data-target="${sec.id}" style="width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;">
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: bold; text-transform: uppercase;">${sec.name}</span>
+                                            ${isEmpty ? `<span style="font-size: 9px; color: #888; font-style: italic;">(Empty/No Data)</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button class="move-section" data-dir="up" data-target="${sec.id}" style="padding: 6px 10px; background: var(--primary); color: var(--bg); border: none; font-size: 10px; cursor: pointer;"><i class="fas fa-chevron-up"></i></button>
+                                        <button class="move-section" data-dir="down" data-target="${sec.id}" style="padding: 6px 10px; background: var(--primary); color: var(--bg); border: none; font-size: 10px; cursor: pointer;"><i class="fas fa-chevron-down"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        return `<div class="section-manager-list" style="display: flex; flex-direction: column; gap: 4px;">${listHtml}</div>`;
+                    }
+                    return '';
+                }
+
+                bindEvents() {
+                    const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                    toggleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.updateInputsFromDOM();
+                            this.panel.classList.toggle('active');
+                        });
+                    });
+
+                    if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                    this.inputs.forEach(input => {
+                        const eventType = input.tagName === 'SELECT' ? 'change' : 'input';
+                        input.addEventListener(eventType, (e) => {
+                            this.applyChange(e.target);
+                        });
+                    });
+
+                    // Manage section visibility
+                    this.panel.querySelectorAll('.section-toggle').forEach(checkbox => {
+                        checkbox.addEventListener('change', (e) => {
+                            const target = document.getElementById(e.target.getAttribute('data-target'));
+                            if (target) {
+                                target.style.display = e.target.checked ? 'block' : 'none';
+                                buildNavigationMenu(portfolioData);
+                                initProgressIndicator();
+                            }
+                        });
+                    });
+
+                    // Manage section order
+                    this.panel.querySelectorAll('.move-section').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const dir = btn.getAttribute('data-dir');
+                            const targetId = btn.getAttribute('data-target');
+                            const section = document.getElementById(targetId);
+                            const managerItem = this.panel.querySelector(`.section-manager-item[data-id="${targetId}"]`);
+
+                            if (!section || !managerItem) return;
+
+                            if (dir === 'up') {
+                                const prev = section.previousElementSibling;
+                                if (prev && prev.tagName === 'SECTION' && prev.id !== 'home') {
+                                    section.parentNode.insertBefore(section, prev);
+                                    // Mirror in Customizer UI
+                                    const prevItem = managerItem.previousElementSibling;
+                                    if (prevItem) {
+                                        managerItem.parentNode.insertBefore(managerItem, prevItem);
+                                    }
+                                }
+                            } else {
+                                const next = section.nextElementSibling;
+                                if (next && next.tagName === 'SECTION') {
+                                    section.parentNode.insertBefore(next, section);
+                                    // Mirror in Customizer UI
+                                    const nextItem = managerItem.nextElementSibling;
+                                    if (nextItem) {
+                                        managerItem.parentNode.insertBefore(nextItem, managerItem);
+                                    }
+                                }
+                            }
+                            buildNavigationMenu(portfolioData);
+                            initProgressIndicator();
+                        });
+                    });
+
+                    if (this.resetBtn) {
+                        this.resetBtn.addEventListener('click', () => {
+                            document.body.style = '';
+                            this.styleTag.textContent = '';
+                            this.updateInputsFromDOM();
+                        });
+                    }
+                }
+
+                applyChange(input) {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let value = input.value;
+
+                    if (type === 'range') {
+                        const unit = input.getAttribute('data-unit') || '';
+                        value = value + unit;
+                        const valSpan = input.parentElement.querySelector('.range-val');
+                        if (valSpan) valSpan.textContent = value;
+                    }
+
+                    document.body.style.setProperty(varName, value);
+                    this.updateStyleTag();
+                }
+
+                updateInputsFromDOM() {
+                    const styles = getComputedStyle(document.body);
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let color = styles.getPropertyValue(varName).trim();
+
+                        if (type === 'color') {
+                            if (color.startsWith('#')) {
+                                input.value = color;
+                            } else if (color.startsWith('rgb')) {
+                                const rgb = color.match(/\d+/g);
+                                if (rgb && rgb.length >= 3) {
+                                    const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                    input.value = hex;
+                                }
+                            }
+                        } else if (type === 'range') {
+                            const numericVal = parseFloat(color);
+                            if (!isNaN(numericVal)) {
+                                input.value = numericVal;
+                                const valSpan = input.parentElement.querySelector('.range-val');
+                                if (valSpan) valSpan.textContent = color;
+                            }
+                        } else if (type === 'select') {
+                            input.value = color.replace(/['"]/g, '');
+                        }
+                    });
+                }
+
+                updateStyleTag() {
+                    let css = ':root { \n';
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let val = input.value;
+                        if (type === 'range') val += input.getAttribute('data-unit') || '';
+                        css += `    ${varName}: ${val} !important;\n`;
+                    });
+                    css += '}\n';
+                    this.styleTag.textContent = css;
+                }
+            }
+
+            new ThemeCustomizer({
+                panelTitle: 'Pro Portfolio Designer',
+                sections: [
+                    {
+                        name: 'Brand Colors',
+                        controls: [
+                            { type: 'color', name: 'Primary (Main)', var: '--primary' },
+                            { name: 'Accent Layer', type: 'color', var: '--accent' },
+                            { name: 'Secondary Link', type: 'color', var: '--secondary' },
+                            { name: 'Background', type: 'color', var: '--bg' },
+                            { name: 'Highlight Bar', type: 'color', var: '--highlight' }
+                        ]
+                    },
+                    {
+                        name: 'Typography OS',
+                        controls: [
+                            {
+                                name: 'Font Architecture',
+                                type: 'select',
+                                var: '--font-main',
+                                options: [
+                                    { label: 'Brutalist Grotesk', value: "'Space Grotesk', sans-serif" },
+                                    { label: 'Terminal Mono', value: "'JetBrains Mono', monospace" },
+                                    { label: 'Display Black', value: "'Archivo Black', sans-serif" }
+                                ]
+                            },
+                            { name: 'Base Scaling', type: 'range', var: '--font-size-base', min: 12, max: 24, unit: 'px' },
+                            { name: 'Kerning', type: 'range', var: '--letter-spacing', min: -5, max: 5, step: 0.1, unit: 'px' }
+                        ]
+                    },
+                    {
+                        name: 'Brutalist Geometry',
+                        controls: [
+                            { name: 'Corner Rounding', type: 'range', var: '--radius', min: 0, max: 50, unit: 'px' },
+                            { name: 'Shadow Depth', type: 'range', var: '--shadow-depth', min: 0, max: 30, unit: 'px' },
+                            { name: 'Border Weight', type: 'range', var: '--border-width', min: 0, max: 10, unit: 'px' }
+                        ]
+                    },
+                    {
+                        name: 'Visual Effects',
+                        controls: [
+                            { name: 'Glass Blur', type: 'range', var: '--blur', min: 0, max: 30, unit: 'px' },
+                            { name: 'Grid Overlay', type: 'range', var: '--grid-opacity', min: 0, max: 0.5, step: 0.01 }
+                        ]
+                    },
+                    {
+                        name: 'Portfolio Architecture',
+                        controls: [
+                            { type: 'section-manager' }
+                        ]
+                    }
+                ]
+            });
 
             document.title = `${data.personalInfo.fullName} - Portfolio`;
+            initCustomCursor();
         }
 
         if (document.readyState === 'loading') {

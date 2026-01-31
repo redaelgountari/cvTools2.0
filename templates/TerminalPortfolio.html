@@ -1,14 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Portfolio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
+    <!-- Persistent Customizer Trigger -->
+    <div style="position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 10002;">
+        <button class="customizer-toggle" id="customizerToggle" title="Customize Colors"
+            style="width: 60px; height: 60px; background: #00ff88; color: #000; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 0 10px 10px 0; cursor: pointer; box-shadow: 4px 0 15px rgba(0,255,136,0.3); transition: all 0.3s;">
+            <i class="fas fa-palette"></i>
+        </button>
+    </div>
     <style>
+        /* Inline Customizer Styles */
+        .customizer-panel {
+            position: fixed;
+            top: 20px;
+            right: -450px;
+            width: 380px;
+            background: var(--nav-bg);
+            border: var(--border-weight) solid var(--neon-green);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            z-index: 20000;
+            transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: var(--white);
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-radius: var(--radius);
+        }
+
+        .customizer-panel.active {
+            right: 20px !important;
+        }
+
+        .customizer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 15px;
+        }
+
+        .customizer-header h3 {
+            font-family: var(--font-headings);
+            font-size: 18px;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .customizer-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .color-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .color-item label {
+            font-family: var(--font-main);
+            font-size: 12px;
+            color: var(--light-grey);
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .color-input-wrapper {
+            width: 50px;
+            height: 50px;
+            border: var(--border-weight) solid var(--neon-green);
+            border-radius: var(--radius);
+            position: relative;
+        }
+
+        .color-input-wrapper input[type="color"] {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border: none;
+            cursor: pointer;
+        }
+
+        .customizer-section h4 {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+            padding-bottom: 5px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            font-family: var(--font-main);
+        }
+
+        .range-item label,
+        .select-item label {
+            font-family: var(--font-main);
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--light-grey);
+            opacity: 0.7;
+        }
+
+        .range-val {
+            font-size: 10px;
+            font-family: var(--font-main);
+            background: var(--neon-green);
+            color: var(--deep-black);
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+
+        .customizer-body select {
+            width: 100%;
+            padding: 8px;
+            background: var(--dark-grey);
+            color: var(--white);
+            border: 1px solid var(--mid-grey);
+            font-family: var(--font-main);
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: var(--radius);
+        }
+
+        .customizer-body select:focus {
+            border-color: var(--neon-green);
+            outline: none;
+        }
+
+        .reset-colors {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--neon-green);
+            color: var(--deep-black);
+            border: none;
+            font-family: var(--font-main);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: var(--radius);
+        }
+
+        #closeCustomizer {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--neon-pink);
+        }
+
         .download-btn {
             position: fixed;
             bottom: 30px;
@@ -38,6 +198,27 @@
             transform: translateY(-2px) scale(1.02);
         }
 
+        .customizer-toggle {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--neon-green) !important;
+            background: transparent !important;
+            color: var(--neon-green) !important;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .customizer-toggle:hover {
+            background: var(--neon-green) !important;
+            color: var(--deep-black) !important;
+            box-shadow: 0 0 30px var(--neon-green);
+        }
+
         :root {
             --neon-green: #00ff88;
             --neon-cyan: #00ccff;
@@ -48,6 +229,18 @@
             --light-grey: #e0e0e0;
             --white: #ffffff;
             --nav-bg: rgba(10, 10, 10, 0.95);
+
+            /* Customization Variables */
+            --font-main: 'JetBrains Mono', monospace;
+            --font-headings: 'Space Grotesk', sans-serif;
+            --font-size-base: 14px;
+            --radius: 0px;
+            --border-weight: 2px;
+            --scanline-opacity: 0.03;
+            --glow-spread: 15px;
+            --grid-opacity: 0.15;
+            --particles-opacity: 0.15;
+            --letter-spacing: 0px;
         }
 
         body.light-mode {
@@ -73,11 +266,12 @@
         }
 
         body {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--font-main);
             background-color: var(--deep-black);
             color: var(--light-grey);
             line-height: 1.6;
-            font-size: 14px;
+            font-size: var(--font-size-base);
+            letter-spacing: var(--letter-spacing);
             overflow-x: hidden;
             position: relative;
         }
@@ -89,26 +283,30 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    rgba(0, 255, 136, 0.03) 0px,
+            background:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 255, 136, var(--scanline-opacity)) 0px,
                     transparent 1px,
                     transparent 2px,
-                    rgba(0, 255, 136, 0.03) 3px
-                );
+                    rgba(0, 255, 136, var(--scanline-opacity)) 3px);
             pointer-events: none;
             z-index: 9999;
             animation: scanlines 8s linear infinite;
         }
 
         @keyframes scanlines {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(10px); }
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(10px);
+            }
         }
 
         .pixel-border {
-            border: 2px solid var(--neon-green);
+            border: var(--border-weight) solid var(--neon-green);
+            border-radius: var(--radius);
         }
 
         .container {
@@ -124,7 +322,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.15;
+            opacity: var(--particles-opacity);
         }
 
         .navbar {
@@ -134,7 +332,7 @@
             right: 0;
             background: var(--nav-bg);
             backdrop-filter: blur(10px);
-            border-bottom: 2px solid var(--neon-green);
+            border-bottom: var(--border-weight) solid var(--neon-green);
             z-index: 1000;
             box-shadow: 0 4px 30px rgba(0, 255, 136, 0.2);
         }
@@ -149,7 +347,7 @@
         }
 
         .nav-logo .logo-text {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-headings);
             font-size: 24px;
             font-weight: 700;
             background: linear-gradient(135deg, var(--neon-green) 0%, var(--neon-cyan) 100%);
@@ -167,8 +365,16 @@
         }
 
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
 
         .nav-menu {
@@ -222,7 +428,7 @@
             cursor: pointer;
             font-size: 18px;
             transition: all 0.3s ease;
-            clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+            border-radius: var(--radius);
         }
 
         .theme-toggle:hover {
@@ -290,7 +496,7 @@
         }
 
         .hero-name {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-headings);
             font-size: 72px;
             font-weight: 700;
             margin-bottom: 20px;
@@ -335,12 +541,12 @@
             letter-spacing: 2px;
             transition: all 0.3s ease;
             display: inline-block;
-            border: 2px solid var(--neon-green);
+            border: var(--border-weight) solid var(--neon-green);
             background: transparent;
             color: var(--neon-green);
             position: relative;
             overflow: hidden;
-            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+            border-radius: var(--radius);
         }
 
         .btn::before {
@@ -381,7 +587,7 @@
             font-size: 20px;
             transition: all 0.3s ease;
             text-decoration: none;
-            clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+            border-radius: var(--radius);
         }
 
         .social-link:hover {
@@ -440,7 +646,7 @@
         }
 
         .section-title {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-headings);
             font-size: 64px;
             font-weight: 700;
             margin-bottom: 80px;
@@ -495,7 +701,8 @@
             text-align: center;
             padding: 40px;
             background: var(--deep-black);
-            border: 2px solid var(--mid-grey);
+            border: var(--border-weight) solid var(--mid-grey);
+            border-radius: var(--radius);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -523,7 +730,7 @@
         }
 
         .stat-number {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-headings);
             font-size: 72px;
             font-weight: 700;
             background: linear-gradient(135deg, var(--neon-green) 0%, var(--neon-cyan) 100%);
@@ -550,16 +757,10 @@
         .skill-category {
             background: rgba(0, 255, 136, 0.02);
             padding: 30px;
-            border: 1px solid var(--mid-grey);
+            border: var(--border-weight) solid var(--mid-grey);
             transition: all 0.3s ease;
             position: relative;
-            clip-path: polygon(
-                0 0, 
-                100% 0, 
-                100% calc(100% - 20px), 
-                calc(100% - 20px) 100%, 
-                0 100%
-            );
+            border-radius: var(--radius);
         }
 
         .skill-category::before {
@@ -673,10 +874,13 @@
         }
 
         @keyframes pulse-dot {
-            0%, 100% { 
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
             }
-            50% { 
+
+            50% {
                 box-shadow: 0 0 0 15px rgba(0, 255, 136, 0);
             }
         }
@@ -684,8 +888,9 @@
         .timeline-content {
             background: var(--deep-black);
             padding: 35px;
-            border: 2px solid var(--mid-grey);
-            border-left: 4px solid var(--neon-green);
+            border: var(--border-weight) solid var(--mid-grey);
+            border-left: calc(var(--border-weight) * 2) solid var(--neon-green);
+            border-radius: var(--radius);
             transition: all 0.3s ease;
         }
 
@@ -749,8 +954,9 @@
         .education-card {
             background: var(--dark-grey);
             padding: 40px;
-            border: 2px solid var(--mid-grey);
-            border-top: 4px solid var(--neon-cyan);
+            border: var(--border-weight) solid var(--mid-grey);
+            border-top: calc(var(--border-weight) * 2) solid var(--neon-cyan);
+            border-radius: var(--radius);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -818,21 +1024,14 @@
 
         .project-card {
             background: rgba(10, 10, 10, 0.6);
-            border: 1px solid var(--mid-grey);
+            border: var(--border-weight) solid var(--mid-grey);
             position: relative;
             display: flex;
             flex-direction: column;
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             overflow: hidden;
             height: 100%;
-            /* Cyberpunk Chamfered Corners */
-            clip-path: polygon(
-                20px 0, 100% 0, 
-                100% calc(100% - 20px), 
-                calc(100% - 20px) 100%, 
-                0 100%, 
-                0 20px
-            );
+            border-radius: var(--radius);
         }
 
         /* Holographic Overlay Effect */
@@ -887,13 +1086,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.3),
-                rgba(0, 0, 0, 0.3) 1px,
-                transparent 1px,
-                transparent 3px
-            );
+            background: repeating-linear-gradient(0deg,
+                    rgba(0, 0, 0, 0.3),
+                    rgba(0, 0, 0, 0.3) 1px,
+                    transparent 1px,
+                    transparent 3px);
             pointer-events: none;
             z-index: 2;
         }
@@ -909,7 +1106,7 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,1) 100%);
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 1) 100%);
         }
 
         .project-header {
@@ -959,7 +1156,7 @@
 
         .project-card:hover .project-description {
             opacity: 1;
-            text-shadow: 0 0 1px rgba(255,255,255,0.2);
+            text-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
         }
 
         .project-tech {
@@ -1472,7 +1669,7 @@
             </div>
         </div>
     </footer>
-    
+
     <button class="download-btn" id="downloadBtn" aria-label="Download Portfolio">
         DOWNLOAD
     </button>
@@ -1631,7 +1828,7 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+
             } catch (error) {
                 console.error('Error downloading portfolio:', error);
             }
@@ -1639,7 +1836,7 @@
 
         function initDownloadButton() {
             const downloadBtn = document.getElementById('downloadBtn');
-            
+
             downloadBtn.addEventListener('click', () => {
                 if (!portfolioData) {
                     alert('Portfolio data is still loading. Please wait a moment and try again.');
@@ -1666,7 +1863,7 @@
         function initPixelParticles() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
-            
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
@@ -1756,7 +1953,7 @@
 
         function initScrollProgress() {
             const progressFill = document.getElementById('progressFill');
-            
+
             window.addEventListener('scroll', () => {
                 const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                 progressFill.style.width = scrolled + '%';
@@ -1899,7 +2096,7 @@
             }
         }
 
-       
+
         function populateEducation(data) {
             const educationGrid = document.getElementById('educationGrid');
 
@@ -1931,7 +2128,7 @@
             const fps = 30;
             const steps = duration / (1000 / fps);
             let currentStep = 0;
-            
+
             if (element.dataset.glitchInterval) {
                 clearInterval(parseInt(element.dataset.glitchInterval));
             }
@@ -1939,7 +2136,7 @@
             const interval = setInterval(() => {
                 currentStep++;
                 const progress = currentStep / steps;
-                
+
                 element.innerText = originalText
                     .split("")
                     .map((letter, index) => {
@@ -1950,14 +2147,14 @@
                         return letter;
                     })
                     .join("");
-                
+
                 if (currentStep >= steps) {
                     clearInterval(interval);
                     element.innerText = originalText;
                     delete element.dataset.glitchInterval;
                 }
             }, 1000 / fps);
-            
+
             element.dataset.glitchInterval = interval;
         }
 
@@ -1970,7 +2167,7 @@
                     const projectImage = project.images && project.images.length > 0 ? project.images[0] : (project.image || '');
                     const technologies = project.technologiesUsed || project.technologies || [];
                     const projectId = `PRJ-${String(index + 1).padStart(3, '0')}`;
-                    
+
                     return `
                     <div class="project-card">
                         <div class="project-image-wrapper">
@@ -2007,7 +2204,7 @@
                 // Attach Glitch Effect
                 document.querySelectorAll('.project-card').forEach(card => {
                     const title = card.querySelector('.project-title');
-                    if(title) {
+                    if (title) {
                         const originalText = title.getAttribute('data-original');
                         card.addEventListener('mouseenter', () => triggerGlitch(title, originalText));
                     }
@@ -2095,6 +2292,224 @@
             initScrollProgress();
             initContactForm();
 
+            class ThemeCustomizer {
+                constructor(config = {}) {
+                    this.sections = config.sections || [];
+                    this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                    this.init();
+                }
+
+                init() {
+                    this.createPanel();
+                    this.bindEvents();
+                    this.updateInputsFromDOM();
+                }
+
+                createPanel() {
+                    if (document.getElementById('customizerPanel')) return;
+
+                    const panelHtml = `
+                        <div id="customizerPanel" class="customizer-panel">
+                            <div class="customizer-header">
+                                <h3>${this.panelTitle}</h3>
+                                <button id="closeCustomizer" type="button"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="customizer-body">
+                                ${this.sections.map(section => `
+                                    <div class="customizer-section">
+                                        <h4>${section.name}</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                                            ${section.controls.map(control => this.renderControl(control)).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button id="resetSettings" class="reset-colors">Reset All Settings</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', panelHtml);
+                    this.panel = document.getElementById('customizerPanel');
+                    this.closeBtn = document.getElementById('closeCustomizer');
+                    this.resetBtn = document.getElementById('resetSettings');
+                    this.inputs = this.panel.querySelectorAll('input');
+
+                    this.styleTag = document.getElementById('dynamic-theme-overrides');
+                    if (!this.styleTag) {
+                        this.styleTag = document.createElement('style');
+                        this.styleTag.id = 'dynamic-theme-overrides';
+                        document.head.appendChild(this.styleTag);
+                    }
+                }
+
+                renderControl(control) {
+                    if (control.type === 'color') {
+                        return `
+                            <div class="color-item">
+                                <label>${control.name}</label>
+                                <div class="color-input-wrapper">
+                                    <input type="color" data-var="${control.var}" data-type="color">
+                                </div>
+                            </div>
+                        `;
+                    } else if (control.type === 'range') {
+                        return `
+                            <div class="range-item">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label>${control.name}</label>
+                                    <span class="range-val"></span>
+                                </div>
+                                <input type="range" 
+                                    data-var="${control.var}" 
+                                    data-type="range"
+                                    data-unit="${control.unit || ''}" 
+                                    min="${control.min}" 
+                                    max="${control.max}" 
+                                    step="${control.step || 1}">
+                            </div>
+                        `;
+                    } else if (control.type === 'select') {
+                        return `
+                            <div class="select-item">
+                                <label>${control.name}</label>
+                                <select data-var="${control.var}" data-type="select">
+                                    ${control.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+                                </select>
+                            </div>
+                        `;
+                    }
+                    return '';
+                }
+
+                bindEvents() {
+                    const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                    toggleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.updateInputsFromDOM();
+                            this.panel.classList.toggle('active');
+                        });
+                    });
+
+                    if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                    this.inputs.forEach(input => {
+                        const eventType = input.tagName === 'SELECT' ? 'change' : 'input';
+                        input.addEventListener(eventType, (e) => {
+                            this.applyChange(e.target);
+                        });
+                    });
+
+                    if (this.resetBtn) {
+                        this.resetBtn.addEventListener('click', () => {
+                            document.body.style = '';
+                            this.styleTag.textContent = '';
+                            this.updateInputsFromDOM();
+                        });
+                    }
+                }
+
+                applyChange(input) {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let value = input.value;
+
+                    if (type === 'range') {
+                        const unit = input.getAttribute('data-unit') || '';
+                        value = value + unit;
+                        const valSpan = input.parentElement.querySelector('.range-val');
+                        if (valSpan) valSpan.textContent = value;
+                    }
+
+                    document.body.style.setProperty(varName, value);
+                    this.updateStyleTag();
+                }
+
+                updateInputsFromDOM() {
+                    const styles = getComputedStyle(document.body);
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let color = styles.getPropertyValue(varName).trim();
+
+                        if (type === 'color') {
+                            if (color.startsWith('#')) {
+                                input.value = color;
+                            } else if (color.startsWith('rgb')) {
+                                const rgb = color.match(/\d+/g);
+                                if (rgb && rgb.length >= 3) {
+                                    const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                    input.value = hex;
+                                }
+                            }
+                        } else if (type === 'range') {
+                            const numericVal = parseFloat(color);
+                            if (!isNaN(numericVal)) {
+                                input.value = numericVal;
+                                const valSpan = input.parentElement.querySelector('.range-val');
+                                if (valSpan) valSpan.textContent = color;
+                            }
+                        } else if (type === 'select') {
+                            input.value = color.replace(/['"]/g, '');
+                        }
+                    });
+                }
+
+                updateStyleTag() {
+                    let css = ':root { \n';
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let val = input.value;
+                        if (type === 'range') val += input.getAttribute('data-unit') || '';
+                        css += `    ${varName}: ${val} !important;\n`;
+                    });
+                    css += '}\n';
+                    this.styleTag.textContent = css;
+                }
+            }
+
+            new ThemeCustomizer({
+                panelTitle: 'Terminal Systems',
+                sections: [
+                    {
+                        name: 'Master Systems',
+                        controls: [
+                            { type: 'color', name: 'Primary Beam', var: '--neon-green' },
+                            { name: 'Data Flow', type: 'color', var: '--neon-cyan' },
+                            { name: 'System Void', type: 'color', var: '--deep-black' },
+                            { name: 'Text Matrix', type: 'color', var: '--white' }
+                        ]
+                    },
+                    {
+                        name: 'Typography OS',
+                        controls: [
+                            {
+                                name: 'Font Architecture',
+                                type: 'select',
+                                var: '--font-main',
+                                options: [
+                                    { label: 'Terminal Mono', value: "'JetBrains Mono', monospace" },
+                                    { label: 'Space Modern', value: "'Space Grotesk', sans-serif" },
+                                    { label: 'System Default', value: 'sans-serif' }
+                                ]
+                            },
+                            { name: 'Text Scaling', type: 'range', var: '--font-size-base', min: 10, max: 24, unit: 'px' },
+                            { name: 'Kerning (Space)', type: 'range', var: '--letter-spacing', min: -2, max: 10, unit: 'px' }
+                        ]
+                    },
+                    {
+                        name: 'Hardware Interface',
+                        controls: [
+                            { name: 'Chassis Radius', type: 'range', var: '--radius', min: 0, max: 30, unit: 'px' },
+                            { name: 'Border Weight', type: 'range', var: '--border-weight', min: 0, max: 8, unit: 'px' },
+                            { name: 'Scanline Intensity', type: 'range', var: '--scanline-opacity', min: 0, max: 0.2, step: 0.01 },
+                            { name: 'Ambient Static', type: 'range', var: '--particles-opacity', min: 0, max: 1, step: 0.05 },
+                            { name: 'Glow Magnitude', type: 'range', var: '--glow-spread', min: 0, max: 60, unit: 'px' }
+                        ]
+                    }
+                ]
+            });
+
             document.title = `${data.personalInfo.fullName.toUpperCase()} - PORTFOLIO`;
         }
 
@@ -2105,4 +2520,5 @@
         }
     </script>
 </body>
+
 </html>

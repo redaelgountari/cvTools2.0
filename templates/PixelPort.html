@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +20,11 @@
             --pixel-yellow: #ffd700;
             --pixel-purple: #b362ff;
             --pixel-orange: #ff6b35;
+
+            /* Detailed Pixel Variables */
+            --scanline-opacity: 0.3;
+            --font-size-base: 10px;
+            --particles-opacity: 0.4;
         }
 
         body.dark-mode {
@@ -52,7 +58,7 @@
             background-color: var(--pixel-bg);
             color: var(--pixel-accent);
             line-height: 1.8;
-            font-size: 10px;
+            font-size: var(--font-size-base);
             overflow-x: hidden;
             position: relative;
         }
@@ -65,16 +71,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.15) 0px,
-                rgba(0, 0, 0, 0.15) 1px,
-                transparent 1px,
-                transparent 2px
-            );
+            background: repeating-linear-gradient(0deg,
+                    rgba(0, 0, 0, 0.15) 0px,
+                    rgba(0, 0, 0, 0.15) 1px,
+                    transparent 1px,
+                    transparent 2px);
             pointer-events: none;
             z-index: 9999;
-            opacity: 0.3;
+            opacity: var(--scanline-opacity);
         }
 
         .container {
@@ -91,7 +95,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.4;
+            opacity: var(--particles-opacity);
         }
 
         /* Enhanced Navbar with RPG-style Window */
@@ -103,9 +107,9 @@
             background: var(--pixel-bg-light);
             border-bottom: 4px solid var(--pixel-primary);
             z-index: 1000;
-            box-shadow: 
+            box-shadow:
                 0 4px 0 var(--pixel-dark),
-                inset 0 -2px 0 rgba(0,0,0,0.3);
+                inset 0 -2px 0 rgba(0, 0, 0, 0.3);
         }
 
         .navbar::after {
@@ -115,13 +119,11 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--pixel-primary) 0px,
-                var(--pixel-primary) 4px,
-                transparent 4px,
-                transparent 8px
-            );
+            background: repeating-linear-gradient(90deg,
+                    var(--pixel-primary) 0px,
+                    var(--pixel-primary) 4px,
+                    transparent 4px,
+                    transparent 8px);
         }
 
         .nav-container {
@@ -149,7 +151,7 @@
         .logo-text {
             font-size: 14px;
             color: var(--pixel-primary);
-            text-shadow: 
+            text-shadow:
                 2px 2px 0 var(--pixel-dark),
                 0 0 10px var(--pixel-primary);
         }
@@ -169,10 +171,8 @@
             transition: all 0.1s;
             background: var(--pixel-bg);
             border: 2px solid transparent;
-            clip-path: polygon(
-                0 0, calc(100% - 6px) 0, 100% 6px,
-                100% 100%, 6px 100%, 0 calc(100% - 6px)
-            );
+            clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px,
+                    100% 100%, 6px 100%, 0 calc(100% - 6px));
         }
 
         .nav-link:hover {
@@ -204,10 +204,8 @@
             font-size: 16px;
             transition: all 0.1s;
             position: relative;
-            clip-path: polygon(
-                0 0, calc(100% - 8px) 0, 100% 8px,
-                100% 100%, 8px 100%, 0 calc(100% - 8px)
-            );
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px,
+                    100% 100%, 8px 100%, 0 calc(100% - 8px));
         }
 
         .theme-toggle:hover {
@@ -256,11 +254,9 @@
             left: 0;
             right: 0;
             height: 200px;
-            background: radial-gradient(
-                ellipse at top,
-                rgba(155, 188, 15, 0.2) 0%,
-                transparent 70%
-            );
+            background: radial-gradient(ellipse at top,
+                    rgba(155, 188, 15, 0.2) 0%,
+                    transparent 70%);
             pointer-events: none;
         }
 
@@ -304,20 +300,36 @@
         }
 
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
 
         @keyframes blink-slow {
-            0%, 70% { opacity: 1; }
-            71%, 100% { opacity: 0.3; }
+
+            0%,
+            70% {
+                opacity: 1;
+            }
+
+            71%,
+            100% {
+                opacity: 0.3;
+            }
         }
 
         .hero-name {
             font-size: 42px;
             margin-bottom: 15px;
             color: var(--pixel-accent);
-            text-shadow: 
+            text-shadow:
                 4px 4px 0 var(--pixel-dark),
                 0 0 20px var(--pixel-primary);
             line-height: 1.2;
@@ -366,14 +378,12 @@
             border: 3px solid var(--pixel-primary);
             background: var(--pixel-bg-light);
             color: var(--pixel-accent);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 var(--pixel-dark),
-                inset 0 -3px 0 rgba(0,0,0,0.3);
+                inset 0 -3px 0 rgba(0, 0, 0, 0.3);
             position: relative;
-            clip-path: polygon(
-                0 0, calc(100% - 8px) 0, 100% 8px,
-                100% 100%, 8px 100%, 0 calc(100% - 8px)
-            );
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px,
+                    100% 100%, 8px 100%, 0 calc(100% - 8px));
         }
 
         .btn::before {
@@ -460,14 +470,12 @@
             height: 500px;
             border: 6px solid var(--pixel-primary);
             background: var(--pixel-bg-light);
-            box-shadow: 
+            box-shadow:
                 10px 10px 0 var(--pixel-dark),
                 0 0 30px rgba(155, 188, 15, 0.5);
             overflow: hidden;
-            clip-path: polygon(
-                0 0, calc(100% - 16px) 0, 100% 16px,
-                100% 100%, 16px 100%, 0 calc(100% - 16px)
-            );
+            clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px,
+                    100% 100%, 16px 100%, 0 calc(100% - 16px));
         }
 
         .image-wrapper::before {
@@ -496,10 +504,25 @@
             box-shadow: 0 0 10px var(--pixel-yellow);
         }
 
-        .pixel-corners.tl { top: -3px; left: -3px; }
-        .pixel-corners.tr { top: -3px; right: -3px; }
-        .pixel-corners.bl { bottom: -3px; left: -3px; }
-        .pixel-corners.br { bottom: -3px; right: -3px; }
+        .pixel-corners.tl {
+            top: -3px;
+            left: -3px;
+        }
+
+        .pixel-corners.tr {
+            top: -3px;
+            right: -3px;
+        }
+
+        .pixel-corners.bl {
+            bottom: -3px;
+            left: -3px;
+        }
+
+        .pixel-corners.br {
+            bottom: -3px;
+            right: -3px;
+        }
 
         /* Level/XP Bar Decoration */
         .image-wrapper::after {
@@ -521,7 +544,7 @@
             text-align: center;
             margin-bottom: 60px;
             color: var(--pixel-primary);
-            text-shadow: 
+            text-shadow:
                 4px 4px 0 var(--pixel-dark),
                 0 0 20px var(--pixel-primary);
             position: relative;
@@ -531,10 +554,8 @@
             padding: 15px 40px;
             background: var(--pixel-bg-light);
             border: 4px solid var(--pixel-primary);
-            clip-path: polygon(
-                0 0, calc(100% - 12px) 0, 100% 12px,
-                100% 100%, 12px 100%, 0 calc(100% - 12px)
-            );
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px,
+                    100% 100%, 12px 100%, 0 calc(100% - 12px));
         }
 
         .section-title::before {
@@ -554,8 +575,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
         }
 
         /* Enhanced About Section */
@@ -573,13 +603,11 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--pixel-yellow) 0px,
-                var(--pixel-yellow) 8px,
-                transparent 8px,
-                transparent 16px
-            );
+            background: repeating-linear-gradient(90deg,
+                    var(--pixel-yellow) 0px,
+                    var(--pixel-yellow) 8px,
+                    transparent 8px,
+                    transparent 16px);
         }
 
         .about-description {
@@ -617,15 +645,13 @@
             padding: 30px 25px;
             background: var(--pixel-bg);
             border: 4px solid var(--pixel-primary);
-            box-shadow: 
+            box-shadow:
                 8px 8px 0 var(--pixel-dark),
                 inset 0 0 0 2px rgba(155, 188, 15, 0.2);
             transition: all 0.2s;
             position: relative;
-            clip-path: polygon(
-                0 0, calc(100% - 12px) 0, 100% 12px,
-                100% 100%, 12px 100%, 0 calc(100% - 12px)
-            );
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px,
+                    100% 100%, 12px 100%, 0 calc(100% - 12px));
         }
 
         .stat-item::before {
@@ -647,7 +673,7 @@
 
         .stat-item:hover {
             transform: translate(-3px, -3px);
-            box-shadow: 
+            box-shadow:
                 11px 11px 0 var(--pixel-dark),
                 inset 0 0 0 2px var(--pixel-yellow);
             border-color: var(--pixel-yellow);
@@ -657,7 +683,7 @@
             font-size: 38px;
             color: var(--pixel-yellow);
             margin-bottom: 15px;
-            text-shadow: 
+            text-shadow:
                 3px 3px 0 var(--pixel-dark),
                 0 0 15px var(--pixel-yellow);
             display: block;
@@ -779,7 +805,7 @@
             width: 6px;
             height: 100%;
             background: var(--pixel-primary);
-            box-shadow: 
+            box-shadow:
                 inset 0 0 0 2px var(--pixel-bg),
                 0 0 10px var(--pixel-primary);
         }
@@ -824,8 +850,17 @@
         }
 
         @keyframes quest-pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px var(--pixel-yellow); }
-            50% { transform: translateX(-50%) scale(1.2); box-shadow: 0 0 30px var(--pixel-yellow); }
+
+            0%,
+            100% {
+                transform: translateX(-50%) scale(1);
+                box-shadow: 0 0 20px var(--pixel-yellow);
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.2);
+                box-shadow: 0 0 30px var(--pixel-yellow);
+            }
         }
 
         .timeline-content {
@@ -922,10 +957,8 @@
             box-shadow: 8px 8px 0 var(--pixel-dark);
             transition: all 0.2s;
             position: relative;
-            clip-path: polygon(
-                0 0, calc(100% - 12px) 0, 100% 12px,
-                100% 100%, 12px 100%, 0 calc(100% - 12px)
-            );
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px,
+                    100% 100%, 12px 100%, 0 calc(100% - 12px));
         }
 
         .education-card::before {
@@ -1003,13 +1036,11 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--pixel-yellow) 0px,
-                var(--pixel-yellow) 4px,
-                var(--pixel-primary) 4px,
-                var(--pixel-primary) 8px
-            );
+            background: repeating-linear-gradient(90deg,
+                    var(--pixel-yellow) 0px,
+                    var(--pixel-yellow) 4px,
+                    var(--pixel-primary) 4px,
+                    var(--pixel-primary) 8px);
         }
 
         .project-card:hover {
@@ -1183,7 +1214,7 @@
         .form-group textarea:focus {
             outline: none;
             background: var(--pixel-bg-light);
-            box-shadow: inset 4px 4px 0 rgba(0,0,0,0.5);
+            box-shadow: inset 4px 4px 0 rgba(0, 0, 0, 0.5);
             border-color: var(--pixel-yellow);
         }
 
@@ -1208,13 +1239,11 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--pixel-yellow) 0px,
-                var(--pixel-yellow) 8px,
-                var(--pixel-primary) 8px,
-                var(--pixel-primary) 16px
-            );
+            background: repeating-linear-gradient(90deg,
+                    var(--pixel-yellow) 0px,
+                    var(--pixel-yellow) 8px,
+                    var(--pixel-primary) 8px,
+                    var(--pixel-primary) 16px);
         }
 
         .footer-content {
@@ -1243,7 +1272,7 @@
             border: 4px solid var(--pixel-primary);
             padding: 15px;
             z-index: 999;
-            box-shadow: 
+            box-shadow:
                 6px 6px 0 var(--pixel-dark),
                 inset 0 0 0 2px rgba(155, 188, 15, 0.2);
         }
@@ -1266,11 +1295,9 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(
-                90deg,
-                var(--pixel-primary) 0%,
-                var(--pixel-yellow) 100%
-            );
+            background: linear-gradient(90deg,
+                    var(--pixel-primary) 0%,
+                    var(--pixel-yellow) 100%);
             width: 0%;
             transition: width 0.3s;
             position: relative;
@@ -1280,13 +1307,11 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent 0px,
-                transparent 4px,
-                rgba(255,255,255,0.2) 4px,
-                rgba(255,255,255,0.2) 8px
-            );
+            background: repeating-linear-gradient(90deg,
+                    transparent 0px,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.2) 4px,
+                    rgba(255, 255, 255, 0.2) 8px);
         }
 
         /* Download Button */
@@ -1305,10 +1330,8 @@
             transition: all 0.1s;
             z-index: 1000;
             text-transform: uppercase;
-            clip-path: polygon(
-                0 0, calc(100% - 10px) 0, 100% 10px,
-                100% 100%, 10px 100%, 0 calc(100% - 10px)
-            );
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px,
+                    100% 100%, 10px 100%, 0 calc(100% - 10px));
         }
 
         .download-btn:hover {
@@ -1430,7 +1453,15 @@
         }
     </style>
 </head>
+
 <body>
+    <!-- Persistent Customizer Trigger -->
+    <div style="position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 10002;">
+        <button class="customizer-toggle" id="customizerToggle" title="Customize Colors"
+            style="width: 60px; height: 60px; background: var(--pixel-primary); color: var(--pixel-dark); border: 4px solid var(--pixel-dark); display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 0 10px 10px 0; cursor: pointer; box-shadow: 0 0 20px rgba(155, 188, 15, 0.6); transition: all 0.1s;">
+            <i class="fas fa-palette"></i>
+        </button>
+    </div>
     <canvas id="particles-canvas"></canvas>
 
     <div class="level-bar">
@@ -1637,7 +1668,7 @@
         function initPixelParticles() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
-            
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
@@ -1727,7 +1758,7 @@
 
         function initScrollProgress() {
             const progressFill = document.getElementById('progressFill');
-            
+
             window.addEventListener('scroll', () => {
                 const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                 progressFill.style.width = scrolled + '%';
@@ -2004,7 +2035,7 @@
 
         function initDownloadButton() {
             const downloadBtn = document.getElementById('downloadBtn');
-            
+
             downloadBtn.addEventListener('click', () => {
                 if (!portfolioData) {
                     alert('Portfolio data is still loading. Please wait a moment and try again.');
@@ -2037,6 +2068,195 @@
             initScrollProgress();
             initContactForm();
 
+            class ThemeCustomizer {
+                constructor(config = {}) {
+                    this.sections = config.sections || [];
+                    this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                    this.init();
+                }
+
+                init() {
+                    this.createPanel();
+                    this.bindEvents();
+                    this.updateInputsFromDOM();
+                }
+
+                createPanel() {
+                    if (document.getElementById('customizerPanel')) return;
+
+                    const panelHtml = `
+                        <div id="customizerPanel" class="customizer-panel" style="width: 380px; right: -420px; background: rgba(10,10,10,0.98); border: 4px solid var(--pixel-primary); box-shadow: 0 0 30px rgba(155,188,15,0.4); backdrop-filter: blur(15px); position: fixed; top: 20px; z-index: 20000; transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1); padding: 30px; max-height: 95vh; overflow-y: auto; color: #fff; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);">
+                            <div class="customizer-header" style="border-bottom: 2px solid var(--pixel-secondary); display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px;">
+                                <h3 style="color: var(--pixel-primary); font-family: 'Press Start 2P', cursive; font-size: 14px;">${this.panelTitle}</h3>
+                                <button id="closeCustomizer" type="button" style="color: var(--pixel-red); background: none; border: none; font-size: 24px; cursor: pointer;"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="customizer-body" style="display: flex; flex-direction: column; gap: 20px;">
+                                ${this.sections.map(section => `
+                                    <div class="customizer-section" style="margin-bottom: 25px;">
+                                        <h4 style="font-size: 8px; color: var(--pixel-secondary); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; opacity: 0.8; text-transform: uppercase;">${section.name}</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                                            ${section.controls.map(control => this.renderControl(control)).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button id="resetSettings" class="reset-colors" style="background: var(--pixel-primary); color: #000; border: none; padding: 15px; cursor: pointer; font-family: 'Press Start 2P'; font-size: 8px; text-transform: uppercase;">Reset All Settings</button>
+                            </div>
+                        </div>
+                        <style>#customizerPanel.active { right: 20px !important; }</style>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', panelHtml);
+                    this.panel = document.getElementById('customizerPanel');
+                    this.closeBtn = document.getElementById('closeCustomizer');
+                    this.resetBtn = document.getElementById('resetSettings');
+                    this.inputs = this.panel.querySelectorAll('input');
+
+                    this.styleTag = document.getElementById('dynamic-theme-overrides');
+                    if (!this.styleTag) {
+                        this.styleTag = document.createElement('style');
+                        this.styleTag.id = 'dynamic-theme-overrides';
+                        document.head.appendChild(this.styleTag);
+                    }
+                }
+
+                renderControl(control) {
+                    if (control.type === 'color') {
+                        return `
+                            <div class="color-item" style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-family: 'Press Start 2P', cursive; font-size: 8px; text-transform: uppercase; color: #aaa;">${control.name}</label>
+                                <div class="color-input-wrapper" style="width: 40px; height: 40px; border: 2px solid var(--pixel-primary); position: relative;">
+                                    <input type="color" data-var="${control.var}" data-type="color" style="position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; cursor: pointer;">
+                                </div>
+                            </div>
+                        `;
+                    } else if (control.type === 'range') {
+                        return `
+                            <div class="range-item" style="display: flex; flex-direction: column; gap: 5px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-family: 'Press Start 2P', cursive; font-size: 8px; text-transform: uppercase; color: #aaa;">${control.name}</label>
+                                    <span class="range-val" style="font-size: 8px; font-family: 'Press Start 2P', cursive; background: var(--pixel-primary); color: var(--pixel-dark); padding: 2px 6px; border-radius: 2px;"></span>
+                                </div>
+                                <input type="range" 
+                                    data-var="${control.var}" 
+                                    data-type="range"
+                                    data-unit="${control.unit || ''}" 
+                                    min="${control.min}" 
+                                    max="${control.max}" 
+                                    step="${control.step || 1}"
+                                    style="width: 100%; cursor: pointer; accent-color: var(--pixel-primary);">
+                            </div>
+                        `;
+                    }
+                    return '';
+                }
+
+                bindEvents() {
+                    const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                    toggleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.updateInputsFromDOM();
+                            this.panel.classList.toggle('active');
+                        });
+                    });
+
+                    if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                    this.inputs.forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            this.applyChange(e.target);
+                        });
+                    });
+
+                    if (this.resetBtn) {
+                        this.resetBtn.addEventListener('click', () => {
+                            document.body.style = '';
+                            this.styleTag.textContent = '';
+                            this.updateInputsFromDOM();
+                        });
+                    }
+                }
+
+                applyChange(input) {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let value = input.value;
+
+                    if (type === 'range') {
+                        const unit = input.getAttribute('data-unit') || '';
+                        value = value + unit;
+                        const valSpan = input.parentElement.querySelector('.range-val');
+                        if (valSpan) valSpan.textContent = value;
+                    }
+
+                    document.body.style.setProperty(varName, value);
+                    this.updateStyleTag();
+                }
+
+                updateInputsFromDOM() {
+                    const styles = getComputedStyle(document.body);
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let color = styles.getPropertyValue(varName).trim();
+
+                        if (type === 'color') {
+                            if (color.startsWith('#')) {
+                                input.value = color;
+                            } else if (color.startsWith('rgb')) {
+                                const rgb = color.match(/\d+/g);
+                                if (rgb && rgb.length >= 3) {
+                                    const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                    input.value = hex;
+                                }
+                            }
+                        } else if (type === 'range') {
+                            const numericVal = parseFloat(color);
+                            if (!isNaN(numericVal)) {
+                                input.value = numericVal;
+                                const valSpan = input.parentElement.querySelector('.range-val');
+                                if (valSpan) valSpan.textContent = color;
+                            }
+                        }
+                    });
+                }
+
+                updateStyleTag() {
+                    let css = ':root { \n';
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let val = input.value;
+                        if (type === 'range') val += input.getAttribute('data-unit') || '';
+                        css += `    ${varName}: ${val} !important;\n`;
+                    });
+                    css += '}\n';
+                    this.styleTag.textContent = css;
+                }
+            }
+
+            new ThemeCustomizer({
+                panelTitle: 'World Settings',
+                sections: [
+                    {
+                        name: 'Color Palette',
+                        controls: [
+                            { type: 'color', name: 'Primary', var: '--pixel-primary' },
+                            { type: 'color', name: 'Secondary', var: '--pixel-secondary' },
+                            { type: 'color', name: 'Accent Text', var: '--pixel-accent' },
+                            { type: 'color', name: 'Dark Void', var: '--pixel-dark' }
+                        ]
+                    },
+                    {
+                        name: 'Visual FX',
+                        controls: [
+                            { name: 'Scanline Alpha', type: 'range', var: '--scanline-opacity', min: 0, max: 0.6, step: 0.05 },
+                            { name: 'Global Scale', type: 'range', var: '--font-size-base', min: 8, max: 14, unit: 'px' },
+                            { name: 'Star Intensity', type: 'range', var: '--particles-opacity', min: 0, max: 1, step: 0.1 }
+                        ]
+                    }
+                ]
+            });
+
             document.title = `${data.personalInfo.fullName.toUpperCase()} - PORTFOLIO`;
         }
 
@@ -2047,4 +2267,5 @@
         }
     </script>
 </body>
+
 </html>

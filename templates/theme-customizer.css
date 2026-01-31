@@ -1,0 +1,198 @@
+/* Color Customizer Styles */
+.customizer-panel {
+    position: fixed;
+    top: 100px;
+    right: -320px;
+    width: 300px;
+    background: var(--card-bg, #ffffff);
+    border: 3px solid var(--primary, #000000);
+    box-shadow: 10px 10px 0 var(--accent, #ff3366);
+    z-index: 10001;
+    transition: right 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    padding: 24px;
+}
+
+.customizer-panel.active {
+    right: 40px;
+}
+
+.customizer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 3px solid var(--primary, #000000);
+    padding-bottom: 12px;
+}
+
+.customizer-header h3 {
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--primary, #000000);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#closeCustomizer {
+    background: transparent;
+    border: none;
+    color: var(--primary, #000000);
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+#closeCustomizer:hover {
+    color: var(--accent, #ff3366);
+}
+
+.customizer-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.color-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.color-item label {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text, #1a1a1a);
+    text-transform: uppercase;
+}
+
+.color-input-wrapper {
+    width: 45px;
+    height: 45px;
+    border: 3px solid var(--primary, #000000);
+    position: relative;
+    overflow: hidden;
+}
+
+.color-input-wrapper input[type="color"] {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: calc(100% + 10px);
+    height: calc(100% + 10px);
+    border: none;
+    cursor: pointer;
+    background: none;
+}
+
+.customizer-toggle {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--primary, #000000);
+    background: transparent;
+    color: var(--primary, #000000);
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.customizer-toggle:hover {
+    background: var(--accent, #ff3366);
+    border-color: var(--accent, #ff3366);
+    color: white;
+}
+
+.reset-colors {
+    margin-top: 10px;
+    padding: 12px;
+    background: var(--primary, #000000);
+    color: white;
+    border: 3px solid var(--primary, #000000);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.reset-colors:hover {
+    background: transparent;
+    color: var(--primary, #000000);
+}
+
+/* Floating Action Group */
+.floating-actions {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 15px;
+    z-index: 9999;
+}
+
+/* Specific styling for the customizer toggle when in floating group */
+.floating-actions .customizer-toggle {
+    background: var(--bg, #ffffff) !important;
+    box-shadow: 5px 5px 0 var(--primary, #000000);
+    border-radius: 0;
+}
+
+.floating-actions .customizer-toggle:hover {
+    background: var(--accent, #ff3366) !important;
+    color: white !important;
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--primary, #000000);
+}
+
+/* Ensure buttons in floating actions don't have their own fixed positioning */
+.floating-actions .download-btn,
+.floating-actions .customizer-toggle {
+    position: static !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .floating-actions {
+        bottom: 20px;
+        right: 20px;
+        gap: 10px;
+        flex-direction: column-reverse;
+        align-items: flex-end;
+    }
+}
+
+/* Dark mode adjustments for customizer */
+body.dark-mode .customizer-panel {
+    background: var(--card-bg, #1a1a1a);
+    border-color: var(--primary, #ffffff);
+}
+
+body.dark-mode .customizer-header {
+    border-color: var(--primary, #ffffff);
+}
+
+body.dark-mode .customizer-header h3,
+body.dark-mode #closeCustomizer,
+body.dark-mode .color-input-wrapper,
+body.dark-mode .customizer-toggle,
+body.dark-mode .reset-colors {
+    border-color: var(--primary, #ffffff);
+    color: var(--primary, #ffffff);
+}
+
+body.dark-mode .reset-colors {
+    background: var(--primary, #ffffff);
+    color: var(--bg, #000000);
+}
+
+body.dark-mode .reset-colors:hover {
+    background: transparent;
+    color: var(--primary, #ffffff);
+}

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +26,11 @@
             --tab-active: #1e1e1e;
             --tab-inactive: #2d2d30;
             --line-number: #858585;
+
+            /* Editor Pro Variables */
+            --font-size-base: 14px;
+            --line-height: 1.6;
+            --border-radius: 4px;
         }
 
         body.light-mode {
@@ -43,6 +49,11 @@
             --tab-active: #ffffff;
             --tab-inactive: #e8e8e8;
             --line-number: #6a737d;
+
+            /* Editor Pro Variables Default */
+            --font-size-base: 14px;
+            --line-height: 1.6;
+            --border-radius: 4px;
         }
 
         * {
@@ -59,7 +70,8 @@
             font-family: 'Fira Code', monospace;
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            line-height: 1.6;
+            line-height: var(--line-height);
+            font-size: var(--font-size-base);
             transition: all 0.3s ease;
             overflow-x: hidden;
         }
@@ -826,6 +838,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="top-bar">
         <div class="menu-icon" id="menuIcon">
@@ -833,6 +846,9 @@
         </div>
         <span class="top-bar-title">Portfolio</span>
         <div class="top-bar-actions">
+            <button class="top-bar-btn customizer-toggle" id="customizerToggle" title="Settings Palette">
+                <i class="fas fa-palette"></i>
+            </button>
             <button class="top-bar-btn" id="themeToggle" title="Toggle Theme">
                 <i class="fas fa-sun"></i>
             </button>
@@ -1115,11 +1131,11 @@
         async function loadPortfolioData() {
             try {
                 const response = await fetch('http://localhost:3000/api/GettingUserData');
-                
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
-                
+
                 const jsonData = await response.json();
                 portfolioData = jsonData.data;
                 return portfolioData;
@@ -1132,7 +1148,7 @@
         function initThemeToggle() {
             const themeToggle = document.getElementById('themeToggle');
             const themeIcon = themeToggle.querySelector('i');
-            
+
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.body.classList.add('light-mode');
@@ -1242,7 +1258,7 @@
                 closeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     tab.remove();
-                    
+
                     const remainingTabs = document.querySelectorAll('.tab');
                     if (remainingTabs.length > 0 && tab.classList.contains('active')) {
                         const lastTab = remainingTabs[remainingTabs.length - 1];
@@ -1503,6 +1519,179 @@
             });
         }
 
+        class ThemeCustomizer {
+            constructor(config = {}) {
+                this.sections = config.sections || [];
+                this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                this.init();
+            }
+
+            init() {
+                this.createPanel();
+                this.bindEvents();
+                this.updateInputsFromDOM();
+            }
+
+            createPanel() {
+                if (document.getElementById('customizerPanel')) return;
+                
+                const panelHtml = `
+                    <div id="customizerPanel" class="customizer-panel" style="width: 380px; right: -420px; background: var(--bg-secondary); border: 1px solid var(--border-color); box-shadow: 0 0 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); position: fixed; top: 35px; height: calc(100vh - 35px); z-index: 20000; transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1); padding: 30px; overflow-y: auto; color: var(--text-primary); font-family: 'Fira Code', monospace;">
+                        <div class="customizer-header" style="border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px;">
+                            <h3 style="color: var(--accent-yellow); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">${this.panelTitle}</h3>
+                            <button id="closeCustomizer" type="button" style="color: var(--text-secondary); background: none; border: none; font-size: 20px; cursor: pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="customizer-body" style="display: flex; flex-direction: column; gap: 20px;">
+                            ${this.sections.map(section => `
+                                <div class="customizer-section" style="margin-bottom: 25px;">
+                                    <h4 style="font-size: 11px; color: var(--accent-blue); margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; opacity: 0.8; text-transform: uppercase;">${section.name}</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                                        ${section.controls.map(control => this.renderControl(control)).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <button id="resetSettings" class="reset-colors" style="background: var(--accent-blue); color: var(--bg-primary); border: none; padding: 12px; cursor: pointer; font-family: 'Fira Code'; font-size: 11px; font-weight: 600; text-transform: uppercase;">Reset Editor Defaults</button>
+                        </div>
+                    </div>
+                    <style>
+                        #customizerPanel.active { right: 0 !important; }
+                        #customizerPanel::-webkit-scrollbar { width: 8px; }
+                        #customizerPanel::-webkit-scrollbar-track { background: var(--bg-primary); }
+                        #customizerPanel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+                        #customizerPanel input[type="range"] { height: 4px; -webkit-appearance: none; background: var(--border-color); border-radius: 2px; }
+                        #customizerPanel input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--accent-blue); border-radius: 50%; cursor: pointer; }
+                    </style>
+                `;
+                document.body.insertAdjacentHTML('beforeend', panelHtml);
+                this.panel = document.getElementById('customizerPanel');
+                this.closeBtn = document.getElementById('closeCustomizer');
+                this.resetBtn = document.getElementById('resetSettings');
+                this.inputs = this.panel.querySelectorAll('input');
+                
+                this.styleTag = document.getElementById('dynamic-theme-overrides');
+                if (!this.styleTag) {
+                    this.styleTag = document.createElement('style');
+                    this.styleTag.id = 'dynamic-theme-overrides';
+                    document.head.appendChild(this.styleTag);
+                }
+            }
+
+            renderControl(control) {
+                if (control.type === 'color') {
+                    return `
+                        <div class="color-item" style="display: flex; justify-content: space-between; align-items: center;">
+                            <label style="font-size: 12px; color: var(--text-secondary);">${control.name}</label>
+                            <div class="color-input-wrapper" style="width: 30px; height: 30px; border: 1px solid var(--border-color); position: relative; background: ${control.var}">
+                                <input type="color" data-var="${control.var}" data-type="color" style="position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; cursor: pointer; opacity: 0;">
+                            </div>
+                        </div>
+                    `;
+                } else if (control.type === 'range') {
+                    return `
+                        <div class="range-item" style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 11px; color: var(--text-secondary);">${control.name}</label>
+                                <span class="range-val" style="font-size: 11px; background: var(--bg-tertiary); color: var(--accent-green); padding: 2px 6px; border-radius: 2px; border: 1px solid var(--border-color);"></span>
+                            </div>
+                            <input type="range" 
+                                data-var="${control.var}" 
+                                data-type="range"
+                                data-unit="${control.unit || ''}" 
+                                min="${control.min}" 
+                                max="${control.max}" 
+                                step="${control.step || 1}"
+                                style="width: 100%; cursor: pointer; accent-color: var(--accent-blue);">
+                        </div>
+                    `;
+                }
+                return '';
+            }
+
+            bindEvents() {
+                const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                toggleBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.updateInputsFromDOM();
+                        this.panel.classList.toggle('active');
+                    });
+                });
+
+                if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                this.inputs.forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        this.applyChange(e.target);
+                    });
+                });
+
+                if (this.resetBtn) {
+                    this.resetBtn.addEventListener('click', () => {
+                        document.body.style = '';
+                        this.styleTag.textContent = '';
+                        this.updateInputsFromDOM();
+                    });
+                }
+            }
+
+            applyChange(input) {
+                const varName = input.getAttribute('data-var');
+                const type = input.getAttribute('data-type');
+                let value = input.value;
+                
+                if (type === 'range') {
+                    const unit = input.getAttribute('data-unit') || '';
+                    value = value + unit;
+                    const valSpan = input.parentElement.querySelector('.range-val');
+                    if (valSpan) valSpan.textContent = value;
+                }
+                
+                document.body.style.setProperty(varName, value);
+                this.updateStyleTag();
+            }
+
+            updateInputsFromDOM() {
+                const styles = getComputedStyle(document.body);
+                this.inputs.forEach(input => {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let color = styles.getPropertyValue(varName).trim();
+                    
+                    if (type === 'color') {
+                        if (color.startsWith('#')) {
+                            input.value = color;
+                        } else if (color.startsWith('rgb')) {
+                            const rgb = color.match(/\d+/g);
+                            if (rgb && rgb.length >= 3) {
+                                const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                input.value = hex;
+                            }
+                        }
+                    } else if (type === 'range') {
+                        const numericVal = parseFloat(color);
+                        if (!isNaN(numericVal)) {
+                            input.value = numericVal;
+                            const valSpan = input.parentElement.querySelector('.range-val');
+                            if (valSpan) valSpan.textContent = color;
+                        }
+                    }
+                });
+            }
+
+            updateStyleTag() {
+                let css = ':root { \n';
+                this.inputs.forEach(input => {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let val = input.value;
+                    if (type === 'range') val += input.getAttribute('data-unit') || '';
+                    css += `    ${varName}: ${val} !important;\n`;
+                });
+                css += '}\n';
+                this.styleTag.textContent = css;
+            }
+        }
+
         async function init() {
             const data = await loadPortfolioData();
 
@@ -1523,6 +1712,37 @@
             initNavigation();
             initContactForm();
 
+            new ThemeCustomizer({
+                panelTitle: 'VS Code Settings',
+                sections: [
+                    {
+                        name: 'Workbench Colors',
+                        controls: [
+                            { type: 'color', name: 'Primary BG', var: '--bg-primary' },
+                            { type: 'color', name: 'Secondary BG', var: '--bg-secondary' },
+                            { type: 'color', name: 'Sidebar BG', var: '--sidebar-bg' },
+                            { type: 'color', name: 'Accent Blue', var: '--accent-blue' }
+                        ]
+                    },
+                    {
+                        name: 'Editor Typography',
+                        controls: [
+                            { type: 'range', name: 'Font Size', var: '--font-size-base', min: 10, max: 20, unit: 'px' },
+                            { type: 'range', name: 'Line Height', var: '--line-height', min: 1, max: 2, step: 0.1 },
+                            { type: 'range', name: 'Border Radius', var: '--border-radius', min: 0, max: 20, unit: 'px' }
+                        ]
+                    },
+                    {
+                        name: 'Syntax Colors',
+                        controls: [
+                            { type: 'color', name: 'Green (Keywords)', var: '--accent-green' },
+                            { type: 'color', name: 'Yellow (Functions)', var: '--accent-yellow' },
+                            { type: 'color', name: 'Pink (Types)', var: '--accent-pink' }
+                        ]
+                    }
+                ]
+            });
+
             document.title = `${data.personalInfo.fullName} - Portfolio`;
         }
 
@@ -1533,4 +1753,5 @@
         }
     </script>
 </body>
+
 </html>

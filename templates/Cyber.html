@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Portfolio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
+    <!-- Persistent Customizer Trigger -->
+    <div style="position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 10002;">
+        <button class="customizer-toggle" id="customizerToggle" title="Customize Colors"
+            style="width: 60px; height: 60px; background: #00ff88; color: #000; border: 3px solid #000; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 0 10px 10px 0; cursor: pointer; box-shadow: 0 0 20px rgba(0,255,136,0.6); transition: all 0.3s;">
+            <i class="fas fa-palette"></i>
+        </button>
+    </div>
     <style>
         .download-btn {
             position: fixed;
@@ -34,6 +45,107 @@
             background: linear-gradient(135deg, #00ffaa 0%, #00ddff 100%);
         }
 
+        /* Inline Customizer Styles */
+        .customizer-panel {
+            position: fixed;
+            top: 20px;
+            right: -350px;
+            width: 320px;
+            background: rgba(10, 10, 10, 0.98);
+            border: 4px solid #00ff88;
+            box-shadow: 0 0 40px rgba(0, 255, 136, 0.2);
+            z-index: 20000;
+            transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 30px;
+            max-height: 95vh;
+            overflow-y: auto;
+            backdrop-filter: blur(15px);
+            color: #fff;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+        }
+
+        .customizer-panel.active {
+            right: 20px;
+        }
+
+        .customizer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #00ccff;
+            padding-bottom: 15px;
+        }
+
+        .customizer-header h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            color: #00ff88;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        #closeCustomizer {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ff006e;
+        }
+
+        .customizer-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .color-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .color-item label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .color-input-wrapper {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #00ff88;
+            position: relative;
+        }
+
+        .color-input-wrapper input[type="color"] {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border: none;
+            cursor: pointer;
+        }
+
+        .reset-colors {
+            margin-top: 15px;
+            padding: 15px;
+            background: #00ccff;
+            color: #000;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+        }
+
         .download-btn:active {
             transform: translateY(-2px) scale(1.02);
         }
@@ -47,6 +159,14 @@
             --mid-grey: #2a2a2a;
             --light-grey: #e0e0e0;
             --white: #ffffff;
+
+            /* Cyber Detailed Variables */
+            --scanline-opacity: 0.03;
+            --glow-spread: 15px;
+            --font-size-base: 14px;
+            --radius: 0px;
+            --border-weight: 2px;
+            --particles-opacity: 0.15;
         }
 
         body.dark-mode {
@@ -73,7 +193,7 @@
             background-color: var(--deep-black);
             color: var(--light-grey);
             line-height: 1.6;
-            font-size: 14px;
+            font-size: var(--font-size-base);
             overflow-x: hidden;
             position: relative;
         }
@@ -85,22 +205,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    0deg,
-                    rgba(0, 255, 136, 0.03) 0px,
+            background:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 255, 136, var(--scanline-opacity)) 0px,
                     transparent 1px,
                     transparent 2px,
-                    rgba(0, 255, 136, 0.03) 3px
-                );
+                    rgba(0, 255, 136, var(--scanline-opacity)) 3px);
             pointer-events: none;
             z-index: 9999;
             animation: scanlines 8s linear infinite;
         }
 
         @keyframes scanlines {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(10px); }
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(10px);
+            }
         }
 
         .pixel-border {
@@ -120,7 +243,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.15;
+            opacity: var(--particles-opacity);
         }
 
         .navbar {
@@ -163,8 +286,16 @@
         }
 
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
 
         .nav-menu {
@@ -664,10 +795,13 @@
         }
 
         @keyframes pulse-dot {
-            0%, 100% { 
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
             }
-            50% { 
+
+            50% {
                 box-shadow: 0 0 0 15px rgba(0, 255, 136, 0);
             }
         }
@@ -1359,7 +1493,7 @@
             </div>
         </div>
     </footer>
-    
+
     <button class="download-btn" id="downloadBtn" aria-label="Download Portfolio">
         DOWNLOAD
     </button>
@@ -1518,7 +1652,7 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+
             } catch (error) {
                 console.error('Error downloading portfolio:', error);
             }
@@ -1526,7 +1660,7 @@
 
         function initDownloadButton() {
             const downloadBtn = document.getElementById('downloadBtn');
-            
+
             downloadBtn.addEventListener('click', () => {
                 if (!portfolioData) {
                     alert('Portfolio data is still loading. Please wait a moment and try again.');
@@ -1553,7 +1687,7 @@
         function initPixelParticles() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
-            
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
@@ -1643,7 +1777,7 @@
 
         function initScrollProgress() {
             const progressFill = document.getElementById('progressFill');
-            
+
             window.addEventListener('scroll', () => {
                 const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                 progressFill.style.width = scrolled + '%';
@@ -1786,7 +1920,7 @@
             }
         }
 
-       
+
         function populateEducation(data) {
             const educationGrid = document.getElementById('educationGrid');
 
@@ -1925,6 +2059,204 @@
             initScrollProgress();
             initContactForm();
 
+            class ThemeCustomizer {
+                constructor(config = {}) {
+                    this.sections = config.sections || [];
+                    this.panelTitle = config.panelTitle || 'Detailed Customizer';
+                    this.init();
+                }
+
+                init() {
+                    this.createPanel();
+                    this.bindEvents();
+                    this.updateInputsFromDOM();
+                }
+
+                createPanel() {
+                    if (document.getElementById('customizerPanel')) return;
+
+                    const panelHtml = `
+                        <div id="customizerPanel" class="customizer-panel" style="width: 380px; right: -420px; background: rgba(10,10,10,0.98); border: 4px solid var(--neon-green); box-shadow: 0 0 30px rgba(0,255,136,0.2); backdrop-filter: blur(15px);">
+                            <div class="customizer-header" style="border-bottom: 2px solid var(--neon-cyan);">
+                                <h3 style="color: var(--neon-green); font-family: 'JetBrains Mono', monospace;">${this.panelTitle}</h3>
+                                <button id="closeCustomizer" type="button" style="color: var(--neon-pink); background: none; border: none; font-size: 24px; cursor: pointer;"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="customizer-body">
+                                ${this.sections.map(section => `
+                                    <div class="customizer-section" style="margin-bottom: 25px;">
+                                        <h4 style="font-size: 11px; color: var(--neon-cyan); margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; opacity: 0.8; text-transform: uppercase;">${section.name}</h4>
+                                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                                            ${section.controls.map(control => this.renderControl(control)).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <button id="resetSettings" class="reset-colors" style="background: var(--neon-green); color: #000; border: none; padding: 15px; cursor: pointer; font-family: 'JetBrains Mono'; font-weight: 800; text-transform: uppercase;">Reset All Settings</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', panelHtml);
+                    this.panel = document.getElementById('customizerPanel');
+                    this.closeBtn = document.getElementById('closeCustomizer');
+                    this.resetBtn = document.getElementById('resetSettings');
+                    this.inputs = this.panel.querySelectorAll('input');
+
+                    this.styleTag = document.getElementById('dynamic-theme-overrides');
+                    if (!this.styleTag) {
+                        this.styleTag = document.createElement('style');
+                        this.styleTag.id = 'dynamic-theme-overrides';
+                        document.head.appendChild(this.styleTag);
+                    }
+                }
+
+                renderControl(control) {
+                    if (control.type === 'color') {
+                        return `
+                            <div class="color-item" style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; color: #aaa;">${control.name}</label>
+                                <div class="color-input-wrapper" style="width: 40px; height: 40px; border: 2px solid var(--neon-green); position: relative;">
+                                    <input type="color" data-var="${control.var}" data-type="color" style="position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; cursor: pointer;">
+                                </div>
+                            </div>
+                        `;
+                    } else if (control.type === 'range') {
+                        return `
+                            <div class="range-item" style="display: flex; flex-direction: column; gap: 5px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; color: #aaa;">${control.name}</label>
+                                    <span class="range-val" style="font-size: 10px; font-family: 'JetBrains Mono', monospace; background: var(--neon-green); color: var(--deep-black); padding: 2px 6px; border-radius: 2px;"></span>
+                                </div>
+                                <input type="range" 
+                                    data-var="${control.var}" 
+                                    data-type="range"
+                                    data-unit="${control.unit || ''}" 
+                                    min="${control.min}" 
+                                    max="${control.max}" 
+                                    step="${control.step || 1}"
+                                    style="width: 100%; cursor: pointer; accent-color: var(--neon-green);">
+                            </div>
+                        `;
+                    }
+                    return '';
+                }
+
+                bindEvents() {
+                    const toggleBtns = document.querySelectorAll('.customizer-toggle');
+                    toggleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.updateInputsFromDOM();
+                            this.panel.classList.toggle('active');
+                        });
+                    });
+
+                    if (this.closeBtn) this.closeBtn.addEventListener('click', () => this.panel.classList.remove('active'));
+
+                    this.inputs.forEach(input => {
+                        input.addEventListener('input', (e) => {
+                            this.applyChange(e.target);
+                        });
+                    });
+
+                    if (this.resetBtn) {
+                        this.resetBtn.addEventListener('click', () => {
+                            document.body.style = '';
+                            this.styleTag.textContent = '';
+                            this.updateInputsFromDOM();
+                        });
+                    }
+                }
+
+                applyChange(input) {
+                    const varName = input.getAttribute('data-var');
+                    const type = input.getAttribute('data-type');
+                    let value = input.value;
+
+                    if (type === 'range') {
+                        const unit = input.getAttribute('data-unit') || '';
+                        value = value + unit;
+                        const valSpan = input.parentElement.querySelector('.range-val');
+                        if (valSpan) valSpan.textContent = value;
+                    }
+
+                    document.body.style.setProperty(varName, value);
+                    this.updateStyleTag();
+                }
+
+                updateInputsFromDOM() {
+                    const styles = getComputedStyle(document.body);
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let color = styles.getPropertyValue(varName).trim();
+
+                        if (type === 'color') {
+                            if (color.startsWith('#')) {
+                                input.value = color;
+                            } else if (color.startsWith('rgb')) {
+                                const rgb = color.match(/\d+/g);
+                                if (rgb && rgb.length >= 3) {
+                                    const hex = "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+                                    input.value = hex;
+                                }
+                            }
+                        } else if (type === 'range') {
+                            const numericVal = parseFloat(color);
+                            if (!isNaN(numericVal)) {
+                                input.value = numericVal;
+                                const valSpan = input.parentElement.querySelector('.range-val');
+                                if (valSpan) valSpan.textContent = color;
+                            }
+                        }
+                    });
+                }
+
+                updateStyleTag() {
+                    let css = ':root { \n';
+                    this.inputs.forEach(input => {
+                        const varName = input.getAttribute('data-var');
+                        const type = input.getAttribute('data-type');
+                        let val = input.value;
+                        if (type === 'range') val += input.getAttribute('data-unit') || '';
+                        css += `    ${varName}: ${val} !important;\n`;
+                    });
+                    css += '}\n';
+                    this.styleTag.textContent = css;
+                }
+            }
+
+            new ThemeCustomizer({
+                panelTitle: 'Interface Systems',
+                sections: [
+                    {
+                        name: 'Core Spectrum',
+                        controls: [
+                            { type: 'color', name: 'Neon Green', var: '--neon-green' },
+                            { type: 'color', name: 'Neon Cyan', var: '--neon-cyan' },
+                            { type: 'color', name: 'Neon Pink', var: '--neon-pink' },
+                            { type: 'color', name: 'Deep Black', var: '--deep-black' },
+                            { type: 'color', name: 'Dark Grey', var: '--dark-grey' },
+                            { type: 'color', name: 'White', var: '--white' }
+                        ]
+                    },
+                    {
+                        name: 'Visual Modulation',
+                        controls: [
+                            { name: 'Scanline Opacity', type: 'range', var: '--scanline-opacity', min: 0, max: 0.1, step: 0.01 },
+                            { name: 'Glow Intensity', type: 'range', var: '--glow-spread', min: 0, max: 40, unit: 'px' },
+                            { name: 'Data Density', type: 'range', var: '--font-size-base', min: 12, max: 18, unit: 'px' }
+                        ]
+                    },
+                    {
+                        name: 'Hardware Control',
+                        controls: [
+                            { name: 'Structural Radius', type: 'range', var: '--radius', min: 0, max: 30, unit: 'px' },
+                            { name: 'Pixel Thickness', type: 'range', var: '--border-weight', min: 1, max: 5, unit: 'px' },
+                            { name: 'Static Noise', type: 'range', var: '--particles-opacity', min: 0, max: 0.4, step: 0.05 }
+                        ]
+                    }
+                ]
+            });
+
             document.title = `${data.personalInfo.fullName.toUpperCase()} - PORTFOLIO`;
         }
 
@@ -1935,4 +2267,5 @@
         }
     </script>
 </body>
+
 </html>
