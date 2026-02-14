@@ -142,7 +142,8 @@ export default function ExcelTransformer() {
       if (montantTTC === 0 && montantHT === 0 && montantTVA === 0) continue;
 
       const accountNumbers = ['34210000', '71211000', '44552000'];
-      
+      const formatAmount = (value) =>
+  Number(value).toFixed(2).replace('.', ',');
       // Ensure libellé has no leading/trailing spaces and client+factureNum are properly concatenated
       const libelle = `${client} ${factureNum}`.trim();
 
@@ -152,7 +153,7 @@ export default function ExcelTransformer() {
         invoiceCounter,                         // N°
         accountNumbers[0],                      // Compte (34210000)
         libelle,                                // Libellé (IRIS 64)
-        Math.round(montantTTC).toString(),      // TTC
+        formatAmount(montantTTC),      // TTC
         '00',                                   // HT
         'VET'                                   // VET
       ]);
@@ -164,7 +165,7 @@ export default function ExcelTransformer() {
         accountNumbers[1],                      // Compte (71211000)
         libelle,                                // Libellé (IRIS 64)
         '00',                                   // TTC
-        Math.round(montantHT).toString(),       // HT
+        formatAmount(montantHT),       // HT
         'VET'                                   // VET
       ]);
 
@@ -175,7 +176,7 @@ export default function ExcelTransformer() {
         accountNumbers[2],                      // Compte (71211000)
         libelle,                                // Libellé (IRIS 64)
         '00',                                   // TTC
-        Math.round(montantTVA).toString(),       // HT
+        formatAmount(montantTVA),       // HT
         'VET'                                   // VET
       ]);
       

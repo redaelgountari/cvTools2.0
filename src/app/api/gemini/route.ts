@@ -1,10 +1,30 @@
 import { OpenAI } from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
-import { Groq } from 'groq-sdk'; 
+import { Groq } from 'groq-sdk';
+import { createHash } from 'crypto';
+
+// Redis Config (Matches Cookiesmv.js server logic)
+const REDIS_URL = "https://growing-alpaca-24643.upstash.io";
+const REDIS_TOKEN = "AWBDAAIncDI3ODI1ZWIzNjUxNjY0NWY2OWVkYzhmZDE3YTM3N2FiOHAyMjQ2NDM";
+
+async function redisOps(action: 'GET' | 'SET', key: string, value?: string) {
+  try {
+    const command = action === 'GET' ? ['GET', key] : ['SETEX', key, '86400', value!]; // 24h cache
+    const encodedCommand = command.map(part => encodeURIComponent(part)).join('/');
+    const response = await fetch(`${REDIS_URL}/${encodedCommand}`, {
+      headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
+      cache: 'no-store'
+    });
+    const data = await response.json();
+    return data.result;
+  } catch (e) {
+    return null;
+  }
+}
 
 // Define all possible use cases for your app
-export type UseCase = 
+export type UseCase =
   | 'cover-letter'
   | 'resume-feedback'
   | 'interview-prep'
@@ -35,23 +55,23 @@ interface APIResponse {
 const SECURITY_CONFIG = {
   maxInputLength: 15000,
   maxOutputTokens: 4000,
-  
+
   // Blocked patterns - focused on actual malicious content
   blockedPatterns: [
     /ignore\s+previous\s+instructions/gi,
     /disregard\s+previous\s+instructions/gi,
     /forget\s+previous\s+instructions/gi,
     /override\s+system/gi,
-    
+
     // Dangerous content
     /generate\s+(malicious|harmful|dangerous|virus|malware|exploit)/gi,
     /create\s+(virus|malware|exploit)/gi,
     /give\s+me\s+(password|credentials|api\s+key)/gi,
-    
+
     // Illegal role changes
     /(you are|act as)\s+(a\s+)?(hacker|cracker|illegal|unauthorized)/gi
   ],
-  
+
   // CV analysis specific patterns
   cvAnalysisPatterns: [
     /cv\s+analysis/gi,
@@ -63,7 +83,7 @@ const SECURITY_CONFIG = {
     /professional\s+summary/gi,
     /certifications|projects|awards/gi
   ],
-  
+
   // Translation specific patterns
   translationPatterns: [
     /change\s+language/gi,
@@ -75,7 +95,7 @@ const SECURITY_CONFIG = {
     /arabic|hindi|turkish|dutch|swedish/gi,
     /greek|hebrew|thai|vietnamese/gi
   ],
-  
+
   // Career-related patterns
   careerPatterns: [
     /cover\s+letter/gi,
@@ -90,7 +110,7 @@ const SECURITY_CONFIG = {
     /professional/gi,
     /work|employment/gi
   ],
-  
+
   maxInjectionScore: 5
 };
 
@@ -183,8 +203,8 @@ export async function POST(request: Request) {
         useCase,
         inputLength: userData.length
       });
-      return NextResponse.json({ 
-        error: 'Your request contains inappropriate content. Please only submit career-related requests.' 
+      return NextResponse.json({
+        error: 'Your request contains inappropriate content. Please only submit career-related requests.'
       }, { status: 400 });
     }
 
@@ -199,26 +219,37 @@ export async function POST(request: Request) {
     // Construct secure prompt based on use case
     const securePrompt = constructSecurePrompt(body);
 
+    // Cache Check
+    const cacheKey = `ai_cache:${createHash('sha256').update(`${useCase}:${securePrompt}`).digest('hex')}`;
+    const cachedResponse = await redisOps('GET', cacheKey);
+    if (cachedResponse) {
+      console.log('⚡ Cache Hit for:', useCase);
+      return NextResponse.json(JSON.parse(cachedResponse));
+    }
+
     // Try providers with priority order
     if (!provider) {
       // Try Gemini first (if specified or default)
       const geminiResult = await tryGemini(securePrompt, useCase);
       if (geminiResult) {
         console.log('✓ Success with Gemini');
+        await redisOps('SET', cacheKey, JSON.stringify(geminiResult));
         return NextResponse.json(geminiResult);
       }
-      
+
       // Then try Groq (fast and reliable)
       const groqResult = await tryGroq(securePrompt, useCase);
       if (groqResult) {
         console.log('✓ Success with Groq');
+        await redisOps('SET', cacheKey, JSON.stringify(groqResult));
         return NextResponse.json(groqResult);
       }
-      
+
       // Finally try OpenRouter
       const openRouterResult = await tryOpenRouter(securePrompt, useCase);
       if (openRouterResult) {
         console.log('✓ Success with OpenRouter');
+        await redisOps('SET', cacheKey, JSON.stringify(openRouterResult));
         return NextResponse.json(openRouterResult);
       }
     } else {
@@ -235,8 +266,10 @@ export async function POST(request: Request) {
           result = await tryOpenRouter(securePrompt, useCase);
           break;
       }
-      
+
       if (result) {
+        // Cache the successful result
+        await redisOps('SET', cacheKey, JSON.stringify(result));
         return NextResponse.json(result);
       }
     }
@@ -277,14 +310,14 @@ function validateInput(body: RequestBody): string | null {
   return null;
 }
 
-function performSecurityChecks(body: RequestBody): { 
-  valid: boolean; 
-  reason?: string; 
-  score: number 
+function performSecurityChecks(body: RequestBody): {
+  valid: boolean;
+  reason?: string;
+  score: number
 } {
   const { userData, useCase } = body;
   let injectionScore = 0;
-  
+
   const input = userData.toLowerCase();
 
   // Check for blocked patterns
@@ -297,14 +330,14 @@ function performSecurityChecks(body: RequestBody): {
 
   // Context-aware scoring for different use cases
   if (useCase === 'Analyse-resume') {
-    const hasCVAnalysisContent = SECURITY_CONFIG.cvAnalysisPatterns.some(pattern => 
+    const hasCVAnalysisContent = SECURITY_CONFIG.cvAnalysisPatterns.some(pattern =>
       pattern.test(input)
     );
     if (hasCVAnalysisContent) {
       injectionScore = Math.max(0, injectionScore - 2);
     }
   } else if (useCase === 'Translate-cv') {
-    const hasTranslationContent = SECURITY_CONFIG.translationPatterns.some(pattern => 
+    const hasTranslationContent = SECURITY_CONFIG.translationPatterns.some(pattern =>
       pattern.test(input)
     );
     if (hasTranslationContent) {
@@ -328,12 +361,12 @@ function performSecurityChecks(body: RequestBody): {
 
 function checkContentRelevance(userData: string, useCase: UseCase): { relevant: boolean; reason?: string } {
   const input = userData.toLowerCase();
-  
+
   if (useCase === 'Analyse-resume') {
-    const hasCVAnalysisPatterns = SECURITY_CONFIG.cvAnalysisPatterns.some(pattern => 
+    const hasCVAnalysisPatterns = SECURITY_CONFIG.cvAnalysisPatterns.some(pattern =>
       pattern.test(input)
     );
-    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern => 
+    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
       pattern.test(input)
     );
     const hasJSONStructure = input.includes('json') && input.includes('format');
@@ -342,10 +375,10 @@ function checkContentRelevance(userData: string, useCase: UseCase): { relevant: 
       return { relevant: true };
     }
   } else if (useCase === 'Translate-cv') {
-    const hasTranslationPatterns = SECURITY_CONFIG.translationPatterns.some(pattern => 
+    const hasTranslationPatterns = SECURITY_CONFIG.translationPatterns.some(pattern =>
       pattern.test(input)
     );
-    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern => 
+    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
       pattern.test(input)
     );
     const hasJSONData = input.includes('{') && input.includes('}');
@@ -355,13 +388,13 @@ function checkContentRelevance(userData: string, useCase: UseCase): { relevant: 
     }
   } else {
     // For other use cases
-    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern => 
+    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
       pattern.test(input)
     );
     if (!hasCareerPatterns) {
-      return { 
-        relevant: false, 
-        reason: 'No career-related content detected' 
+      return {
+        relevant: false,
+        reason: 'No career-related content detected'
       };
     }
   }
@@ -371,9 +404,9 @@ function checkContentRelevance(userData: string, useCase: UseCase): { relevant: 
 
 function constructSecurePrompt(body: RequestBody): string {
   const { useCase, userData, cvData, jobDescription, additionalContext } = body;
-  
+
   const systemPrompt = USE_CASE_PROMPTS[useCase];
-  
+
   // For translation, we use the userData directly as it contains the CV JSON
   if (useCase === 'Translate-cv') {
     return `${systemPrompt}
@@ -382,7 +415,7 @@ TRANSLATION REQUEST: ${userData}
 
 CRITICAL: Return ONLY the translated JSON object. Do not include any additional text, explanations, or markdown formatting.`;
   }
-  
+
   // For CV analysis, use the pre-generated prompt
   if (useCase === 'Analyse-resume') {
     return `${systemPrompt}
@@ -499,8 +532,8 @@ async function tryGemini(prompt: string, useCase: UseCase): Promise<APIResponse 
     // FIXED: Use correct model name - either of these should work
     const modelName = 'gemini-2.0-flash'; // Production model
     // Alternative: 'gemini-1.5-flash-latest'
-    
-    const model = genAI.getGenerativeModel({ 
+
+    const model = genAI.getGenerativeModel({
       model: modelName,
       generationConfig: {
         maxOutputTokens: SECURITY_CONFIG.maxOutputTokens,
@@ -541,12 +574,12 @@ async function tryGemini(prompt: string, useCase: UseCase): Promise<APIResponse 
     };
   } catch (error: any) {
     console.error('Gemini API error:', error);
-    
+
     // Check if it's a quota exhaustion error
     if (error.status === 429 && error.message?.includes('limit: 0')) {
       console.log('⚠️ Gemini free tier quota exhausted');
     }
-    
+
     return null;
   }
 }
@@ -563,7 +596,7 @@ async function tryGroq(prompt: string, useCase: UseCase): Promise<APIResponse | 
 
     // Free model with generous limits
     const modelName = 'llama-3.2-3b-preview';
-    
+
     const response = await groq.chat.completions.create({
       model: modelName,
       messages: [

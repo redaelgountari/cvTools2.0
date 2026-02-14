@@ -1,4 +1,4 @@
-import ResumeSchema from '@/lib/ResumeSchema';
+import ResumeShema from '@/lib/ResumeShema';
 import { mdb } from '@/lib/mongodb';
 import { NextResponse, NextRequest } from "next/server";
 import type { InferSchemaType } from 'mongoose';
@@ -8,8 +8,8 @@ import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function POST(request: NextRequest) {
     try {
-        type ResumeData = InferSchemaType<typeof ResumeSchema>;
-        const session = await getServerSession(authOptions);
+        type ResumeData = InferSchemaType<typeof ResumeShema>;
+        const session = await getServerSession(authOptions) as any;
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
             ...userDataWithoutId, // This spread now excludes _id
             updatedAt: new Date()
         };
-
-        console.log("Attempting to save resume for userId:", userId);
-        console.log("Data to insert:", JSON.stringify(resumeToInsert, null, 2));
 
         // Use updateOne with upsert
         const result = await db.collection("Resumetl").updateOne(

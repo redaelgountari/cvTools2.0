@@ -125,6 +125,35 @@
     color: var(--primary, #000000);
 }
 
+/* Dark mode adjustments for customizer if needed */
+body.dark-mode .customizer-panel {
+    background: var(--card-bg, #1a1a1a);
+    border-color: var(--primary, #ffffff);
+}
+
+body.dark-mode .customizer-header {
+    border-color: var(--primary, #ffffff);
+}
+
+body.dark-mode .customizer-header h3,
+body.dark-mode #closeCustomizer,
+body.dark-mode .color-input-wrapper,
+body.dark-mode .customizer-toggle,
+body.dark-mode .reset-colors {
+    border-color: var(--primary, #ffffff);
+    color: var(--primary, #ffffff);
+}
+
+body.dark-mode .reset-colors {
+    background: var(--primary, #ffffff);
+    color: var(--bg, #000000);
+}
+
+body.dark-mode .reset-colors:hover {
+    background: transparent;
+    color: var(--primary, #ffffff);
+}
+
 /* Floating Action Group */
 .floating-actions {
     position: fixed;
@@ -166,33 +195,4 @@
         flex-direction: column-reverse;
         align-items: flex-end;
     }
-}
-
-/* Dark mode adjustments for customizer */
-body.dark-mode .customizer-panel {
-    background: var(--card-bg, #1a1a1a);
-    border-color: var(--primary, #ffffff);
-}
-
-body.dark-mode .customizer-header {
-    border-color: var(--primary, #ffffff);
-}
-
-body.dark-mode .customizer-header h3,
-body.dark-mode #closeCustomizer,
-body.dark-mode .color-input-wrapper,
-body.dark-mode .customizer-toggle,
-body.dark-mode .reset-colors {
-    border-color: var(--primary, #ffffff);
-    color: var(--primary, #ffffff);
-}
-
-body.dark-mode .reset-colors {
-    background: var(--primary, #ffffff);
-    color: var(--bg, #000000);
-}
-
-body.dark-mode .reset-colors:hover {
-    background: transparent;
-    color: var(--primary, #ffffff);
 }

@@ -26,11 +26,14 @@ export default function Page() {
   const [isAnalysisReady, setIsAnalysisReady] = useState(false)
   const { setSteps, autoStart } = useTour();
 
+  const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
   const handleFileUploaded = () => {
     setIsAnalysisReady(true);
   };
 
   useEffect(() => {
+    if (hasTriggeredTour) return;
+
     setSteps([
       {
         target: '.upload-section',
@@ -52,12 +55,9 @@ export default function Page() {
       },
     ]);
 
-    const timer = setTimeout(() => {
-      autoStart();
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, []); 
+    setHasTriggeredTour(true);
+    autoStart();
+  }, [setSteps, autoStart, hasTriggeredTour]);
   return (
     <ReadContextProvider>
       <div className="flex min-h-screen flex-col bg-background">
@@ -70,7 +70,7 @@ export default function Page() {
                   <div className="upload-section">
                     <ReadTXT onFileUploaded={handleFileUploaded} />
                   </div>
-                  
+
                   <Card className="hidden md:block tips-card">
                     <CardHeader>
                       <CardTitle>Tips</CardTitle>
@@ -86,14 +86,14 @@ export default function Page() {
                   </Card>
                 </div>
               </div>
-              
+
               {/* Main Analysis Area */}
               <div className="md:col-span-6 lg:col-span-7">
                 <div className="grid gap-6">
                   <div className="analysis-section">
                     <Analyse />
                   </div>
-                  
+
                   <Card>
                     <CardHeader>
                       <CardTitle>Keyword Matches</CardTitle>
@@ -107,7 +107,7 @@ export default function Page() {
             </div>
           </div>
         </div>
-        
+
         {/* Footer */}
         <footer className="border-t py-4">
           <div className="container flex items-center justify-between">

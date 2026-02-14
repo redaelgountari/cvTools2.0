@@ -1,5 +1,5 @@
 "use client"
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import * as React from "react"
 import {
   SquareTerminal,
@@ -14,7 +14,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { ReadContext } from '@/app/GenComponents/ReadContext';
+import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 
 const data = {
   user: {
@@ -24,21 +24,7 @@ const data = {
 }
 
 export function AppSidebar({ ...props }) {
-  const { AnlysedCV } = useContext(ReadContext);
-  
-  // Check if CV is properly analyzed by verifying essential fields exist
-  const isCVAnalyzed = useMemo(() => {
-    if (!AnlysedCV) return false;
-    
-    // Check if the object has more than just the basic fields (_id, userId, updatedAt)
-    const essentialFields = ['personalInfo', 'skills', 'experience', 'education'];
-    const hasEssentialData = essentialFields.some(field => 
-      AnlysedCV[field] && 
-      (Array.isArray(AnlysedCV[field]) ? AnlysedCV[field].length > 0 : Object.keys(AnlysedCV[field]).length > 0)
-    );
-    
-    return hasEssentialData;
-  }, [AnlysedCV]);
+  const { isCVAnalyzed } = useIsCVAnalyzed();
 
   const navMain = useMemo(() => [
     {
@@ -82,7 +68,7 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <div className="right-4">
-        <ModeToggle/>
+        <ModeToggle />
       </div>
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}

@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  email: { 
-    type: String, 
+  email: {
+    type: String,
     required: [true, 'Email is required'],
     unique: true,
     trim: true,
     lowercase: true,
   },
-  password: { 
+  password: {
     type: String,
   },
   provider: {
@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   },
   verified: {
+    type: Boolean,
+    default: false
+  },
+  hasSeenTutorial: {
     type: Boolean,
     default: false
   }

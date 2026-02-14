@@ -29,22 +29,23 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const db = await mdb();
-          
+
           const user = await db.collection("users").findOne({ email: credentials.email });
-          
+
           if (!user || !user.password) {
             return null;
           }
-          
+
           const passwordMatch = await bcrypt.compare(credentials.password, user.password);
-          
+
           if (!passwordMatch) {
             return null;
           }
-          
+
           return {
             id: user._id.toString(),
             email: user.email,
+            hasSeenTutorial: user.hasSeenTutorial ?? false,
           };
         } catch (error) {
           console.error("Authorization error:", error);
@@ -59,13 +60,13 @@ export const authOptions: NextAuthOptions = {
         const db = await mdb();
 
         const email = user.email;
-        
+
         if (!email) {
           return false;
         }
-        
+
         const existingUser = await db.collection("users").findOne({ email });
-        
+
         if (existingUser) {
           if (account?.provider && account.provider !== existingUser.provider) {
             await db.collection("users").updateOne(
@@ -75,30 +76,54 @@ export const authOptions: NextAuthOptions = {
           }
           return true;
         }
-        
+
         // Use db.collection for consistency or userSchema - pick one approach
         await db.collection("users").insertOne({
           email,
           provider: account?.provider || 'credentials',
           verified: account?.provider ? true : false,
+          hasSeenTutorial: false,
           createdAt: new Date(),
         });
-        
+
         return true;
       } catch (error) {
         console.error("Error in signIn callback:", error);
         return false;
       }
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.hasSeenTutorial = (user as any).hasSeenTutorial;
       }
+
+      // Handle manual session update or periodic refresh
+      if (trigger === "update" && session?.hasSeenTutorial !== undefined) {
+        token.hasSeenTutorial = session.hasSeenTutorial;
+      } else if (token.hasSeenTutorial === undefined) {
+        // Social logins might not have the field in the 'user' object from provider
+        // Or if we need a fresh check
+        try {
+          const db = await mdb();
+          const dbUser = await db.collection("users").findOne({ email: token.email });
+          if (dbUser) {
+            token.hasSeenTutorial = dbUser.hasSeenTutorial ?? false;
+          } else {
+            token.hasSeenTutorial = false;
+          }
+        } catch (e) {
+          console.error("Error refreshing token from DB:", e);
+          token.hasSeenTutorial = false;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        (session.user as any).hasSeenTutorial = token.hasSeenTutorial as boolean;
       }
       return session;
     },

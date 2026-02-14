@@ -1,226 +1,91 @@
-const REDIS_URL = "https://growing-alpaca-24643.upstash.io"
-const REDIS_TOKEN = "AWBDAAIncDI3ODI1ZWIzNjUxNjY0NWY2OWVkYzhmZDE3YTM3N2FiOHAyMjQ2NDM"
+// In-memory cache to improve UX during navigation (cleared on page refresh/F5)
+const volatileCache = {};
 
 /**
- * Makes a request to Upstash Redis REST API
- * @private
+ * Utility for interacting with the server-side Redis cache API.
+ * This prevents leaking Redis credentials to the client.
  */
-async function redisRequest(command) {
-  if (!REDIS_URL || !REDIS_TOKEN) {
-    console.error('Upstash Redis credentials not configured');
-    return null;
-  }
 
+async function cacheRequest(action, params = {}) {
   try {
-    // Encode each command part for URL safety
-    const encodedCommand = command.map(part => encodeURIComponent(part)).join('/');
-    
-    const response = await fetch(`${REDIS_URL}/${encodedCommand}`, {
-      headers: {
-        Authorization: `Bearer ${REDIS_TOKEN}`,
-      },
+    const response = await fetch('/api/cache', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...params })
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Redis request failed: ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data.result;
+    if (!response.ok) throw new Error('Cache request failed');
+    return await response.json();
   } catch (error) {
-    console.error('Redis request error:', error);
+    console.error('Cache utility error:', error);
     return null;
   }
 }
 
-/**
- * Saves data to Redis with optional expiration
- * @param {any} key - The key to store the data under
- * @param {any} data - The data to store (will be JSON stringified)
- * @param {number} expiryDays - Optional number of days until data expires
- */
 export async function saveToStorage(key, data, expiryDays = null) {
-  try {
-    const timestamp = Date.now();
-    const storageItem = { data, timestamp };
+  const expirySeconds = expiryDays ? expiryDays * 24 * 60 * 60 : null;
+  const storageItem = {
+    data,
+    timestamp: Date.now(),
+    expiry: expirySeconds ? Date.now() + (expirySeconds * 1000) : null
+  };
 
-    if (expiryDays !== null) {
-      storageItem.expiry = timestamp + expiryDays * 24 * 60 * 60 * 1000;
-    }
+  // Update in-memory cache for instant subsequent access
+  volatileCache[key] = storageItem;
 
-    const value = JSON.stringify(storageItem);
-
-    if (expiryDays !== null) {
-      const expirySeconds = expiryDays * 24 * 60 * 60;
-      await redisRequest(['SETEX', key, String(expirySeconds), value]);
-    } else {
-      await redisRequest(['SET', key, value]);
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Error saving to Redis:', error);
-    return false;
-  }
+  const res = await cacheRequest('set', {
+    key,
+    data: storageItem,
+    expirySeconds
+  });
+  return res?.success || false;
 }
+
 export async function saveSettings(key, data, expiryDays = null) {
-  try {
-    // Create storage object
-    const storageItem = {
-      data: data,
-      timestamp: new Date().getTime()
-    };
-    
-    // Add expiration timestamp if specified
-    if (expiryDays !== null) {
-      storageItem.expiry = new Date().getTime() + (expiryDays * 24 * 60 * 60 * 1000);
-    }
-    
-    const value = JSON.stringify(storageItem);
-    
-    // Save to Redis
-    if (expiryDays !== null) {
-      const expirySeconds = expiryDays * 24 * 60 * 60;
-      await redisRequest(['SETEX', key, expirySeconds, value]);
-    } else {
-      await redisRequest(['SET', key, value]);
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error saving settings to Redis:', error);
-    return false;
-  }
+  return await saveToStorage(key, data, expiryDays);
 }
 
-/**
- * Retrieves data from Redis, checking for expiration
- * @param {string} key - The key to retrieve data for
- * @returns {any|null} - The stored data or null if not found or expired
- */
 export async function getFromStorage(key) {
-  try {
-    const storedItem = await redisRequest(['GET', key]);
-    if (!storedItem) return null;
-    
-    // Parse the stored data
-    const storageItem = JSON.parse(storedItem);
-    
-    // Check if expired (redundant with Redis TTL but kept for consistency)
-    if (storageItem.expiry && storageItem.expiry < new Date().getTime()) {
-      await redisRequest(['DEL', key]); 
-      return null;
+  // Check volatile memory cache first
+  const cached = volatileCache[key];
+  if (cached) {
+    if (!cached.expiry || cached.expiry > Date.now()) {
+      return cached.data;
     }
-    
-    return storageItem.data;
-  } catch (error) {
-    console.error('Error retrieving from Redis:', error);
+    delete volatileCache[key];
+  }
+
+  const res = await cacheRequest('get', { key });
+  if (!res?.result) return null;
+
+  const storageItem = res.result;
+
+  if (storageItem.expiry && storageItem.expiry < Date.now()) {
+    await removeFromStorage(key);
     return null;
   }
+
+  // Update volatile cache for next call
+  volatileCache[key] = storageItem;
+
+  return storageItem.data;
 }
 
-/**
- * Removes data from Redis
- * @param {string} key - The key to remove
- */
 export async function removeFromStorage(key) {
-  try {
-    await redisRequest(['DEL', key]);
-    return true;
-  } catch (error) {
-    console.error('Error removing from Redis:', error);
-    return false;
-  }
+  delete volatileCache[key];
+  const res = await cacheRequest('del', { key });
+  return res?.success || false;
 }
 
-/**
- * Clears all app data from Redis
- * @param {string} prefix - Optional prefix to limit clearing to specific keys
- */
-export async function clearStorage(prefix = '') {
-  try {
-    if (prefix) {
-      // Get all keys with the specified prefix
-      const keys = await redisRequest(['KEYS', `${prefix}*`]);
-      if (keys && keys.length > 0) {
-        // Delete all matching keys
-        await redisRequest(['DEL', ...keys]);
-      }
-    } else {
-      // WARNING: This clears ALL keys in your Redis database
-      // Use with caution in production
-      await redisRequest(['FLUSHDB']);
-    }
-    return true;
-  } catch (error) {
-    console.error('Error clearing Redis storage:', error);
-    return false;
-  }
-}
-
-/**
- * Checks if Redis is available and working
- * @returns {boolean} - Whether Redis is available
- */
 export async function isStorageAvailable() {
   try {
     const testKey = '__storage_test__';
     const testValue = 'test';
-    await redisRequest(['SET', testKey, testValue]);
-    const result = await redisRequest(['GET', testKey]);
-    await redisRequest(['DEL', testKey]);
+    await saveToStorage(testKey, testValue);
+    const result = await getFromStorage(testKey);
+    await removeFromStorage(testKey);
     return result === testValue;
   } catch (e) {
-    console.error('Redis availability check failed:', e);
-    return false;
-  }
-}
-
-/**
- * Additional Redis-specific utilities
- */
-
-/**
- * Set TTL (Time To Live) on an existing key
- * @param {string} key - The key to set expiration on
- * @param {number} seconds - Number of seconds until expiration
- */
-export async function setExpiration(key, seconds) {
-  try {
-    await redisRequest(['EXPIRE', key, seconds]);
-    return true;
-  } catch (error) {
-    console.error('Error setting expiration:', error);
-    return false;
-  }
-}
-
-/**
- * Get remaining TTL for a key
- * @param {string} key - The key to check
- * @returns {number} - Remaining seconds (-1 if no expiry, -2 if key doesn't exist)
- */
-export async function getTimeToLive(key) {
-  try {
-    return await redisRequest(['TTL', key]);
-  } catch (error) {
-    console.error('Error getting TTL:', error);
-    return -2;
-  }
-}
-
-/**
- * Check if a key exists
- * @param {string} key - The key to check
- * @returns {boolean} - Whether the key exists
- */
-export async function keyExists(key) {
-  try {
-    const result = await redisRequest(['EXISTS', key]);
-    return result === 1;
-  } catch (error) {
-    console.error('Error checking key existence:', error);
     return false;
   }
 }

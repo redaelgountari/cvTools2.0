@@ -104,32 +104,47 @@ export default function AnalyseResults() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeSection, setActiveSection] = useState('personal');
-  const { AnlysedCV, setAnlysedCV, userData, setUserData } = useContext(ReadContext);
+  const { AnlysedCV, setAnlysedCV, userData, setUserData, isLoading: contextLoading } = useContext(ReadContext);
   const [userImages, setUserImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const [initialLoading, setInitialLoading] = useState(true);
   const [showNoData, setShowNoData] = useState(false);
 
+  const validateFile = (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Invalid file type. Please upload a JPEG, PNG or WEBP image.`);
+    }
+
+    if (file.size > maxSize) {
+      throw new Error(`File is too large. Maximum size is 5MB.`);
+    }
+  };
+
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
-    if (AnlysedCV) {
+    if (!contextLoading && AnlysedCV) {
       setResponse(AnlysedCV);
       setUserImages(AnlysedCV?.image || []);
       setInitialLoading(false);
-    } else {
+    } else if (!contextLoading && !AnlysedCV) {
       // Set a timeout to show "No CV data found" after 10 seconds
       timeoutId = setTimeout(() => {
-        setInitialLoading(false);
-        setShowNoData(true);
+        if (!AnlysedCV && !contextLoading) {
+          setInitialLoading(false);
+          setShowNoData(true);
+        }
       }, 10000);
     }
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [AnlysedCV]);
+  }, [AnlysedCV, contextLoading]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -217,6 +232,7 @@ export default function AnalyseResults() {
 
     setUploading(true);
     try {
+      validateFile(file);
       const cloudinaryUrl = await uploadToCloudinary(file);
 
       const newImages = [...userImages];
@@ -229,9 +245,15 @@ export default function AnalyseResults() {
         image: newImages
       }));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating image:', error);
-      setError('Failed to update image. Please try again.');
+      const msg = error.message || 'Failed to update image. Please try again.';
+      setError(msg);
+      toast({
+        title: "Upload Error",
+        description: msg,
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
@@ -252,6 +274,8 @@ export default function AnalyseResults() {
 
       setUploading(true);
       try {
+        files.forEach(file => validateFile(file));
+
         const uploadPromises = files.map(file => uploadToCloudinary(file));
         const cloudinaryUrls = await Promise.all(uploadPromises);
 
@@ -263,9 +287,15 @@ export default function AnalyseResults() {
           image: newImages
         }));
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error uploading images:', error);
-        setError('Failed to upload images. Please try again.');
+        const msg = error.message || 'Failed to upload images. Please try again.';
+        setError(msg);
+        toast({
+          title: "Upload Error",
+          description: msg,
+          variant: "destructive",
+        });
       } finally {
         setUploading(false);
       }
@@ -291,6 +321,8 @@ export default function AnalyseResults() {
 
       setUploading(true);
       try {
+        files.forEach(file => validateFile(file));
+
         const uploadPromises = files.map(file => uploadToCloudinary(file));
         const cloudinaryUrls = await Promise.all(uploadPromises);
 
@@ -301,9 +333,15 @@ export default function AnalyseResults() {
           image: cloudinaryUrls
         }));
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error uploading images:', error);
-        setError('Failed to upload images. Please try again.');
+        const msg = error.message || 'Failed to upload images. Please try again.';
+        setError(msg);
+        toast({
+          title: "Upload Error",
+          description: msg,
+          variant: "destructive",
+        });
       } finally {
         setUploading(false);
       }
@@ -358,7 +396,7 @@ export default function AnalyseResults() {
     { id: 'hobbies', label: 'Hobbies', icon: <Palette className="w-4 h-4" /> }
   ];
 
-  if (initialLoading) {
+  if (initialLoading || contextLoading) {
     return <LoadingState />;
   }
 

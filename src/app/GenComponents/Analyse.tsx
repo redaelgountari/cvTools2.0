@@ -61,11 +61,11 @@ export default function Analyse() {
     try {
       console.log("Sending data to API:", userData);
 
-      const { data } = await axios.post("/api/gemini", { 
+      const { data } = await axios.post("/api/gemini", {
         userData: userData.text,
         useCase: 'Analyse-resume',
       });
-      console.log("dtsll :",data)
+      console.log("dtsll :", data)
 
       // Check if response exists
       if (!data || !data.text) {
@@ -99,17 +99,17 @@ export default function Analyse() {
         throw new Error('Invalid resume data format - missing required fields');
       }
 
+      console.log('rdatas :', { ...parsedData, image: userData.image })
+      setAnlysedCV({ ...parsedData, image: userData.image });
       setUploading(true);
       setResponse(parsedData);
-      console.log('rdatas :',{...parsedData,image:userData.image})
-      setAnlysedCV({...parsedData,image:userData.image});
 
       const prompt = generateJobMatchingPrompt(parsedData);
       setJobMatchingPrompt(prompt);
 
     } catch (error) {
       console.error('Error in fetchAnalysis:', error);
-      
+
       if (axios.isAxiosError(error)) {
         // Handle Axios-specific errors
         if (error.response) {

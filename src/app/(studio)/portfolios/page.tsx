@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Filter, ExternalLink, Loader2, AlertCircle, X } from 'lucide-react';
+import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,7 +46,7 @@ function TemplateCard({ template }) {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <Card 
+    <Card
       className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
     >
       {/* Image */}
@@ -52,12 +54,11 @@ function TemplateCard({ template }) {
         {imageLoading && !imageError && (
           <Skeleton className="absolute inset-0" />
         )}
-        <img 
-          src={template.image} 
+        <img
+          src={template.image}
           alt={template.name}
-          className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-110 ${
-            imageLoading ? 'opacity-0' : 'opacity-100'
-          }`}
+          className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-110 ${imageLoading ? 'opacity-0' : 'opacity-100'
+            }`}
           onLoad={() => setImageLoading(false)}
           onError={(e) => {
             setImageLoading(false);
@@ -87,11 +88,11 @@ function TemplateCard({ template }) {
 
       {/* Footer */}
       <CardFooter>
-        <Button 
-          className="w-full group-hover:shadow-md transition-shadow" 
+        <Button
+          className="w-full group-hover:shadow-md transition-shadow"
           asChild
         >
-         <a href={`/portfolio/${template.link}`}>
+          <a href={`/portfolio/${template.link}`}>
             View Template
             <ExternalLink className="ml-2 h-4 w-4" />
           </a>
@@ -108,6 +109,15 @@ export default function TemplatesGallery() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
+
+  const { isCVAnalyzed, isLoading: isCVLoading } = useIsCVAnalyzed();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isCVLoading && !isCVAnalyzed) {
+      router.push('/ReadCV');
+    }
+  }, [isCVLoading, isCVAnalyzed, router]);
 
   useEffect(() => {
     fetchTemplates();
@@ -158,7 +168,7 @@ export default function TemplatesGallery() {
 
   const uniqueTypes = ['all', ...new Set(templates.map(t => t.type))];
 
-  if (loading) {
+  if (loading || isCVLoading || (!isCVAnalyzed && !isCVLoading)) {
     return (
       <div className="min-h-screen py-12 px-4">
         <div className="max-w-7xl mx-auto">

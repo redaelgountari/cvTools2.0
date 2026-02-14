@@ -29,6 +29,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
   const [userinfos, setUserinfos] = useState<string | null>(null);
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [AnlysedCV, setAnlysedCV] = useState<Resume>(EmptyResume);
+  const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
 
   const isDataLoaded = useRef(false);
@@ -93,9 +94,11 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
         }
 
         isDataLoaded.current = true;
+        setIsLoading(false);
       } catch (err) {
         setAnlysedCV(normalizeData(EmptyResume));
         isDataLoaded.current = true;
+        setIsLoading(false);
       }
     };
 
@@ -134,6 +137,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
         setSettings,
         userinfos,
         setUserinfos,
+        isLoading,
       }}
     >
       {children}

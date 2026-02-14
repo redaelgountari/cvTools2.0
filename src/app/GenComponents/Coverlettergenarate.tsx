@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Download, FileText, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Download, FileText, Sparkles, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 import React, { useContext, useEffect, useState } from 'react';
 import { ReadContext } from './ReadContext';
 import axios from 'axios';
@@ -24,7 +26,25 @@ interface MatchData {
 }
 
 export default function CoverLetterGenerate() {
+    const { isCVAnalyzed, isLoading: isCVLoading } = useIsCVAnalyzed();
+    const router = useRouter();
     const { AnlysedCV } = useContext(ReadContext);
+
+    useEffect(() => {
+        if (!isCVLoading && !isCVAnalyzed) {
+            router.push('/ReadCV');
+        }
+    }, [isCVLoading, isCVAnalyzed, router]);
+
+    if (isCVLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            </div>
+        );
+    }
+
+    if (!isCVAnalyzed) return null;
     const [response, setResponse] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

@@ -1,7 +1,9 @@
 'use client';
 
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import Joyride, { Step, CallBackProps, STATUS } from 'react-joyride';
-import { createContext, useContext, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import axios from 'axios';
 
 type TourContextType = {
   setSteps: (steps: Step[]) => void;
@@ -10,13 +12,78 @@ type TourContextType = {
 
 const TourContext = createContext<TourContextType | null>(null);
 
-export function TourProvider({ children }) {
+export function TourProvider({ children }: { children: React.ReactNode }) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [run, setRun] = useState(false);
+  const { data: session, status, update } = useSession();
+  const [hasStartedThisMount, setHasStartedThisMount] = useState(false);
+  const hasRefreshedSession = useRef(false);
 
-  const autoStart = () => {
-    setRun(true);
-  };
+  // Force session sync on mount to ensure hasSeenTutorial is up to date
+  useEffect(() => {
+    if (
+      status === 'authenticated' &&
+      session?.user &&
+      !hasRefreshedSession.current
+    ) {
+      const hasSeenTutorial = (session.user as any).hasSeenTutorial;
+      // If hasSeenTutorial is undefined, the JWT token doesn't have it yet — force a refresh
+      if (hasSeenTutorial === undefined) {
+        hasRefreshedSession.current = true;
+        update();
+      }
+    }
+  }, [session, status, update]);
+
+  const markAsSeen = useCallback(async () => {
+    try {
+      await axios.post('/api/user/tutorial-seen');
+      await update({ hasSeenTutorial: true });
+    } catch (err) {
+      console.error('Failed to update tutorial status:', err);
+    }
+  }, [update]);
+
+  // Reactive auto-start: watch session + steps, and start the tour when ready
+  useEffect(() => {
+    if (hasStartedThisMount || run) return;
+    if (status !== 'authenticated' || !session?.user) return;
+    if (steps.length === 0) return;
+
+    const hasSeenTutorial = (session.user as any).hasSeenTutorial;
+
+    console.log('[TourProvider] Reactive AutoStart Check:', { hasSeenTutorial, stepsCount: steps.length, run, hasStartedThisMount });
+
+    if (hasSeenTutorial === false) {
+      setRun(true);
+      setHasStartedThisMount(true);
+    }
+  }, [session, status, steps, run, hasStartedThisMount]);
+
+  // Keep autoStart for backward compatibility (manual trigger from components)
+  const autoStart = useCallback(() => {
+    if (run || hasStartedThisMount) return;
+    if (!session) return;
+
+    const hasSeenTutorial = (session?.user as any)?.hasSeenTutorial;
+
+    console.log('[TourProvider] Manual AutoStart Check:', { hasSeenTutorial, run, hasStartedThisMount });
+
+    if (hasSeenTutorial === false) {
+      setRun(true);
+      setHasStartedThisMount(true);
+    }
+  }, [session, run, hasStartedThisMount]);
+
+  const handleJoyrideCallback = useCallback((data: CallBackProps) => {
+    const { status } = data;
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+    if (finishedStatuses.includes(status)) {
+      setRun(false);
+      markAsSeen();
+    }
+  }, [markAsSeen]);
 
   return (
     <TourContext.Provider value={{ setSteps, autoStart }}>
@@ -30,6 +97,11 @@ export function TourProvider({ children }) {
         spotlightClicks={false}
         disableOverlayClose={false}
         hideCloseButton={false}
+        callback={handleJoyrideCallback}
+        locale={{
+          last: "Finish",
+          skip: "Skip Tour"
+        }}
         styles={{
           options: {
             zIndex: 10000,

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { mdb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions) as any;
 
@@ -12,24 +12,24 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const userId = session.user.id;
-
+        const email = session.user.email;
         const db = await mdb();
-        const data = await db.collection("users").findOne(
-            { _id: new ObjectId(userId) },
-            { projection: { password: 0 } }
+
+        const result = await db.collection("users").updateOne(
+            { email: email },
+            { $set: { hasSeenTutorial: true } }
         );
 
-        if (!data) {
-            return NextResponse.json({ error: new ObjectId(userId) }, { status: 404 });
+        if (result.acknowledged) {
+            return NextResponse.json({ message: "Tutorial status updated" }, { status: 200 });
+        } else {
+            throw new Error("Update not acknowledged");
         }
 
-        return NextResponse.json({ data }, { status: 200 });
-
     } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error updating tutorial status:", error);
         return NextResponse.json({
-            error: "Failed to fetch user",
+            error: "Failed to update tutorial status",
             details: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
     }

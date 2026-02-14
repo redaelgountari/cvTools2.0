@@ -110,6 +110,8 @@ const ResumeSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+ResumeSchema.index({ userId: 1 });
+
 const ResumeShema = mongoose.models.Resume || mongoose.model('Resume', ResumeSchema);
 
 export default ResumeShema;

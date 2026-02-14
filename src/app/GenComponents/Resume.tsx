@@ -6,6 +6,8 @@ import { getFromStorage } from '@/Cookiesmv';
 import { ReadContext } from './ReadContext';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 import dynamic from "next/dynamic";
 
 import {
@@ -53,7 +55,29 @@ import MatchAnalysisStats from './MatchAnalysisStats';
 import { ColorPicker } from './ColorPicker';
 import { DEFAULT_THEME_COLORS } from './Themes/themeDefaults';
 
+import { useTour } from '../(studio)/TourProvider';
+
 export default function Resume() {
+  const { setSteps, autoStart } = useTour();
+  const { isCVAnalyzed, isLoading: isCVLoading } = useIsCVAnalyzed();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isCVLoading && !isCVAnalyzed) {
+      router.push('/ReadCV');
+    }
+  }, [isCVLoading, isCVAnalyzed, router]);
+
+  if (isCVLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isCVAnalyzed) return null;
+
   // Types
   interface PersonalInfo {
     fullName: string;
@@ -112,7 +136,7 @@ export default function Resume() {
   }
 
   // Context and state
-  const { AnlysedCV, userData, settings: contextSettings, setSettings } = useContext(ReadContext);
+  const { AnlysedCV, userData, settings: contextSettings, setSettings, isLoading: contextLoading } = useContext(ReadContext);
   const [resumeData, setResumeData] = useState<Resume | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
   const [jobAnnouncement, setJobAnnouncement] = useState('');
@@ -136,12 +160,12 @@ export default function Resume() {
   useEffect(() => {
     const loadResumeData = async () => {
       try {
-        if (AnlysedCV) {
+        if (!contextLoading && AnlysedCV) {
           console.log("Loading data from context:", AnlysedCV);
           setRawResponse(typeof AnlysedCV === 'string' ? AnlysedCV : JSON.stringify(AnlysedCV));
           const parsedData = typeof AnlysedCV === 'string' ? JSON.parse(AnlysedCV) : AnlysedCV;
           setResumeData(parsedData);
-        } else {
+        } else if (!contextLoading && !AnlysedCV) {
           const storedData = await getFromStorage('userData');
           if (storedData) {
             console.log("Loading data from storage:", storedData);
@@ -161,12 +185,49 @@ export default function Resume() {
         }
       } catch (error) {
         console.error("Error loading resume data:", error);
-        setError("Failed to load resume data. Please try again.");
+        // Silently fail or handle error appropriately
       }
     };
 
     loadResumeData();
-  }, [AnlysedCV, userData]);
+  }, [AnlysedCV, userData, contextLoading]);
+
+  const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
+
+  // Onboarding Tutorial Effect
+  useEffect(() => {
+    if (!contextLoading && isMounted && !hasTriggeredTour) {
+      setSteps([
+        {
+          target: '.card-container',
+          content: 'This is the control panel. You can select different resume templates and themes here.',
+          placement: 'right' as const,
+          disableBeacon: true,
+        },
+        {
+          target: '.job-description-section',
+          content: 'Paste the target job description here to let the AI tailor your resume precisely.',
+          placement: 'bottom' as const,
+          disableBeacon: true,
+        },
+        {
+          target: '.generate-button',
+          content: 'Click here to generate your tailored resume!',
+          placement: 'top' as const,
+          disableBeacon: true,
+        },
+        {
+          target: '.pdf-viewer-container',
+          content: 'Your live resume preview will appear here. Changes are saved automatically.',
+          placement: 'left' as const,
+          disableBeacon: true,
+        }
+      ]);
+
+      setHasTriggeredTour(true);
+      autoStart();
+    }
+  }, [contextLoading, isMounted, setSteps, autoStart, hasTriggeredTour]);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -496,6 +557,22 @@ The JSON structure must follow this format:
     setActiveTheme(themes[newIndex].id);
   };
 
+  // Check if we have actual data or just the empty initialization
+  const hasActualData = AnlysedCV && AnlysedCV.personalInfo && AnlysedCV.personalInfo.email !== ' ';
+
+  if (contextLoading || !hasActualData) {
+    return (
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-lg font-medium text-muted-foreground">
+            {contextLoading ? "Loading your resume data..." : "Preparing your workspace..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-3 sm:p-4 md:p-6 max-w-[1600px]">
@@ -503,7 +580,7 @@ The JSON structure must follow this format:
           {/* Left Column - Controls */}
           <div className="lg:col-span-4 space-y-4 sm:space-y-6">
             {/* Resume Template Section */}
-            <Card className="border-2 shadow-lg">
+            <Card className="border-2 shadow-lg card-container">
               <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6">
                 <CardTitle className="text-base sm:text-lg md:text-xl">Resume Template</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
@@ -659,7 +736,7 @@ The JSON structure must follow this format:
             </Card>
 
             {/* Target Job Description Section */}
-            <Card className="border-2">
+            <Card className="border-2 job-description-section">
               <CardHeader className="pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
                   <div className="flex-1">
@@ -712,7 +789,7 @@ The JSON structure must follow this format:
 
             {/* Generate Button */}
             <Button
-              className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold"
+              className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold generate-button"
               onClick={generateResume}
               disabled={loading || !rawResponse}
             >
@@ -736,7 +813,7 @@ The JSON structure must follow this format:
           </div>
 
           {/* Right Column - Preview */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 pdf-viewer-container">
             <Card className="border-2 h-full">
               <CardHeader className="pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
