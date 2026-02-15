@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Note: Values kept in Cookiesmv.js for now as requested by user
-const REDIS_URL = "https://growing-alpaca-24643.upstash.io";
-const REDIS_TOKEN = "AWBDAAIncDI3ODI1ZWIzNjUxNjY0NWY2OWVkYzhmZDE3YTM3N2FiOHAyMjQ2NDM";
+const REDIS_URL = process.env.REDIS_URL;
+const REDIS_TOKEN = process.env.REDIS_TOKEN;
 
 async function redisRequest(command: any[]) {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { getFromStorage } from '@/Cookiesmv';
 import { ReadContext } from './ReadContext';
@@ -50,90 +50,110 @@ import Theme8 from './Themes/Theme8';
 import Theme9 from './Themes/Theme9';
 import Theme10 from './Themes/Theme10';
 import Theme11 from './Themes/Theme11';
-import { AlertDialogCancel, AlertDialogTrigger } from '@radix-ui/react-alert-dialog';
+import { AlertDialogCancel } from '@radix-ui/react-alert-dialog';
 import MatchAnalysisStats from './MatchAnalysisStats';
 import { ColorPicker } from './ColorPicker';
 import { DEFAULT_THEME_COLORS } from './Themes/themeDefaults';
+import { normalizeResumeData } from './Themes/dataNormalization';
+import { Resume, MatchData } from '@/app/types/resume';
 
 import { useTour } from '../(studio)/TourProvider';
+
+// Dynamic import of PDFViewer with loading skeleton
+const PDFViewer = dynamic(() => import("@/app/GenComponents/PDFViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[700px] bg-background rounded-lg border border-input p-6 overflow-hidden">
+      <div className="space-y-4 animate-pulse">
+        <div className="flex items-center justify-between">
+          <div className="h-6 bg-muted rounded w-2/5"></div>
+          <div className="h-6 bg-muted rounded w-24"></div>
+        </div>
+        <div className="flex space-x-2">
+          <div className="h-8 bg-muted rounded w-10"></div>
+          <div className="h-8 bg-muted rounded w-10"></div>
+          <div className="h-8 bg-muted rounded w-24"></div>
+          <div className="h-8 bg-muted rounded w-16"></div>
+        </div>
+        <div className="pt-4 space-y-3">
+          {Array(15).fill(0).map((_, i) => (
+            <div key={i} className="h-4 bg-muted rounded w-full" style={{ opacity: 1 - (i * 0.03) }}></div>
+          ))}
+          <div className="h-40 bg-muted rounded w-full mt-6"></div>
+          {Array(8).fill(0).map((_, i) => (
+            <div key={i + 15} className="h-4 bg-muted rounded w-full" style={{ opacity: 0.9 - (i * 0.05) }}></div>
+          ))}
+        </div>
+      </div>
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center animate-pulse">
+        <div className="h-8 bg-muted rounded w-32"></div>
+      </div>
+    </div>
+  ),
+});
+
+// Memoized wrapper for the PDF Viewer content to prevent unnecessary re-renders
+const ResumePreview = React.memo(({
+  resumeData,
+  activeTheme,
+  themeColors,
+  userImage
+}: {
+  resumeData: Resume;
+  activeTheme: string;
+  themeColors: any;
+  userImage: string;
+}) => {
+  const themeProps = useMemo(() => ({
+    userdata: resumeData,
+    userImage,
+    colors: themeColors
+  }), [resumeData, userImage, themeColors]);
+
+  const RenderedTheme = useMemo(() => {
+    switch (activeTheme) {
+      case 'theme1': return <Theme1 {...themeProps} />;
+      case 'theme2': return <Theme2 {...themeProps} />;
+      case 'theme3': return <Theme3 {...themeProps} />;
+      case 'theme4': return <Theme4 {...themeProps} />;
+      case 'theme5': return <Theme5 {...themeProps} />;
+      case 'theme6': return <Theme6 {...themeProps} />;
+      case 'theme7': return <Theme7 {...themeProps} />;
+      case 'theme8': return <Theme8 {...themeProps} />;
+      case 'theme9': return <Theme9 {...themeProps} />;
+      case 'theme10': return <Theme10 {...themeProps} />;
+      case 'theme11': return <Theme11 {...themeProps} />;
+      default: return <Theme2 {...themeProps} />;
+    }
+  }, [activeTheme, themeProps]);
+
+  return (
+    <PDFViewer
+      width="100%"
+      height="800px"
+      showToolbar={true}
+      className="rounded-lg"
+    >
+      {RenderedTheme}
+    </PDFViewer>
+  );
+}, (prevProps, nextProps) => {
+  // Simple check for equality to prevent redundant updates if unnecessary
+  // But parent component will now control remounting via key
+  return (
+    prevProps.activeTheme === nextProps.activeTheme &&
+    prevProps.userImage === nextProps.userImage &&
+    JSON.stringify(prevProps.themeColors) === JSON.stringify(nextProps.themeColors) &&
+    prevProps.resumeData === nextProps.resumeData
+  );
+});
+
+ResumePreview.displayName = 'ResumePreview';
 
 export default function Resume() {
   const { setSteps, autoStart } = useTour();
   const { isCVAnalyzed, isLoading: isCVLoading } = useIsCVAnalyzed();
   const router = useRouter();
-
-  useEffect(() => {
-    if (!isCVLoading && !isCVAnalyzed) {
-      router.push('/ReadCV');
-    }
-  }, [isCVLoading, isCVAnalyzed, router]);
-
-  if (isCVLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isCVAnalyzed) return null;
-
-  // Types
-  interface PersonalInfo {
-    fullName: string;
-    email: string;
-    phone: string;
-    location: string;
-    linkedin: string;
-  }
-
-  interface Skills {
-    technical: string[];
-    soft: string[];
-    languages: string[];
-  }
-
-  interface Experience {
-    title: string;
-    company: string;
-    location: string;
-    startDate: string;
-    endDate: string;
-    responsibilities: string[];
-  }
-
-  interface Education {
-    degree: string;
-    institution: string;
-    location: string;
-    graduationYear: string;
-    relevantCourses: string[];
-  }
-
-  interface Certification {
-    name: string;
-    issuer: string;
-    year: string;
-  }
-
-  interface Resume {
-    personalInfo: PersonalInfo;
-    professionalSummary: string;
-    skills: Skills;
-    experience: Experience[];
-    education: Education[];
-    certifications: Certification[];
-  }
-
-  interface MatchData {
-    matchScore: number;
-    skillsMatch: number;
-    experienceMatch: number;
-    educationMatch: number;
-    skillsJustification?: string;
-    experienceJustification?: string;
-    educationJustification?: string;
-  }
 
   // Context and state
   const { AnlysedCV, userData, settings: contextSettings, setSettings, isLoading: contextLoading } = useContext(ReadContext);
@@ -156,43 +176,55 @@ export default function Resume() {
   const [pendingResumeData, setPendingResumeData] = useState<Resume | null>(null);
   const [themeColors, setThemeColors] = useState(DEFAULT_THEME_COLORS[activeTheme] || {});
 
+  const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
+  const [currentThemeIndex, setCurrentThemeIndex] = useState(1);
+
   // Load data from context or storage
   useEffect(() => {
     const loadResumeData = async () => {
       try {
         if (!contextLoading && AnlysedCV) {
           console.log("Loading data from context:", AnlysedCV);
-          setRawResponse(typeof AnlysedCV === 'string' ? AnlysedCV : JSON.stringify(AnlysedCV));
-          const parsedData = typeof AnlysedCV === 'string' ? JSON.parse(AnlysedCV) : AnlysedCV;
-          setResumeData(parsedData);
+          // Optimization: check if data actually changed before processing
+          const isString = typeof AnlysedCV === 'string';
+          const stringData = isString ? AnlysedCV : JSON.stringify(AnlysedCV);
+
+          if (rawResponse !== stringData) {
+            setRawResponse(stringData);
+            const parsedData = isString ? JSON.parse(AnlysedCV) : AnlysedCV;
+            setResumeData(normalizeResumeData(parsedData));
+          }
         } else if (!contextLoading && !AnlysedCV) {
           const storedData = await getFromStorage('userData');
           if (storedData) {
             console.log("Loading data from storage:", storedData);
-            setRawResponse(JSON.stringify(storedData));
-            setResumeData(storedData as Resume);
+            const stringData = JSON.stringify(storedData);
+            if (rawResponse !== stringData) {
+              setRawResponse(stringData);
+              setResumeData(normalizeResumeData(storedData));
+            }
           }
         }
 
         // Set user image from userData or storage
         if (userData && userData.image && userData.image[0]) {
-          setUserImage(userData.image[0]);
+          if (userImage !== userData.image[0]) {
+            setUserImage(userData.image[0]);
+          }
         } else {
           const storedImage = await getFromStorage('userImage');
-          if (storedImage && storedImage[0]) {
+          if (storedImage && storedImage[0] && userImage !== storedImage[0]) {
             setUserImage(storedImage[0]);
           }
         }
       } catch (error) {
         console.error("Error loading resume data:", error);
-        // Silently fail or handle error appropriately
       }
     };
 
     loadResumeData();
-  }, [AnlysedCV, userData, contextLoading]);
-
-  const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [AnlysedCV, userData, contextLoading]); // Optimized dependencies
 
   // Onboarding Tutorial Effect
   useEffect(() => {
@@ -240,7 +272,6 @@ export default function Resume() {
     };
 
     loadSettings();
-    console.log("Settings:", contextSettings);
   }, [contextSettings, setSettings]);
 
   useEffect(() => {
@@ -252,44 +283,34 @@ export default function Resume() {
     setThemeColors(DEFAULT_THEME_COLORS[activeTheme] || {});
   }, [activeTheme]);
 
+  useEffect(() => {
+    if (!isCVLoading && !isCVAnalyzed) {
+      router.push('/ReadCV');
+    }
+  }, [isCVLoading, isCVAnalyzed, router]);
+
+  // Memoize resume data key to avoid expensive stringify on every render
+  const resumeDataKey = useMemo(() => {
+    // Return a stable identifier/hash if possible, otherwise stringify (but only when resumeData changes)
+    return resumeData ? JSON.stringify(resumeData) : '';
+  }, [resumeData]);
+
+  if (isCVLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isCVAnalyzed) return null;
+
   const handleColorChange = (key: string, value: string) => {
     setThemeColors(prev => ({
       ...prev,
       [key]: value
     }));
   };
-
-  // Dynamic import of PDFViewer with loading skeleton
-  const PDFViewer = dynamic(() => import("@/app/GenComponents/PDFViewer"), {
-    loading: () => (
-      <div className="w-full h-[700px] bg-background rounded-lg border border-input p-6 overflow-hidden">
-        <div className="space-y-4 animate-pulse">
-          <div className="flex items-center justify-between">
-            <div className="h-6 bg-muted rounded w-2/5"></div>
-            <div className="h-6 bg-muted rounded w-24"></div>
-          </div>
-          <div className="flex space-x-2">
-            <div className="h-8 bg-muted rounded w-10"></div>
-            <div className="h-8 bg-muted rounded w-10"></div>
-            <div className="h-8 bg-muted rounded w-24"></div>
-            <div className="h-8 bg-muted rounded w-16"></div>
-          </div>
-          <div className="pt-4 space-y-3">
-            {Array(15).fill(0).map((_, i) => (
-              <div key={i} className="h-4 bg-muted rounded w-full" style={{ opacity: 1 - (i * 0.03) }}></div>
-            ))}
-            <div className="h-40 bg-muted rounded w-full mt-6"></div>
-            {Array(8).fill(0).map((_, i) => (
-              <div key={i + 15} className="h-4 bg-muted rounded w-full" style={{ opacity: 0.9 - (i * 0.05) }}></div>
-            ))}
-          </div>
-        </div>
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center animate-pulse">
-          <div className="h-8 bg-muted rounded w-32"></div>
-        </div>
-      </div>
-    ),
-  });
 
   const generateResume = async () => {
     if (!rawResponse) {
@@ -301,7 +322,7 @@ export default function Resume() {
         try {
           // Reset to original CV if no job description
           const originalCV = JSON.parse(rawResponse);
-          setResumeData(originalCV);
+          setResumeData(normalizeResumeData(originalCV));
           setMatchData(null);
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 1500);
@@ -449,10 +470,10 @@ The JSON structure must follow this format:
 
       if (newAnalysisData && newAnalysisData.matchScore < 50) {
         setMatchData(newAnalysisData);
-        setPendingResumeData(newResumeData);
+        setPendingResumeData(normalizeResumeData(newResumeData));
         setShowLowMatchWarning(true);
       } else {
-        setResumeData(newResumeData);
+        setResumeData(normalizeResumeData(newResumeData));
         setMatchData(newAnalysisData);
         setShowSuccess(true);
         setTimeout(() => {
@@ -507,28 +528,6 @@ The JSON structure must follow this format:
     }
   };
 
-  // Render the theme component based on activeTheme
-  const renderThemeComponent = () => {
-    if (!resumeData) return null;
-
-    const themeProps = { userdata: resumeData, userImage, colors: themeColors };
-
-    switch (activeTheme) {
-      case 'theme1': return <Theme1 {...themeProps} />;
-      case 'theme2': return <Theme2 {...themeProps} />;
-      case 'theme3': return <Theme3 {...themeProps} />;
-      case 'theme4': return <Theme4 {...themeProps} />;
-      case 'theme5': return <Theme5 {...themeProps} />;
-      case 'theme6': return <Theme6 {...themeProps} />;
-      case 'theme7': return <Theme7 {...themeProps} />;
-      case 'theme8': return <Theme8 {...themeProps} />;
-      case 'theme9': return <Theme9 {...themeProps} />;
-      case 'theme10': return <Theme10 {...themeProps} />;
-      case 'theme11': return <Theme11 {...themeProps} />;
-      default: return <Theme2 {...themeProps} />;
-    }
-  };
-
   const themes = [
     { id: 'theme1', name: 'Modern' },
     { id: 'theme2', name: 'Professional' },
@@ -542,8 +541,6 @@ The JSON structure must follow this format:
     { id: 'theme10', name: 'Executive' },
     { id: 'theme11', name: 'Technical' },
   ];
-
-  const [currentThemeIndex, setCurrentThemeIndex] = useState(1);
 
   const handlePrevTheme = () => {
     const newIndex = currentThemeIndex === 0 ? themes.length - 1 : currentThemeIndex - 1;
@@ -854,9 +851,13 @@ The JSON structure must follow this format:
                 {resumeData ? (
                   <div className="overflow-hidden rounded-lg border-2 bg-background shadow-inner">
                     {typeof window !== 'undefined' && (
-                      <PDFViewer key={JSON.stringify(resumeData) + activeTheme} width="100%" height="800px">
-                        {renderThemeComponent()}
-                      </PDFViewer>
+                      <ResumePreview
+                        key={resumeDataKey + activeTheme} // Force remount on data/theme change
+                        resumeData={resumeData}
+                        activeTheme={activeTheme}
+                        themeColors={themeColors}
+                        userImage={userImage}
+                      />
                     )}
                   </div>
                 ) : (

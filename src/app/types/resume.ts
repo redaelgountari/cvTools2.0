@@ -153,3 +153,13 @@ export const EmptyResume: Resume = {
   hobbies: [],
   image: [],
 };
+
+export interface MatchData {
+  matchScore: number;
+  skillsMatch: number;
+  experienceMatch: number;
+  educationMatch: number;
+  skillsJustification?: string;
+  experienceJustification?: string;
+  educationJustification?: string;
+}

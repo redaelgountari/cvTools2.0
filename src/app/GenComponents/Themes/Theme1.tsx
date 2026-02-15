@@ -218,12 +218,12 @@ export default function Theme1({ userdata, colors = DEFAULT_THEME_COLORS.theme1 
               {userdata.experience.filter(exp => hasContent(exp.title) || hasContent(exp.company)).map((exp, index) => (
                 <View key={index} style={styles.experienceItem}>
                   <View style={styles.itemHeader}>
-                    <Text style={styles.itemTitle}>{exp.title?.trim()}</Text>
+                    <Text style={styles.itemTitle}>{(exp.title?.toString() || '').trim()}</Text>
                     <Text style={styles.itemDate}>
                       {[exp.startDate, exp.endDate].filter(hasContent).join(' - ') || (hasContent(exp.startDate) ? 'Present' : '')}
                     </Text>
                   </View>
-                  <Text style={styles.itemSubtitle}>{exp.company?.trim()}</Text>
+                  <Text style={styles.itemSubtitle}>{(exp.company?.toString() || '').trim()}</Text>
                   {exp.responsibilities && exp.responsibilities.some(hasContent) && (
                     <View>
                       {exp.responsibilities.filter(hasContent).map((resp, idx) => (

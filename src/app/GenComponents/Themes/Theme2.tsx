@@ -265,12 +265,12 @@ export default function Theme2({
               {userdata.experience.filter(exp => hasContent(exp.title) || hasContent(exp.company)).map((exp, index) => (
                 <View key={index} style={styles.experienceItem}>
                   <View style={styles.itemHeader}>
-                    <Text style={styles.itemTitle}>{exp.title?.trim()}</Text>
+                    <Text style={styles.itemTitle}>{(exp.title?.toString() || '').trim()}</Text>
                     <Text style={styles.itemDate}>
                       {[exp.startDate, exp.endDate].filter(hasContent).join(' - ') || (hasContent(exp.startDate) ? 'Present' : '')}
                     </Text>
                   </View>
-                  <Text style={styles.itemSubtitle}>{exp.company?.trim()}</Text>
+                  <Text style={styles.itemSubtitle}>{(exp.company?.toString() || '').trim()}</Text>
                   {exp.responsibilities && exp.responsibilities.some(hasContent) && (
                     <View style={styles.bulletList}>
                       {exp.responsibilities.filter(hasContent).map((resp, idx) => (
@@ -292,10 +292,10 @@ export default function Theme2({
               {userdata.education.filter(edu => hasContent(edu.degree) || hasContent(edu.institution)).map((edu, index) => (
                 <View key={index} style={styles.experienceItem}>
                   <View style={styles.itemHeader}>
-                    <Text style={styles.itemTitle}>{edu.degree?.trim()}</Text>
-                    <Text style={styles.itemDate}>{edu.graduationYear?.trim()}</Text>
+                    <Text style={styles.itemTitle}>{(edu.degree?.toString() || '').trim()}</Text>
+                    <Text style={styles.itemDate}>{(edu.graduationYear?.toString() || '').trim()}</Text>
                   </View>
-                  <Text style={styles.itemSubtitle}>{edu.institution?.trim()}</Text>
+                  <Text style={styles.itemSubtitle}>{(edu.institution?.toString() || '').trim()}</Text>
                 </View>
               ))}
             </View>

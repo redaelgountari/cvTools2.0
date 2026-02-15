@@ -1,7 +1,7 @@
 import { Resume } from "@/app/types/resume";
 
-export const hasContent = (val?: string | null) => {
-    if (!val) return false;
+export const hasContent = (val?: any): val is string => {
+    if (typeof val !== 'string') return false;
     const pruned = val.trim();
     return pruned !== '' && pruned !== 'N/A';
 };
