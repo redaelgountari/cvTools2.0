@@ -28,13 +28,26 @@ import {
   Globe,
   Palette,
   Star,
-  X
+  X,
+  ChevronUp,
+  ChevronDown,
+  Save
 } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { ReadContext } from './ReadContext';
 import { Resume } from '../types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { ResumeSchema } from '../types/resumeSchema';
+import { normalizeResumeData } from './Themes/dataNormalization';
 import { z } from 'zod';
 import { Skeleton } from '@/components/ui/skeleton';
 import LoadingState from './LoadingState';
@@ -111,6 +124,11 @@ export default function AnalyseResults() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [showNoData, setShowNoData] = useState(false);
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalSection, setModalSection] = useState<string | null>(null);
+  const [modalData, setModalData] = useState<any>({});
+
   const validateFile = (file: File) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     const maxSize = 5 * 1024 * 1024; // 5MB
@@ -158,8 +176,11 @@ export default function AnalyseResults() {
         image: userImages // Use the current userImages state
       };
 
+      // Normalize data to ensure string fields are strings (fixes Gemini returning arrays)
+      const normalizedData = normalizeResumeData(updatedResume);
+
       // Validate using Zod
-      const validatedData = ResumeSchema.parse(updatedResume);
+      const validatedData = ResumeSchema.parse(normalizedData);
 
       setAnlysedCV(validatedData as Resume);
 
@@ -379,6 +400,40 @@ export default function AnalyseResults() {
   };
 
 
+  const handleMoveExperience = (index: number, direction: 'up' | 'down') => {
+    if (!response || !response.experience) return;
+
+    const newExperience = [...response.experience];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newExperience.length) return;
+
+    // Swap items
+    [newExperience[index], newExperience[targetIndex]] = [newExperience[targetIndex], newExperience[index]];
+
+    setResponse({
+      ...response,
+      experience: newExperience
+    });
+  };
+
+  const handleMoveEducation = (index: number, direction: 'up' | 'down') => {
+    if (!response || !response.education) return;
+
+    const newEducation = [...response.education];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newEducation.length) return;
+
+    // Swap items
+    [newEducation[index], newEducation[targetIndex]] = [newEducation[targetIndex], newEducation[index]];
+
+    setResponse({
+      ...response,
+      education: newEducation
+    });
+  };
+
   const sections = [
     { id: 'image', label: 'Images', icon: <ImageIcon className="w-4 h-4" /> },
     { id: 'personal', label: 'Personal Info', icon: <User className="w-4 h-4" /> },
@@ -395,6 +450,78 @@ export default function AnalyseResults() {
     { id: 'online', label: 'Online Presence', icon: <Globe className="w-4 h-4" /> },
     { id: 'hobbies', label: 'Hobbies', icon: <Palette className="w-4 h-4" /> }
   ];
+
+  const openAddModal = (sectionId: string) => {
+    setModalSection(sectionId);
+    let initialData = {};
+
+    switch (sectionId) {
+      case 'experience':
+        initialData = { title: '', company: '', startDate: '', endDate: '', location: '', responsibilities: [] };
+        break;
+      case 'education':
+        initialData = { degree: '', institution: '', location: '', graduationYear: '', relevantCourses: [] };
+        break;
+      case 'certifications':
+        initialData = { name: '', issuer: '', year: '' };
+        break;
+      case 'publications':
+        initialData = { title: '', publicationType: '', year: '', link: '' };
+        break;
+      case 'awards':
+        initialData = { name: '', year: '', description: '' };
+        break;
+      case 'volunteer':
+        initialData = { role: '', organization: '', startDate: '', endDate: '', description: '' };
+        break;
+      case 'projects':
+        initialData = { title: '', description: '', technologiesUsed: [], github: '', role: '', images: [] };
+        break;
+    }
+
+    setModalData(initialData);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveModalData = () => {
+    if (!response || !modalSection) return;
+
+    const updatedResponse = { ...response };
+
+    switch (modalSection) {
+      case 'experience':
+        updatedResponse.experience = [...(updatedResponse.experience || []), modalData];
+        break;
+      case 'education':
+        updatedResponse.education = [...(updatedResponse.education || []), modalData];
+        break;
+      case 'certifications':
+        updatedResponse.certifications = [...(updatedResponse.certifications || []), modalData];
+        break;
+      case 'publications':
+        updatedResponse.publications = [...(updatedResponse.publications || []), modalData];
+        break;
+      case 'awards':
+        updatedResponse.awards = [...(updatedResponse.awards || []), modalData];
+        break;
+      case 'volunteer':
+        updatedResponse.volunteerExperience = [...(updatedResponse.volunteerExperience || []), modalData];
+        break;
+      case 'projects':
+        updatedResponse.projects = [...(updatedResponse.projects || []), modalData];
+        break;
+    }
+
+    setResponse(updatedResponse);
+    setIsModalOpen(false);
+    setModalSection(null);
+    setModalData({});
+
+    toast({
+      title: "Success",
+      description: `Added new ${modalSection} entry.`,
+    });
+  };
 
   if (initialLoading || contextLoading) {
     return <LoadingState />;
@@ -673,19 +800,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Work Experience</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        experience: [...(response.experience || []), {
-                          title: '',
-                          company: '',
-                          startDate: '',
-                          endDate: '',
-                          location: '',
-                          responsibilities: []
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('experience')}
                     type="button"
                     size="sm"
                   >
@@ -699,20 +814,42 @@ export default function AnalyseResults() {
                     <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Experience #{index + 1}</CardTitle>
-                        <Button
-                          onClick={() => {
-                            setResponse({
-                              ...response,
-                              experience: response.experience.filter((_, i) => i !== index)
-                            });
-                          }}
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            onClick={() => handleMoveExperience(index, 'up')}
+                            disabled={index === 0}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleMoveExperience(index, 'down')}
+                            disabled={index === response.experience.length - 1}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setResponse({
+                                ...response,
+                                experience: response.experience.filter((_, i) => i !== index)
+                              });
+                            }}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
@@ -804,18 +941,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Education</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        education: [...(response.education || []), {
-                          degree: '',
-                          institution: '',
-                          location: '',
-                          graduationYear: '',
-                          relevantCourses: []
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('education')}
                     type="button"
                     size="sm"
                   >
@@ -829,20 +955,42 @@ export default function AnalyseResults() {
                     <CardHeader className="bg-muted/30">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg">Education #{index + 1}</CardTitle>
-                        <Button
-                          onClick={() => {
-                            setResponse({
-                              ...response,
-                              education: response.education.filter((_, i) => i !== index)
-                            });
-                          }}
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            onClick={() => handleMoveEducation(index, 'up')}
+                            disabled={index === 0}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <ChevronUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleMoveEducation(index, 'down')}
+                            disabled={index === response.education.length - 1}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setResponse({
+                                ...response,
+                                education: response.education.filter((_, i) => i !== index)
+                              });
+                            }}
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6">
@@ -922,16 +1070,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Certifications</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        certifications: [...(response.certifications || []), {
-                          name: '',
-                          issuer: '',
-                          year: ''
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('certifications')}
                     type="button"
                     size="sm"
                   >
@@ -1012,17 +1151,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Publications</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        publications: [...(response.publications || []), {
-                          title: '',
-                          publicationType: '',
-                          year: '',
-                          link: ''
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('publications')}
                     type="button"
                     size="sm"
                   >
@@ -1115,16 +1244,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Awards & Honors</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        awards: [...(response.awards || []), {
-                          name: '',
-                          year: '',
-                          description: ''
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('awards')}
                     type="button"
                     size="sm"
                   >
@@ -1206,18 +1326,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Volunteer Experience</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        volunteerExperience: [...(response.volunteerExperience || []), {
-                          role: '',
-                          organization: '',
-                          startDate: '',
-                          endDate: '',
-                          description: ''
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('volunteer')}
                     type="button"
                     size="sm"
                   >
@@ -1323,19 +1432,7 @@ export default function AnalyseResults() {
                 <div className="flex items-center justify-between pb-3 border-b">
                   <h3 className="text-2xl font-bold">Projects</h3>
                   <Button
-                    onClick={() => {
-                      setResponse({
-                        ...response,
-                        projects: [...(response.projects || []), {
-                          title: '',
-                          description: '',
-                          technologiesUsed: [],
-                          github: '',
-                          role: '',
-                          image: ''
-                        }]
-                      });
-                    }}
+                    onClick={() => openAddModal('projects')}
                     type="button"
                     size="sm"
                   >
@@ -1689,6 +1786,320 @@ export default function AnalyseResults() {
             </div>
           </CardContent>
         </form>
+
+        {/* Add New Entry Modal */}
+        <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Add {modalSection === 'volunteer' ? 'Volunteer Experience' : modalSection?.charAt(0).toUpperCase().concat(modalSection?.slice(1))}</SheetTitle>
+              <SheetDescription>
+                Enter the details for the new {modalSection} entry.
+              </SheetDescription>
+            </SheetHeader>
+
+            <div className="grid gap-4 py-4">
+              {modalSection === 'experience' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Job Title</Label>
+                    <Input
+                      value={modalData.title || ''}
+                      onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                      placeholder="Senior Developer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Company</Label>
+                    <Input
+                      value={modalData.company || ''}
+                      onChange={(e) => setModalData({ ...modalData, company: e.target.value })}
+                      placeholder="Tech Corp"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Start Date</Label>
+                      <Input
+                        value={modalData.startDate || ''}
+                        onChange={(e) => setModalData({ ...modalData, startDate: e.target.value })}
+                        placeholder="2020-01"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>End Date</Label>
+                      <Input
+                        value={modalData.endDate || ''}
+                        onChange={(e) => setModalData({ ...modalData, endDate: e.target.value })}
+                        placeholder="Present"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Location</Label>
+                    <Input
+                      value={modalData.location || ''}
+                      onChange={(e) => setModalData({ ...modalData, location: e.target.value })}
+                      placeholder="City, Country"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Responsibilities</Label>
+                    <Textarea
+                      value={modalData.responsibilities?.join('\n') || ''}
+                      onChange={(e) => setModalData({ ...modalData, responsibilities: e.target.value.split('\n').filter(r => r.trim()) })}
+                      placeholder="Enter responsibilities (one per line)"
+                      rows={5}
+                    />
+                    <p className="text-xs text-muted-foreground">One responsibility per line</p>
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'education' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Degree</Label>
+                    <Input
+                      value={modalData.degree || ''}
+                      onChange={(e) => setModalData({ ...modalData, degree: e.target.value })}
+                      placeholder="Bachelor of Science"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Institution</Label>
+                    <Input
+                      value={modalData.institution || ''}
+                      onChange={(e) => setModalData({ ...modalData, institution: e.target.value })}
+                      placeholder="University Name"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Location</Label>
+                      <Input
+                        value={modalData.location || ''}
+                        onChange={(e) => setModalData({ ...modalData, location: e.target.value })}
+                        placeholder="City, Country"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Graduation Year</Label>
+                      <Input
+                        value={modalData.graduationYear || ''}
+                        onChange={(e) => setModalData({ ...modalData, graduationYear: e.target.value })}
+                        placeholder="2024"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Relevant Courses</Label>
+                    <Textarea
+                      value={modalData.relevantCourses?.join('\n') || ''}
+                      onChange={(e) => setModalData({ ...modalData, relevantCourses: e.target.value.split('\n').filter(c => c.trim()) })}
+                      placeholder="Enter courses (one per line)"
+                      rows={5}
+                    />
+                    <p className="text-xs text-muted-foreground">One course per line</p>
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'certifications' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Certification Name</Label>
+                    <Input
+                      value={modalData.name || ''}
+                      onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
+                      placeholder="AWS Certified Solutions Architect"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Issuing Organization</Label>
+                    <Input
+                      value={modalData.issuer || ''}
+                      onChange={(e) => setModalData({ ...modalData, issuer: e.target.value })}
+                      placeholder="Amazon Web Services"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Year</Label>
+                    <Input
+                      value={modalData.year || ''}
+                      onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
+                      placeholder="2024"
+                    />
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'publications' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Title</Label>
+                    <Input
+                      value={modalData.title || ''}
+                      onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                      placeholder="Publication Title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Publication Type</Label>
+                    <Input
+                      value={modalData.publicationType || ''}
+                      onChange={(e) => setModalData({ ...modalData, publicationType: e.target.value })}
+                      placeholder="Journal, Conference"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Year</Label>
+                      <Input
+                        value={modalData.year || ''}
+                        onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
+                        placeholder="2024"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Link</Label>
+                      <Input
+                        value={modalData.link || ''}
+                        onChange={(e) => setModalData({ ...modalData, link: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'awards' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Award Name</Label>
+                    <Input
+                      value={modalData.name || ''}
+                      onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
+                      placeholder="Employee of the Year"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Year</Label>
+                    <Input
+                      value={modalData.year || ''}
+                      onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
+                      placeholder="2024"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={modalData.description || ''}
+                      onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
+                      placeholder="Award description..."
+                      rows={4}
+                    />
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'volunteer' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Input
+                      value={modalData.role || ''}
+                      onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
+                      placeholder="Volunteer Role"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Organization</Label>
+                    <Input
+                      value={modalData.organization || ''}
+                      onChange={(e) => setModalData({ ...modalData, organization: e.target.value })}
+                      placeholder="Organization"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Start Date</Label>
+                      <Input
+                        value={modalData.startDate || ''}
+                        onChange={(e) => setModalData({ ...modalData, startDate: e.target.value })}
+                        placeholder="2023-01"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>End Date</Label>
+                      <Input
+                        value={modalData.endDate || ''}
+                        onChange={(e) => setModalData({ ...modalData, endDate: e.target.value })}
+                        placeholder="Present"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={modalData.description || ''}
+                      onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
+                      placeholder="Description..."
+                      rows={4}
+                    />
+                  </div>
+                </>
+              )}
+
+              {modalSection === 'projects' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Project Title</Label>
+                    <Input
+                      value={modalData.title || ''}
+                      onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
+                      placeholder="Project Name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Input
+                      value={modalData.role || ''}
+                      onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
+                      placeholder="Lead Developer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={modalData.description || ''}
+                      onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
+                      placeholder="Project description..."
+                      rows={4}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>GitHub Link</Label>
+                    <Input
+                      value={modalData.github || ''}
+                      onChange={(e) => setModalData({ ...modalData, github: e.target.value })}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <SheetFooter className="mt-6">
+              <SheetClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </SheetClose>
+              <Button onClick={handleSaveModalData}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Entry
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
       </Card>
     </div>
   );

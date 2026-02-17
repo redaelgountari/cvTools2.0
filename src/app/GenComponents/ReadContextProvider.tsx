@@ -8,13 +8,14 @@ import axios from "axios";
 import { SessionProvider, useSession } from "next-auth/react";
 
 import { Resume, EmptyResume } from "@/app/types/resume";
+import { normalizeResumeData } from "./Themes/dataNormalization";
 
 interface SettingsType {
   [key: string]: any;
 }
 
 const normalizeData = (data: any): any => {
-  if (data === null || data === undefined) return ' ';
+  if (data === null || data === undefined) return '';
   if (Array.isArray(data)) return data.map(item => normalizeData(item));
   if (typeof data === 'object' && data !== null) {
     return Object.fromEntries(
@@ -79,7 +80,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
         const saved = await getFromStorage(userinfos);
 
         if (saved) {
-          const normalized = normalizeData(saved);
+          const normalized = normalizeResumeData(saved);
           setAnlysedCV(normalized);
           previousAnlysedCV.current = normalized;
         } else {
@@ -87,7 +88,7 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
             params: { userId: userinfos },
           });
 
-          const normalized = normalizeData(data.data);
+          const normalized = normalizeResumeData(data.data);
           setAnlysedCV(normalized);
           previousAnlysedCV.current = normalized;
           await saveToStorage(userinfos, normalized, 7);

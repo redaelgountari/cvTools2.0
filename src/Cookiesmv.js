@@ -22,6 +22,11 @@ async function cacheRequest(action, params = {}) {
   }
 }
 
+/**
+ * @param {string} key
+ * @param {any} data
+ * @param {number|null} [expiryDays]
+ */
 export async function saveToStorage(key, data, expiryDays = null) {
   const expirySeconds = expiryDays ? expiryDays * 24 * 60 * 60 : null;
   const storageItem = {
@@ -41,6 +46,11 @@ export async function saveToStorage(key, data, expiryDays = null) {
   return res?.success || false;
 }
 
+/**
+ * @param {string} key
+ * @param {any} data
+ * @param {number|null} [expiryDays]
+ */
 export async function saveSettings(key, data, expiryDays = null) {
   return await saveToStorage(key, data, expiryDays);
 }

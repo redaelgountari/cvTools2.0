@@ -14,6 +14,7 @@ import { useCookies } from 'react-cookie';
 import { getFromStorage, saveToStorage } from "../../Cookiesmv"
 import AnalyseResults from './AnalyseResults';
 import { Resume } from '../types/resume';
+import { normalizeResumeData } from './Themes/dataNormalization';
 
 export default function Analyse() {
   const [response, setResponse] = useState<Resume | null>(null);
@@ -100,9 +101,10 @@ export default function Analyse() {
       }
 
       console.log('rdatas :', { ...parsedData, image: userData.image })
-      setAnlysedCV({ ...parsedData, image: userData.image });
+      const normalizedData = normalizeResumeData({ ...parsedData, image: userData.image });
+      setAnlysedCV(normalizedData);
       setUploading(true);
-      setResponse(parsedData);
+      setResponse(normalizedData);
 
       const prompt = generateJobMatchingPrompt(parsedData);
       setJobMatchingPrompt(prompt);
