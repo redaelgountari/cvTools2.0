@@ -24,9 +24,9 @@ async function getResumeData() {
 export default async function PortfolioTemplate({
   params
 }: {
-  params: { template: string }
+  params: Promise<{ template: string }>
 }) {
-  const { template } = params;
+  const { template } = await params;
 
   // Protect route
   await requirePersonalInfo();

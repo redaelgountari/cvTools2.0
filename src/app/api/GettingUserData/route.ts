@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { mdb } from "@/lib/mongodb";
 
-export async function GET(request: NextRequest) {
+export async function GET(request?: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     } catch (error) {
         console.error("Error fetching resume:", error);
-        return NextResponse.json({ 
+        return NextResponse.json({
             error: "Failed to fetch resume",
             details: error instanceof Error ? error.message : String(error)
         }, { status: 500 });

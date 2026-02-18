@@ -1,9 +1,20 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import Joyride, { Step, CallBackProps, STATUS } from 'react-joyride';
+import dynamic from 'next/dynamic';
+import type { Step, CallBackProps } from 'react-joyride';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
+
+// Define STATUS constants locally to avoid importing from react-joyride which triggers build errors
+const JOYRIDE_STATUS = {
+  FINISHED: 'finished',
+  SKIPPED: 'skipped',
+};
+
+// Dynamically import Joyride with SSR disabled to avoid React legacy export issues during build
+// Use any as a temporary fix for props distribution in dynamic components
+const Joyride = dynamic<any>(() => Promise.resolve(require('react-joyride')), { ssr: false });
 
 type TourContextType = {
   setSteps: (steps: Step[]) => void;
@@ -77,7 +88,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const handleJoyrideCallback = useCallback((data: CallBackProps) => {
     const { status } = data;
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+    const finishedStatuses: string[] = [JOYRIDE_STATUS.FINISHED, JOYRIDE_STATUS.SKIPPED];
 
     if (finishedStatuses.includes(status)) {
       setRun(false);

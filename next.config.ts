@@ -3,11 +3,6 @@ import path from 'path';
 import { Configuration } from 'webpack';
 import { NextConfig } from 'next';
 
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
-module.exports = withBundleAnalyzer({})
-
 const nextConfig: NextConfig = {
   webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
     // Add PDF.js worker handling
@@ -43,7 +38,10 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-  
 };
 
-export default nextConfig;
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+export default withBundleAnalyzer(nextConfig);

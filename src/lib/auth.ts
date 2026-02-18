@@ -1,9 +1,8 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { mdb } from "@/lib/mongodb";
-import userSchema from "@/lib/UsersShema";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -29,7 +28,6 @@ export const authOptions: NextAuthOptions = {
 
                 try {
                     const db = await mdb();
-
                     const user = await db.collection("users").findOne({ email: credentials.email });
 
                     if (!user || !user.password) {
@@ -58,7 +56,6 @@ export const authOptions: NextAuthOptions = {
         async signIn({ user, account }) {
             try {
                 const db = await mdb();
-
                 const email = user.email;
 
                 if (!email) {
@@ -77,7 +74,6 @@ export const authOptions: NextAuthOptions = {
                     return true;
                 }
 
-                // Use db.collection for consistency or userSchema - pick one approach
                 await db.collection("users").insertOne({
                     email,
                     provider: account?.provider || 'credentials',
@@ -98,12 +94,9 @@ export const authOptions: NextAuthOptions = {
                 token.hasSeenTutorial = (user as any).hasSeenTutorial;
             }
 
-            // Handle manual session update or periodic refresh
             if (trigger === "update" && session?.hasSeenTutorial !== undefined) {
                 token.hasSeenTutorial = session.hasSeenTutorial;
             } else if (token.hasSeenTutorial === undefined) {
-                // Social logins might not have the field in the 'user' object from provider
-                // Or if we need a fresh check
                 try {
                     const db = await mdb();
                     const dbUser = await db.collection("users").findOne({ email: token.email });
@@ -137,7 +130,3 @@ export const authOptions: NextAuthOptions = {
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
-
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
