@@ -55,7 +55,19 @@ import MatchAnalysisStats from './MatchAnalysisStats';
 import { ColorPicker } from './ColorPicker';
 import { DEFAULT_THEME_COLORS } from './Themes/themeDefaults';
 import { normalizeResumeData } from './Themes/dataNormalization';
-import { Resume, MatchData } from '@/app/types/resume';
+import type { Resume, MatchData } from '@/app/types/resume';
+import { Edit3, Eye } from 'lucide-react';
+import HTMLTheme1 from './Editor/HTMLTheme1';
+import HTMLTheme2 from './Editor/HTMLTheme2';
+import HTMLTheme3 from './Editor/HTMLTheme3';
+import HTMLTheme4 from './Editor/HTMLTheme4';
+import HTMLTheme5 from './Editor/HTMLTheme5';
+import HTMLTheme6 from './Editor/HTMLTheme6';
+import HTMLTheme7 from './Editor/HTMLTheme7';
+import HTMLTheme8 from './Editor/HTMLTheme8';
+import HTMLTheme9 from './Editor/HTMLTheme9';
+import HTMLTheme10 from './Editor/HTMLTheme10';
+import HTMLTheme11 from './Editor/HTMLTheme11';
 
 import { useTour } from '../(studio)/TourProvider';
 
@@ -156,7 +168,7 @@ export default function Resume() {
   const router = useRouter();
 
   // Context and state
-  const { AnlysedCV, userData, settings: contextSettings, setSettings, isLoading: contextLoading } = useContext(ReadContext);
+  const { AnlysedCV, setAnlysedCV, userData, settings: contextSettings, setSettings, isLoading: contextLoading } = useContext<any>(ReadContext);
   const [resumeData, setResumeData] = useState<Resume | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
   const [jobAnnouncement, setJobAnnouncement] = useState('');
@@ -164,6 +176,7 @@ export default function Resume() {
   const [showJobDescription, setShowJobDescription] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [userImage, setUserImage] = useState('');
+  const [isEditingMode, setIsEditingMode] = useState(false);
 
   // UI states
   const [loading, setLoading] = useState(false);
@@ -178,6 +191,10 @@ export default function Resume() {
 
   const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
   const [currentThemeIndex, setCurrentThemeIndex] = useState(1);
+
+  const updateResumeData = (newData: Resume) => {
+    setResumeData(newData);
+  };
 
   // Load data from context or storage
   useEffect(() => {
@@ -504,7 +521,7 @@ The JSON structure must follow this format:
   };
 
   // Handle export
-  const handleExport = async (format) => {
+  const handleExport = async (format: string) => {
     if (!resumeData) {
       setError('No resume content to export.');
       return;
@@ -813,23 +830,37 @@ The JSON structure must follow this format:
           <div className="lg:col-span-8 pdf-viewer-container">
             <Card className="border-2 h-full">
               <CardHeader className="pb-3 sm:pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 overflow-hidden">
                   <div>
                     <CardTitle className="text-base sm:text-lg">Resume Preview</CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
-                      See how your resume will look
+                      {isEditingMode ? "Editing your resume directly" : "See how your resume will look"}
                     </CardDescription>
                   </div>
-                  {resumeData && (
+                  <div className="flex items-center gap-2">
                     <Button
-                      className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto"
-                      onClick={() => handleExport('pdf')}
-                      disabled={exportLoading}
+                      variant={isEditingMode ? "default" : "outline"}
+                      size="sm"
+                      className="h-9"
+                      onClick={() => setIsEditingMode(!isEditingMode)}
                     >
-                      <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                      {exportLoading ? 'Exporting...' : 'Export PDF'}
+                      {isEditingMode ? (
+                        <><Eye className="mr-2 h-4 w-4" /> View PDF</>
+                      ) : (
+                        <><Edit3 className="mr-2 h-4 w-4" /> Visual Editor</>
+                      )}
                     </Button>
-                  )}
+                    {resumeData && (
+                      <Button
+                        className="h-9 text-xs sm:text-sm"
+                        onClick={() => handleExport('pdf')}
+                        disabled={exportLoading}
+                      >
+                        <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        {exportLoading ? 'Exporting...' : 'Export PDF'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {matchData && (
@@ -849,15 +880,57 @@ The JSON structure must follow this format:
               </CardHeader>
               <CardContent>
                 {resumeData ? (
-                  <div className="overflow-hidden rounded-lg border-2 bg-background shadow-inner">
+                  <div className="overflow-hidden rounded-lg border-2 bg-background shadow-inner min-h-[800px]">
                     {typeof window !== 'undefined' && (
-                      <ResumePreview
-                        key={resumeDataKey + activeTheme} // Force remount on data/theme change
-                        resumeData={resumeData}
-                        activeTheme={activeTheme}
-                        themeColors={themeColors}
-                        userImage={userImage}
-                      />
+                      isEditingMode ? (
+                        <div className="bg-slate-100/50 dark:bg-slate-900/50 p-4 sm:p-8 overflow-auto max-h-[1000px] flex justify-center">
+                          <div className="bg-white shadow-2xl origin-top" style={{ width: '210mm', minHeight: '297mm', transform: 'scale(0.95)' }}>
+                            {(() => {
+                              const props = {
+                                userdata: resumeData,
+                                colors: themeColors,
+                                userImage: userImage,
+                                onUpdate: updateResumeData
+                              };
+                              switch (activeTheme) {
+                                case 'theme1': return <HTMLTheme1 {...props} />;
+                                case 'theme2': return <HTMLTheme2 {...props} />;
+                                case 'theme3': return <HTMLTheme3 {...props} />;
+                                case 'theme4': return <HTMLTheme4 {...props} />;
+                                case 'theme5': return <HTMLTheme5 {...props} />;
+                                case 'theme6': return <HTMLTheme6 {...props} />;
+                                case 'theme7': return <HTMLTheme7 {...props} />;
+                                case 'theme8': return <HTMLTheme8 {...props} />;
+                                case 'theme9': return <HTMLTheme9 {...props} />;
+                                case 'theme10': return <HTMLTheme10 {...props} />;
+                                case 'theme11': return <HTMLTheme11 {...props} />;
+                                default: return (
+                                  <div className="flex flex-col items-center justify-center h-[297mm] p-20 text-center bg-white">
+                                    <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                                      <Edit3 className="h-8 w-8 text-muted-foreground" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold mb-2">Visual Editor for "{activeTheme}"</h3>
+                                    <p className="text-muted-foreground max-w-sm">
+                                      We're currently building the interactive version of this template. You can still customize colors below or switch to another theme!
+                                    </p>
+                                    <Button variant="outline" className="mt-6" onClick={() => setIsEditingMode(false)}>
+                                      Switch to PDF View
+                                    </Button>
+                                  </div>
+                                );
+                              }
+                            })()}
+                          </div>
+                        </div>
+                      ) : (
+                        <ResumePreview
+                          key={resumeDataKey + activeTheme} // Force remount on data/theme change
+                          resumeData={resumeData}
+                          activeTheme={activeTheme}
+                          themeColors={themeColors}
+                          userImage={userImage}
+                        />
+                      )
                     )}
                   </div>
                 ) : (
@@ -912,64 +985,21 @@ The JSON structure must follow this format:
       </AlertDialog>
 
       {/* Low Match Warning Dialog */}
-      <AlertDialog open={showLowMatchWarning} onOpenChange={setShowLowMatchWarning}>
-        <AlertDialogContent className="max-w-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              Low Job Match Detected
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              The generated resume has a low match score ({matchData?.matchScore}%) with the job description.
-              The result might not be optimal. Do you want to proceed with this resume or cancel to adjust your inputs?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <div className="py-4">
-            <MatchAnalysisStats matchData={matchData} />
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setPendingResumeData(null);
-              setMatchData(null);
-            }}>
-              Cancel & Adjust
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              if (pendingResumeData) {
-                setResumeData(pendingResumeData);
-                setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 1500);
-              }
-            }}>
-              Continue Anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       {/* Stats Analysis Dialog */}
       <AlertDialog open={showStatsModal} onOpenChange={setShowStatsModal}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <ChartBar className="h-5 w-5 text-primary" />
-              Resume Match Analysis
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Detailed breakdown of how well your profile matches the job description.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Match Analysis</AlertDialogTitle>
           </AlertDialogHeader>
-
           <div className="py-4">
             <MatchAnalysisStats matchData={matchData} />
           </div>
-
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowStatsModal(false)}>Close</AlertDialogAction>
+            <AlertDialogAction>Close</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </div>
   );
 }
