@@ -13,16 +13,18 @@ export default function Home() {
   const [statsRef, statsInView] = useInView({ triggerOnce: false, threshold: 0.1 });
   const [testimonialsRef, testimonialsInView] = useInView({ triggerOnce: false, threshold: 0.1 });
   const [ctaRef, ctaInView] = useInView({ triggerOnce: false, threshold: 0.1 });
-  
+
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const [isHovering, setIsHovering] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseMove = (e) => setMousePosition({ x: e.clientX, y: e.clientY });
+    setIsMounted(true);
+    const handleMouseMove = (e: React.MouseEvent | MouseEvent) => setMousePosition({ x: (e as any).clientX, y: (e as any).clientY });
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
@@ -89,15 +91,15 @@ export default function Home() {
           </svg>
         </motion.div>
         <div className="mx-auto max-w-2xl text-center relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            transition={{ duration: 0.6, type: "spring", bounce: 0.4 }} 
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
             className="mb-4">
-            <motion.h1 
-              initial={{ y: 50 }} 
-              animate={{ y: 0 }} 
-              transition={{ duration: 0.6 }} 
+            <motion.h1
+              initial={{ y: 50 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.6 }}
               className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl relative">
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.5 }} className="absolute -inset-1 rounded-lg bg-primary/10 blur-xl" />
               Smart CV Analyzer
@@ -136,20 +138,22 @@ export default function Home() {
               </Button>
             </motion.div>
           </motion.div>
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(10)].map((_, i) => (
-              <motion.div key={i} className="absolute w-4 h-4 rounded-full bg-primary/20" initial={{ x: Math.random() * 100 - 50 + "%", y: Math.random() * 100 + "%", opacity: 0 }} animate={{ y: [Math.random() * 100 + "%", Math.random() * 100 + "%"], opacity: [0, 0.5, 0] }} transition={{ repeat: Infinity, duration: 5 + Math.random() * 10, delay: i * 0.5 }} />
-            ))}
-          </div>
+          {isMounted && (
+            <div className="absolute inset-0 pointer-events-none">
+              {[...Array(10)].map((_, i) => (
+                <motion.div key={i} className="absolute w-4 h-4 rounded-full bg-primary/20" initial={{ x: Math.random() * 100 - 50 + "%", y: Math.random() * 100 + "%", opacity: 0 }} animate={{ y: [Math.random() * 100 + "%", Math.random() * 100 + "%"], opacity: [0, 0.5, 0] }} transition={{ repeat: Infinity, duration: 5 + Math.random() * 10, delay: i * 0.5 }} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Stats Section */}
       <section className="py-12 bg-primary/5 relative" ref={statsRef}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 50 }} 
-            animate={statsInView ? { opacity: 1, y: 0 } : {}} 
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={statsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8 }}
             className="grid grid-cols-2 gap-4 md:grid-cols-4"
           >
@@ -159,9 +163,9 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 className="text-center p-4 bg-card/50 backdrop-blur-sm rounded-lg shadow-sm border border-border/30"
               >
-                <motion.div 
-                  initial={{ scale: 0.8, opacity: 0 }} 
-                  animate={statsInView ? { scale: 1, opacity: 1 } : {}} 
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={statsInView ? { scale: 1, opacity: 1 } : {}}
                   transition={{ duration: 0.5, delay: 0.2 }}
                   className="text-3xl sm:text-4xl font-bold text-primary"
                 >
@@ -246,10 +250,10 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className="py-16 sm:py-24 relative" ref={testimonialsRef}>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 50 }} 
-            animate={testimonialsInView ? { opacity: 1, y: 0 } : {}} 
-            transition={{ duration: 0.8 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
             className="mx-auto max-w-2xl text-center mb-12"
           >
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">What Our Users Say</h2>
@@ -257,7 +261,7 @@ export default function Home() {
               Real success stories from professionals who boosted their careers
             </p>
           </motion.div>
-          
+
           <div className="mx-auto grid max-w-2xl grid-cols-1 gap-6 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             {testimonials.map((testimonial, index) => (
               <motion.div
@@ -271,8 +275,8 @@ export default function Home() {
                 <motion.div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full -z-10" />
                 <div className="mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <motion.span 
-                      key={i} 
+                    <motion.span
+                      key={i}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={testimonialsInView ? { opacity: 1, scale: 1 } : {}}
                       transition={{ duration: 0.3, delay: index * 0.1 + i * 0.1 }}
@@ -305,32 +309,32 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="relative py-16 bg-primary/5" ref={ctaRef}>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={ctaInView ? { opacity: 1 } : {}}
           transition={{ duration: 1 }}
           className="absolute inset-0 overflow-hidden -z-10"
         >
-          <motion.div 
+          <motion.div
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
             className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"
           />
-          <motion.div 
+          <motion.div
             animate={{ rotate: [360, 0] }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary/5 rounded-full blur-2xl"
           />
         </motion.div>
-        
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={ctaInView ? { scale: 1, opacity: 1 } : {}}
             transition={{ duration: 0.5 }}
             className="mx-auto max-w-2xl rounded-2xl bg-card p-8 shadow-lg border border-border/50 text-center"
           >
-            <motion.h2 
+            <motion.h2
               initial={{ y: 20, opacity: 0 }}
               animate={ctaInView ? { y: 0, opacity: 1 } : {}}
               transition={{ delay: 0.2 }}
@@ -338,7 +342,7 @@ export default function Home() {
             >
               Ready to transform your job search?
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={ctaInView ? { y: 0, opacity: 1 } : {}}
               transition={{ delay: 0.3 }}
@@ -346,7 +350,7 @@ export default function Home() {
             >
               Start using Smart CV Analyzer today and increase your chances of landing interviews.
             </motion.p>
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={ctaInView ? { y: 0, opacity: 1 } : {}}
               transition={{ delay: 0.4 }}
@@ -369,7 +373,7 @@ export default function Home() {
                 </Button>
               </motion.div>
             </motion.div>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0 }}
               animate={ctaInView ? { opacity: 0.8 } : {}}
               transition={{ delay: 0.5 }}

@@ -21,6 +21,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import SearchResults from "../../GenComponents/SearchResults"
 import { useEffect, useState } from "react"
 import { useTour } from "../TourProvider"
+import ClientOnly from "../../GenComponents/ClientOnly"
 
 export default function Page() {
   const [isAnalysisReady, setIsAnalysisReady] = useState(false)
@@ -59,7 +60,7 @@ export default function Page() {
     autoStart();
   }, [setSteps, autoStart, hasTriggeredTour]);
   return (
-    <ReadContextProvider>
+    <ClientOnly>
       <div className="flex min-h-screen flex-col bg-background">
         <div className="container flex-1 py-6 md:py-8">
           <div className="flex flex-col space-y-6">
@@ -128,6 +129,6 @@ export default function Page() {
           </div>
         </footer>
       </div>
-    </ReadContextProvider>
+    </ClientOnly>
   )
 }

@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { mdb } from "@/lib/mongodb";
 
-export async function GET(request?: NextRequest) {
+export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 

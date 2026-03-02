@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { loadFull } from 'tsparticles';
 import Particles from 'react-tsparticles';
 import type { Engine } from 'tsparticles-engine';
@@ -8,11 +8,16 @@ import { useTheme } from 'next-themes';
 import { loadSlim } from 'tsparticles-slim'; // much smaller bundle
 
 export default function ParticlesBackground() {
+  const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
-  
+
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadSlim(engine);
   }, []);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
 
   return (
     <Particles

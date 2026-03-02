@@ -27,5 +27,24 @@ export const prompteTemplate = (data : string) =>{
     Do NOT include imports outside what's required. NO explanations. Just the component code.
     `;
 }
-    // - The component receives props: { userdata: Resume; userImage: string }
-    // - Assume props: { userdata: Resume; userImage: string }
+export const prompteCVUpdate = (cvData: string, instructions: string) => {
+    return `You are a professional resume editor.
+    
+    ### TASK:
+    Update the provided CV DATA (JSON format) based on the USER INSTRUCTIONS.
+    
+    ### CV DATA:
+    ${cvData}
+    
+    ### USER INSTRUCTIONS:
+    "${instructions}"
+    
+    ### CRITICAL RULES:
+    1. **STRICT JSON OUTPUT**: Return ONLY the updated JSON object. No explanations, no markdown blocks, just the JSON.
+    2. **PRESERVE STRUCTURE**: Maintain the exact same JSON schema as the input.
+    3. **PRESERVE SENSITIVE DATA**: Do NOT change names, emails, phone numbers, or addresses unless explicitly instructed to do so.
+    4. **TONE**: Keep the tone professional and appropriate for the industry unless a different tone is requested.
+    5. **VALID JSON**: Ensure the output is a single, valid JSON object.
+    
+    Now provide the updated CV JSON:`;
+}

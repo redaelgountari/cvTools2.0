@@ -4,9 +4,8 @@ import { NextResponse } from 'next/server';
 import { Groq } from 'groq-sdk';
 import { createHash } from 'crypto';
 
-// Redis Config (Matches Cookiesmv.js server logic)
-const REDIS_URL = "https://growing-alpaca-24643.upstash.io";
-const REDIS_TOKEN = "AWBDAAIncDI3ODI1ZWIzNjUxNjY0NWY2OWVkYzhmZDE3YTM3N2FiOHAyMjQ2NDM";
+const REDIS_URL = process.env.REDIS_URL;
+const REDIS_TOKEN = process.env.REDIS_TOKEN;
 
 async function redisOps(action: 'GET' | 'SET', key: string, value?: string) {
   try {
@@ -310,6 +309,35 @@ function validateInput(body: RequestBody): string | null {
   return null;
 }
 
+function extractAndFixJSON(text: string): string | null {
+  if (!text) return null;
+
+  // Remove markdown fences
+  let cleaned = text.replace(/```json|```/g, '').trim();
+
+  // Try direct parse first
+  try {
+    JSON.parse(cleaned);
+    return cleaned;
+  } catch {}
+
+  // Try to extract JSON block
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+
+  let jsonString = jsonMatch[0];
+
+  // Remove trailing commas
+  jsonString = jsonString.replace(/,\s*}/g, '}');
+  jsonString = jsonString.replace(/,\s*]/g, ']');
+
+  try {
+    JSON.parse(jsonString);
+    return jsonString;
+  } catch {
+    return null;
+  }
+}
 function performSecurityChecks(body: RequestBody): {
   valid: boolean;
   reason?: string;
@@ -494,21 +522,21 @@ async function tryOpenRouter(prompt: string, useCase: UseCase): Promise<APIRespo
     }
 
     // Validate JSON structure for CV analysis and translation
-    if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
-      const cleanedText = text.replace(/```json|```/g, '').trim();
-      try {
-        JSON.parse(cleanedText);
-        return {
-          text: cleanedText,
-          provider: 'openrouter',
-          model: modelName,
-          useCase,
-        };
-      } catch (error) {
-        console.warn(`Invalid JSON response from OpenRouter for ${useCase}:`, error);
-        return null;
-      }
-    }
+if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
+  const fixedJSON = extractAndFixJSON(text);
+
+  if (!fixedJSON) {
+    console.warn(`Invalid JSON response from OpenRouter for ${useCase}`);
+    return null;
+  }
+
+  return {
+    text: fixedJSON,
+    provider: 'openrouter',
+    model: modelName,
+    useCase,
+  };
+}
 
     return {
       text: text.trim(),
@@ -551,19 +579,19 @@ async function tryGemini(prompt: string, useCase: UseCase): Promise<APIResponse 
 
     // Validate JSON structure for CV analysis and translation
     if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
-      const cleanedText = text.replace(/```json|```/g, '').trim();
-      try {
-        JSON.parse(cleanedText);
-        return {
-          text: cleanedText,
-          provider: 'gemini',
-          model: modelName,
-          useCase,
-        };
-      } catch (error) {
-        console.warn(`Invalid JSON response from Gemini for ${useCase}:`, error);
+      const fixedJSON = extractAndFixJSON(text);
+
+      if (!fixedJSON) {
+        console.warn(`Invalid JSON response from Gemini for ${useCase}`);
         return null;
       }
+
+      return {
+        text: fixedJSON,
+        provider: 'gemini',
+        model: modelName,
+        useCase,
+      };
     }
 
     return {
@@ -595,7 +623,7 @@ async function tryGroq(prompt: string, useCase: UseCase): Promise<APIResponse | 
     });
 
     // Free model with generous limits
-    const modelName = 'llama-3.2-3b-preview';
+    const modelName = 'llama-3.1-8b-instant';
 
     const response = await groq.chat.completions.create({
       model: modelName,
@@ -620,21 +648,21 @@ async function tryGroq(prompt: string, useCase: UseCase): Promise<APIResponse | 
     }
 
     // Validate JSON structure for CV analysis and translation
-    if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
-      const cleanedText = text.replace(/```json|```/g, '').trim();
-      try {
-        JSON.parse(cleanedText);
-        return {
-          text: cleanedText,
-          provider: 'groq',
-          model: modelName,
-          useCase,
-        };
-      } catch (error) {
-        console.warn(`Invalid JSON response from Groq for ${useCase}:`, error);
-        return null;
-      }
-    }
+   if (useCase === 'Analyse-resume' || useCase === 'Translate-cv') {
+  const fixedJSON = extractAndFixJSON(text);
+
+  if (!fixedJSON) {
+    console.warn(`Invalid JSON response from Groq for ${useCase}`);
+    return null;
+  }
+
+  return {
+    text: fixedJSON,
+    provider: 'groq',
+    model: modelName,
+    useCase,
+  };
+}
 
     return {
       text: text.trim(),

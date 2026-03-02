@@ -26,25 +26,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ReadContextProvider>
+    <>
+      <ReadContextProvider>
         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Dashboard>
-              <TourProvider>
-                {children}
-              </TourProvider>
-            </Dashboard>
-          </ThemeProvider>
-          </ReadContextProvider>
-      </body>
-    </html>
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Dashboard>
+            <TourProvider>
+              {children}
+            </TourProvider>
+          </Dashboard>
+        </ThemeProvider>
+      </ReadContextProvider>
+    </>
   );
 }

@@ -3,22 +3,20 @@ import path from "path";
 import Link from "next/link";
 import { requirePersonalInfo } from "@/lib/auth-check";
 
-// ============================================================================
-// SECURITY: Whitelist of allowed templates
-// Only these templates can be loaded - prevents directory traversal attacks
-// ============================================================================
 const ALLOWED_TEMPLATES = [
-  'template1',
+  'NeonPulse',
   'GradientFolio',
-  'template2',
-  'template3',
-  'professional-portfolio', // Add your actual template names here
-  // Add more as needed
+  'CodeCanvas',
+  'TerminalPortfolio',
+  'VSCodePortfolio',
+  'PixelPort'
+
 ];
 
 async function getResumeData() {
   const { GET } = await import('@/app/api/GettingUserData/route');
-  const response = await GET();
+  const request = new Request("http://localhost:3000/api/GettingUserData") as any;
+  const response = await GET(request);
   return response.json();
 }
 export default async function PortfolioTemplate({
@@ -28,12 +26,7 @@ export default async function PortfolioTemplate({
 }) {
   const { template } = await params;
 
-  // Protect route
   await requirePersonalInfo();
-
-  // ============================================================================
-  // SECURITY CHECK 1: Validate template name against whitelist
-  // ============================================================================
   if (!ALLOWED_TEMPLATES.includes(template)) {
     return (
       <div className="p-8">
@@ -54,19 +47,10 @@ export default async function PortfolioTemplate({
     );
   }
 
-  // ============================================================================
-  // SECURITY CHECK 2: Sanitize template name (remove special chars)
-  // Prevents path traversal even if whitelist is bypassed
-  // ============================================================================
   const sanitizedTemplate = template.replace(/[^a-zA-Z0-9-_]/g, '');
 
-  // Build the expected file path
   const templatePath = path.join(process.cwd(), "templates", `${sanitizedTemplate}.html`);
 
-  // ============================================================================
-  // SECURITY CHECK 3: Verify the resolved path is within templates directory
-  // Prevents directory traversal attacks like "../../../etc/passwd"
-  // ============================================================================
   const templatesDir = path.join(process.cwd(), "templates");
   const resolvedPath = path.resolve(templatePath);
 
@@ -85,7 +69,6 @@ export default async function PortfolioTemplate({
     );
   }
 
-  // Check if file exists
   if (!fs.existsSync(templatePath)) {
     return (
       <div className="p-8">
@@ -107,7 +90,6 @@ export default async function PortfolioTemplate({
     );
   }
 
-  // Read the template
   let html: string;
   try {
     html = fs.readFileSync(templatePath, "utf-8");
@@ -127,7 +109,6 @@ export default async function PortfolioTemplate({
     );
   }
 
-  // Fetch resume data
   let resumeData;
   try {
     resumeData = await getResumeData();
@@ -147,9 +128,6 @@ export default async function PortfolioTemplate({
     );
   }
 
-  // ============================================================================
-  // SECURITY: Properly escape data for safe injection
-  // ============================================================================
   const safeHtml = html.replace(
     "{{data}}",
     JSON.stringify(resumeData)
@@ -158,13 +136,8 @@ export default async function PortfolioTemplate({
       .replace(/&/g, "\\u0026")
   );
 
-  // ============================================================================
-  // SECURE RENDERING: Use iframe with sandbox restrictions
-  // This isolates the template and prevents XSS attacks
-  // ============================================================================
   return (
     <div className="w-full h-screen relative">
-      {/* Navigation Bar */}
 
       <iframe
         sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals"

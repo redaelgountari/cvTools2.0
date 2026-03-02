@@ -7,6 +7,8 @@ import { ReadContext } from './ReadContext';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { prompteCVUpdate } from '../Promptes/Aipromptes';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 import dynamic from "next/dynamic";
 
@@ -37,7 +39,14 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  BarChart as ChartBar
+  BarChart as ChartBar,
+  RefreshCw,
+  Sparkles,
+  MessageSquare,
+  Briefcase,
+  Zap,
+  Edit3,
+  Eye
 } from 'lucide-react';
 import Theme1 from './Themes/Theme1';
 import Theme2 from './Themes/Theme2';
@@ -56,7 +65,6 @@ import { ColorPicker } from './ColorPicker';
 import { DEFAULT_THEME_COLORS } from './Themes/themeDefaults';
 import { normalizeResumeData } from './Themes/dataNormalization';
 import type { Resume, MatchData } from '@/app/types/resume';
-import { Edit3, Eye } from 'lucide-react';
 import HTMLTheme1 from './Editor/HTMLTheme1';
 import HTMLTheme2 from './Editor/HTMLTheme2';
 import HTMLTheme3 from './Editor/HTMLTheme3';
@@ -189,6 +197,11 @@ export default function Resume() {
   const [pendingResumeData, setPendingResumeData] = useState<Resume | null>(null);
   const [themeColors, setThemeColors] = useState(DEFAULT_THEME_COLORS[activeTheme] || {});
 
+  // AI Power Tools states
+  const [aiInstruction, setAiInstruction] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [activeAiTab, setActiveAiTab] = useState('targeted');
+
   const [hasTriggeredTour, setHasTriggeredTour] = useState(false);
   const [currentThemeIndex, setCurrentThemeIndex] = useState(1);
 
@@ -308,9 +321,22 @@ export default function Resume() {
 
   // Memoize resume data key to avoid expensive stringify on every render
   const resumeDataKey = useMemo(() => {
-    // Return a stable identifier/hash if possible, otherwise stringify (but only when resumeData changes)
     return resumeData ? JSON.stringify(resumeData) : '';
   }, [resumeData]);
+
+  // Check if current resume data differs from original raw response
+  const isDirty = useMemo(() => {
+    if (!rawResponse || !resumeData) return false;
+    try {
+      const original = normalizeResumeData(JSON.parse(rawResponse));
+      // Comparison - normalize both to be sure
+      const current = JSON.stringify(normalizeResumeData(resumeData));
+      const baseline = JSON.stringify(original);
+      return current !== baseline;
+    } catch (e) {
+      return false;
+    }
+  }, [rawResponse, resumeData]);
 
   if (isCVLoading) {
     return (
@@ -329,24 +355,33 @@ export default function Resume() {
     }));
   };
 
+  // Reset local state to the current baseline (rawResponse)
+  const resetToOriginal = () => {
+    if (!rawResponse) return;
+    try {
+      console.log("Resetting to baseline:", rawResponse);
+      const originalCV = JSON.parse(rawResponse);
+      const normalized = normalizeResumeData(originalCV);
+      setResumeData(normalized);
+      setMatchData(null);
+      setJobAnnouncement('');
+      setAiInstruction('');
+      setError('');
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+    } catch (e) {
+      console.error("Failed to reset resume:", e);
+      setError("Failed to reset data.");
+    }
+  };
+
   const generateResume = async () => {
     if (!rawResponse) {
       setError('Please provide your CV data first before generating a resume.');
       return;
     }
     if (!jobAnnouncement) {
-      if (rawResponse) {
-        try {
-          // Reset to original CV if no job description
-          const originalCV = JSON.parse(rawResponse);
-          setResumeData(normalizeResumeData(originalCV));
-          setMatchData(null);
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 1500);
-        } catch (e) {
-          console.error("Failed to reset resume:", e);
-        }
-      }
+      setError('Please provide a job description for targeted adaptation.');
       return;
     }
 
@@ -460,11 +495,12 @@ The JSON structure must follow this format:
       const parsedData = JSON.parse(cleanedData);
 
       // Extract resume and analysis data
-      let newResumeData = parsedData.resume;
+      // AI might return it wrapped in "resume" or flat at the top level
+      let newResumeData = parsedData.resume || (parsedData.personalInfo ? parsedData : null);
       const newAnalysisData = parsedData.analysis || null;
 
-      // Handle flat structure or missing resume field
-      if (!newResumeData && parsedData.personalInfo) {
+      // Special case: if it's flat but doesn't have personalInfo, check if it's the resume object itself
+      if (!newResumeData && !parsedData.resume && !parsedData.analysis) {
         newResumeData = parsedData;
       }
 
@@ -517,6 +553,77 @@ The JSON structure must follow this format:
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const applyAIUpdate = async () => {
+    if (!aiInstruction.trim()) {
+      setError('Please provide instructions for the AI.');
+      return;
+    }
+    if (!resumeData) {
+      setError('No resume data found to update.');
+      return;
+    }
+
+    setIsAiLoading(true);
+    setError('');
+
+    try {
+      const prompt = prompteCVUpdate(JSON.stringify(resumeData), aiInstruction);
+
+      const { data } = await axios.post("/api/gemini", {
+        userData: prompt,
+        useCase: 'Analyse-resume'
+      });
+
+      let cleanedData = data.text.trim();
+      cleanedData = cleanedData.replace(/```[\w]*\n?/g, '').replace(/```/g, '').trim();
+
+      const firstBrace = cleanedData.indexOf('{');
+      const lastBrace = cleanedData.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanedData = cleanedData.substring(firstBrace, lastBrace + 1);
+      }
+
+      const parsedData = JSON.parse(cleanedData);
+
+      // AI might return it wrapped in "resume" or flat at the top level
+      let newResumeData = parsedData.resume || (parsedData.personalInfo ? parsedData : null);
+      const newAnalysisData = parsedData.analysis || null;
+
+      // Special case: if it's flat but doesn't have personalInfo, check if it's the resume object itself
+      if (!newResumeData && !parsedData.resume && !parsedData.analysis) {
+        newResumeData = parsedData;
+      }
+
+      if (!newResumeData || (!newResumeData.personalInfo && !newResumeData.experience)) {
+        throw new Error('AI did not return a valid resume structure.');
+      }
+
+      // Preserve the image
+      if (resumeData && (resumeData as any).image) {
+        (newResumeData as any).image = (resumeData as any).image;
+      } else if (userImage) {
+        (newResumeData as any).image = [userImage];
+      }
+
+      if (newAnalysisData && newAnalysisData.matchScore > 0 && newAnalysisData.matchScore < 50) {
+        setMatchData(newAnalysisData);
+        setPendingResumeData(normalizeResumeData(newResumeData));
+        setShowLowMatchWarning(true);
+      } else {
+        setResumeData(normalizeResumeData(newResumeData));
+        setMatchData(newAnalysisData);
+        setShowSuccess(true);
+        setAiInstruction('');
+        setTimeout(() => setShowSuccess(false), 1500);
+      }
+    } catch (error) {
+      console.error('Error updating resume with AI:', error);
+      setError('Failed to update resume. Please try again.');
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -749,73 +856,103 @@ The JSON structure must follow this format:
               </CardContent>
             </Card>
 
-            {/* Target Job Description Section */}
-            <Card className="border-2 job-description-section">
-              <CardHeader className="pb-3 sm:pb-4">
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-0">
-                  <div className="flex-1">
-                    <CardTitle className="text-base sm:text-lg">Target Job Description</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-1">
-                      Add job details to tailor your resume
-                    </CardDescription>
+            {/* AI Power Tools Section */}
+            <Card className="border-2 border-primary/20 shadow-md card-container overflow-hidden">
+              <div className="bg-primary/5 px-4 py-2 border-b border-primary/10 flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">AI Power Tools</span>
+              </div>
+              <CardContent className="p-0">
+                <Tabs value={activeAiTab} onValueChange={setActiveAiTab} className="w-full">
+                  <TabsList className="w-full grid grid-cols-2 rounded-none bg-muted/50 p-0 h-10">
+                    <TabsTrigger value="targeted" className="rounded-none text-xs data-[state=active]:bg-background border-r">
+                      <Briefcase className="mr-2 h-3 w-3" />
+                      Targeted Offer
+                    </TabsTrigger>
+                    <TabsTrigger value="editor" className="rounded-none text-xs data-[state=active]:bg-background">
+                      <Sparkles className="mr-2 h-3 w-3" />
+                      AI CV Update
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <div className="p-4">
+                    <TabsContent value="targeted" className="mt-0 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="job-offer" className="text-sm font-semibold flex items-center gap-2">
+                          Job Description
+                        </Label>
+                        <Textarea
+                          id="job-offer"
+                          placeholder="Paste the job offer here to tailor your resume..."
+                          className="min-h-[120px] text-sm resize-none focus:ring-primary/30"
+                          value={jobAnnouncement}
+                          onChange={(e) => setJobAnnouncement(e.target.value)}
+                        />
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] text-muted-foreground italic">
+                            AI will optimize summaries and keywords for ATS
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        className="w-full h-10 text-sm font-bold shadow-sm"
+                        onClick={generateResume}
+                        disabled={loading || !rawResponse || !jobAnnouncement}
+                      >
+                        {loading ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adapting...</>
+                        ) : (
+                          <><Zap className="mr-2 h-4 w-4" /> Adapt My CV</>
+                        )}
+                      </Button>
+                    </TabsContent>
+
+                    <TabsContent value="editor" className="mt-0 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="ai-editor" className="text-sm font-semibold flex items-center gap-2">
+                          AI Instructions
+                        </Label>
+                        <Textarea
+                          id="ai-editor"
+                          placeholder="Example: 'Make my summary sound more senior' or 'Translate my skills to English'..."
+                          className="min-h-[120px] text-sm resize-none focus:ring-primary/30"
+                          value={aiInstruction}
+                          onChange={(e) => setAiInstruction(e.target.value)}
+                        />
+                        <p className="text-[10px] text-muted-foreground italic">
+                          Give specific instructions to update your content
+                        </p>
+                      </div>
+                      <Button
+                        className="w-full h-10 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm"
+                        onClick={applyAIUpdate}
+                        disabled={isAiLoading || !rawResponse || !aiInstruction}
+                      >
+                        {isAiLoading ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
+                        ) : (
+                          <><Sparkles className="mr-2 h-4 w-4" /> Apply AI Update</>
+                        )}
+                      </Button>
+                    </TabsContent>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="job-desc-toggle"
-                      checked={showJobDescription}
-                      onCheckedChange={setShowJobDescription}
-                    />
-                    <Label htmlFor="job-desc-toggle" className="text-xs sm:text-sm font-medium cursor-pointer">
-                      Enable
-                    </Label>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {showJobDescription ? (
-                  <div className="space-y-2 sm:space-y-3">
-                    <Textarea
-                      placeholder="Paste the job description here..."
-                      className="min-h-[150px] sm:min-h-[180px] text-xs sm:text-sm"
-                      value={jobAnnouncement}
-                      onChange={(e) => setJobAnnouncement(e.target.value)}
-                    />
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Helps optimize your resume for ATS systems
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-[150px] sm:h-[180px] border-2 border-dashed rounded-lg p-4 bg-muted/20">
-                    <p className="text-center text-xs sm:text-sm text-muted-foreground mb-3">
-                      Enable to create a tailored resume
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowJobDescription(true)}
-                    >
-                      Add Job Description
-                    </Button>
-                  </div>
-                )}
+                </Tabs>
               </CardContent>
             </Card>
 
-            {/* Generate Button */}
-            <Button
-              className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold generate-button"
-              onClick={generateResume}
-              disabled={loading || !rawResponse}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                'Generate Resume'
-              )}
-            </Button>
+            {/* Sync & Reset buttons - only show when there are manual changes */}
+            {isDirty && !loading && !isAiLoading && (
+              <div className="space-y-2 mt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-[10px] h-6 text-muted-foreground hover:text-destructive transition-colors"
+                  onClick={resetToOriginal}
+                >
+                  Abandon changes and Reset to Original
+                </Button>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -881,7 +1018,7 @@ The JSON structure must follow this format:
               <CardContent>
                 {resumeData ? (
                   <div className="overflow-hidden rounded-lg border-2 bg-background shadow-inner min-h-[800px]">
-                    {typeof window !== 'undefined' && (
+                    {isMounted && (
                       isEditingMode ? (
                         <div className="bg-slate-100/50 dark:bg-slate-900/50 p-4 sm:p-8 overflow-auto max-h-[1000px] flex justify-center">
                           <div className="bg-white shadow-2xl origin-top" style={{ width: '210mm', minHeight: '297mm', transform: 'scale(0.95)' }}>

@@ -51,7 +51,7 @@ export default async function Page() {
             </Badge>
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <div className="grid gap-4">
             <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">

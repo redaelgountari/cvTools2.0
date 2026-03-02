@@ -19,7 +19,7 @@ const switzer = localFont({
       weight: '400',
       style: 'normal',
     }
-   
+
   ],
   variable: '--font-switzer',
 })
@@ -30,8 +30,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr">
-      <body className={switzer.className}>{children}</body>
-    </html>
+    <div className={switzer.className}>{children}</div>
   )
 }

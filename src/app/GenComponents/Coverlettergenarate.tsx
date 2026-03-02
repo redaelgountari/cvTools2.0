@@ -30,22 +30,7 @@ export default function CoverLetterGenerate() {
     const router = useRouter();
     const { AnlysedCV } = useContext(ReadContext);
 
-    useEffect(() => {
-        if (!isCVLoading && !isCVAnalyzed) {
-            router.push('/ReadCV');
-        }
-    }, [isCVLoading, isCVAnalyzed, router]);
-
-    if (isCVLoading) {
-        return (
-            <div className="flex justify-center items-center min-h-[50vh]">
-                <Loader2 className="animate-spin h-8 w-8 text-primary" />
-            </div>
-        );
-    }
-
-    if (!isCVAnalyzed) return null;
-    const [response, setResponse] = useState(null);
+    const [response, setResponse] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [coverLetter, setCoverLetter] = useState('');
@@ -53,6 +38,12 @@ export default function CoverLetterGenerate() {
     const [lineLimit, setLineLimit] = useState(15);
     const [showLineLimit, setShowLineLimit] = useState(false);
     const [matchData, setMatchData] = useState<MatchData | null>(null);
+
+    useEffect(() => {
+        if (!isCVLoading && !isCVAnalyzed) {
+            router.push('/ReadCV');
+        }
+    }, [isCVLoading, isCVAnalyzed, router]);
 
     useEffect(() => {
         if (!AnlysedCV) {
@@ -67,6 +58,16 @@ export default function CoverLetterGenerate() {
         }
     }, [AnlysedCV]);
 
+    if (isCVLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-[50vh]">
+                <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            </div>
+        );
+    }
+
+    if (!isCVAnalyzed) return null;
+
     const generateCoverLetter = async () => {
         if (!response || !jobAnnouncement) {
             setError('Please provide both the analyzed CV and the job announcement.');
@@ -79,27 +80,30 @@ export default function CoverLetterGenerate() {
         try {
             const prompt = `You are a professional career advisor. Generate a cover letter and match analysis.
 
-CRITICAL JSON FORMATTING RULES:
-1. Return ONLY valid JSON - no markdown, no code blocks, no explanations
-2. Do NOT use \`\`\`json or \`\`\` tags
-3. Do NOT include any text before or after the JSON
-4. For the coverLetter field: Write it as ONE continuous paragraph without line breaks
-5. Use only plain text - no special formatting, no tabs, no newlines within the JSON string values
-6. All text must be on single lines - join paragraphs with spaces
+REQUIRED FORMAT:
+You MUST return your response in two distinct parts exactly as shown below:
+1. A valid JSON object for the analysis
+2. The cover letter text wrapped in <cover_letter> tags
 
-REQUIRED JSON STRUCTURE:
+EXAMPLE FORMAT:
 {
-  "analysis": {
-    "matchScore": 75,
-    "skillsMatch": 80,
-    "experienceMatch": 70,
-    "educationMatch": 75,
-    "skillsJustification": "Brief one-line explanation of skills match",
-    "experienceJustification": "Brief one-line explanation of experience match",
-    "educationJustification": "Brief one-line explanation of education match"
-  },
-  "coverLetter": "Write the entire cover letter as one continuous paragraph here. Separate logical sections with double spaces. Keep it professional and concise."
+  "matchScore": 75,
+  "skillsMatch": 80,
+  "experienceMatch": 70,
+  "educationMatch": 75,
+  "skillsJustification": "Brief one-line explanation of skills match",
+  "experienceJustification": "Brief one-line explanation of experience match",
+  "educationJustification": "Brief one-line explanation of education match"
 }
+
+<cover_letter>
+Write the entire cover letter here. You can use standard formatting.
+</cover_letter>
+
+CRITICAL RULES:
+- Do NOT include the cover letter text inside the JSON.
+- The JSON should ONLY contain the analysis metrics.
+- Keep the justification strings short, plain text, and without double quotes or newlines.
 
 COVER LETTER REQUIREMENTS:
 - Approximately ${lineLimit} lines worth of content
@@ -107,7 +111,6 @@ COVER LETTER REQUIREMENTS:
 - Highlight relevant skills and experiences from CV
 - Show enthusiasm for the role
 - Strong opening and closing
-- Write as ONE continuous paragraph (no line breaks)
 
 CV DATA:
 ${typeof response === 'string' ? response : JSON.stringify(response)}
@@ -115,7 +118,7 @@ ${typeof response === 'string' ? response : JSON.stringify(response)}
 JOB ANNOUNCEMENT:
 ${jobAnnouncement}
 
-IMPORTANT: Return ONLY the JSON object. Start with { and end with }. No other text.`;
+IMPORTANT: Follow the requested format exactly.`;
 
             const { data } = await axios.post("/api/gemini", {
                 userData: prompt,
@@ -123,77 +126,55 @@ IMPORTANT: Return ONLY the JSON object. Start with { and end with }. No other te
                 jobDescription: jobAnnouncement
             });
 
-            // Clean the response - remove markdown code blocks, whitespace, and any preamble
-            let cleanedData = data.text
-                .replace(/```json\s*/gi, '')
-                .replace(/```\s*/g, '')
-                .trim();
+            const responseText = data.text;
+            console.log("Raw AI Response:", responseText);
 
-            // Find the first { and last } to extract just the JSON
-            const firstBrace = cleanedData.indexOf('{');
-            const lastBrace = cleanedData.lastIndexOf('}');
+            // First, find and extract the JSON
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            let jsonString = jsonMatch ? jsonMatch[0] : '';
 
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                cleanedData = cleanedData.substring(firstBrace, lastBrace + 1);
+            // Extract Cover Letter
+            // Try explicit tags first
+            let coverLetterText = '';
+            const coverLetterMatch = responseText.match(/<cover_letter>\s*([\s\S]*?)\s*<\/cover_letter>/i);
+
+            if (coverLetterMatch) {
+                coverLetterText = coverLetterMatch[1].trim();
+            } else {
+                // FALLBACK: If AI didn't use tags, remove the JSON block and markdown, and use whatever is left over
+                let remainingText = responseText.replace(jsonString, '');
+                remainingText = remainingText.replace(/```(json|xml|html|text)?\s*/gi, '').replace(/```\s*/g, '');
+                remainingText = remainingText.replace(/<cover_letter>/gi, '').replace(/<\/cover_letter>/gi, '');
+
+                // Clean up any conversational filler
+                remainingText = remainingText.replace(/Here is the requested (cover letter|JSON|format|analysis)[^\n]*\n/gi, '');
+                coverLetterText = remainingText.trim();
             }
 
-            // Fix common JSON issues
-            cleanedData = cleanedData
-                // Replace actual newlines in strings with \n
-                .replace(/\\n/g, '\\\\n')
-                // Replace actual tabs with \t
-                .replace(/\\t/g, '\\\\t')
-                // Replace actual carriage returns with \r
-                .replace(/\\r/g, '\\\\r')
-                // Remove any other control characters except in escape sequences
-                .replace(/[\x00-\x1F\x7F]/g, '');
-
-            console.log('Cleaned response:', cleanedData);
+            console.log('Processed JSON String:', jsonString);
 
             try {
-                let parsedData;
-
-                try {
-                    // First attempt: direct parse
-                    parsedData = JSON.parse(cleanedData);
-                } catch (firstError) {
-                    console.log('First parse failed, trying cleanup...', firstError);
-
-                    // Second attempt: more aggressive cleanup
-                    const superClean = cleanedData
-                        // Remove all actual line breaks within string values
-                        .replace(/"coverLetter"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/g, (match, content) => {
-                            const cleaned = content
-                                .replace(/\n/g, ' ')
-                                .replace(/\r/g, ' ')
-                                .replace(/\t/g, ' ')
-                                .replace(/\s+/g, ' ');
-                            return `"coverLetter": "${cleaned}"`;
-                        })
-                        // Same for justification fields
-                        .replace(/"(skillsJustification|experienceJustification|educationJustification)"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/g,
-                            (match, field, content) => {
-                                const cleaned = content
-                                    .replace(/\n/g, ' ')
-                                    .replace(/\r/g, ' ')
-                                    .replace(/\t/g, ' ')
-                                    .replace(/\s+/g, ' ');
-                                return `"${field}": "${cleaned}"`;
-                            }
-                        );
-
-                    parsedData = JSON.parse(superClean);
+                if (!jsonString) {
+                    throw new Error('Could not find analysis JSON block in the AI response.');
                 }
 
-                // Validate the structure
-                if (!parsedData.analysis || !parsedData.coverLetter) {
-                    throw new Error('Missing required fields: analysis or coverLetter');
+                if (!coverLetterText || coverLetterText.length < 50) {
+                    throw new Error('Could not extract a valid cover letter from the AI response.');
                 }
+
+                // Super aggressive cleanup for control characters to ensure parseability
+                jsonString = jsonString
+                    .replace(/\\n/g, '\\\\n')
+                    .replace(/\\t/g, '\\\\t')
+                    .replace(/\\r/g, '\\\\r')
+                    .replace(/[\x00-\x1F\x7F]/g, '');
+
+                let parsedData = JSON.parse(jsonString);
 
                 // Validate analysis fields
                 const requiredFields = ['matchScore', 'skillsMatch', 'experienceMatch', 'educationMatch'];
                 const missingFields = requiredFields.filter(field =>
-                    parsedData.analysis[field] === undefined || parsedData.analysis[field] === null
+                    parsedData[field] === undefined || parsedData[field] === null
                 );
 
                 if (missingFields.length > 0) {
@@ -201,14 +182,13 @@ IMPORTANT: Return ONLY the JSON object. Start with { and end with }. No other te
                 }
 
                 // Set the data
-                setMatchData(parsedData.analysis);
-                setCoverLetter(parsedData.coverLetter);
+                setMatchData(parsedData);
+                setCoverLetter(coverLetterText);
 
-            } catch (parseError) {
+            } catch (parseError: any) {
                 console.error('Parse error:', parseError);
-                console.error('Attempted to parse:', cleanedData);
+                console.error('Raw response:', responseText);
 
-                // More informative error message
                 setError(`Unable to process the AI response. ${parseError.message || 'Invalid format'}. Please try again.`);
                 setCoverLetter('');
                 setMatchData(null);

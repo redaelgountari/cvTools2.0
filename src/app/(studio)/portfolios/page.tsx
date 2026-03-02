@@ -40,8 +40,17 @@ function TemplateCardSkeleton() {
   );
 }
 
+interface Template {
+  _id: string;
+  name: string;
+  description: string;
+  type: string;
+  image: string;
+  link: string;
+}
+
 // Template Card with Lazy Loading Image
-function TemplateCard({ template }) {
+function TemplateCard({ template }: { template: Template }) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
@@ -63,7 +72,7 @@ function TemplateCard({ template }) {
           onError={(e) => {
             setImageLoading(false);
             setImageError(true);
-            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="16" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
+            // e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="16" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
           }}
           loading="lazy"
         />
@@ -103,10 +112,10 @@ function TemplateCard({ template }) {
 }
 
 export default function TemplatesGallery() {
-  const [templates, setTemplates] = useState([]);
-  const [filteredTemplates, setFilteredTemplates] = useState([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [filteredTemplates, setFilteredTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
 
@@ -136,7 +145,7 @@ export default function TemplatesGallery() {
       setTemplates(result.data || []);
       setFilteredTemplates(result.data || []);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
