@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { loadFull } from 'tsparticles';
-import Particles from 'react-tsparticles';
+import Particles from 'react-particles';
 import type { Engine } from 'tsparticles-engine';
 import { useTheme } from 'next-themes';
 import { loadSlim } from 'tsparticles-slim'; // much smaller bundle
