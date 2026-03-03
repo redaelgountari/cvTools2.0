@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  turbopack: {},
 };
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({

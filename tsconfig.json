@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -19,9 +23,28 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/ReadCV/page3.jsx", "src/app/api/gemini/route.js", "src/app/GenComponents/Coverlettergenarate.tsx", "src/app/GenComponents/ReadTXT.tsx", "src/Cookiesmv.js", "src/app/GenComponents/ReadContextProvider.tsx", "src/app/api/auth/[...nextauth]/route.ts", "src/app/Webcreation/sites/template1/main.js", "src/app/Webcreation/sites/template1/data.js", "src/app/forgot-password/page.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/app/api/gemini/route.js",
+    "src/app/GenComponents/Coverlettergenarate.tsx",
+    "src/app/GenComponents/ReadTXT.tsx",
+    "src/Cookiesmv.js",
+    "src/app/GenComponents/ReadContextProvider.tsx",
+    "src/app/api/auth/[...nextauth]/route.ts",
+    "src/app/Webcreation/sites/template1/main.js",
+    "src/app/Webcreation/sites/template1/data.js",
+    "src/app/forgot-password/page.tsx",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
