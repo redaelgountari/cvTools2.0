@@ -104,9 +104,11 @@ const defaultUserData: UserData = {
 }
 
 export interface Resume {
+  [key: string]: any;
   personalInfo: PersonalInfo;
   professionalSummary: string;
   jobSearchTitle: string;
+  jobSearchSuggestions?: string[];
   skills: Skills;
   tools: string[];
   experience: Experience[];

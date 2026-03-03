@@ -19,6 +19,7 @@ import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 const data = {
   user: {
     name: "RE",
+    email: "reda@example.com",
     avatar: "/avatars/RE.jpg",
   },
 }

@@ -2,8 +2,11 @@
 import { createContext, Dispatch, SetStateAction } from "react";
 import { Resume } from "@/app/types/resume";
 
-interface SettingsType {
-    [key: string]: any;
+export interface ResumeSettings {
+    showLineLimit: boolean;
+    lineLimit: number;
+    atsOptimized: boolean;
+    selectedLanguage: string;
 }
 
 export interface ReadContextType {
@@ -11,8 +14,8 @@ export interface ReadContextType {
     setUserData: Dispatch<SetStateAction<Resume>>;
     AnlysedCV: Resume;
     setAnlysedCV: Dispatch<SetStateAction<Resume>>;
-    settings: SettingsType | null;
-    setSettings: Dispatch<SetStateAction<SettingsType | null>>;
+    settings: ResumeSettings | null;
+    setSettings: Dispatch<SetStateAction<ResumeSettings | null>>;
     userinfos: string | null;
     setUserinfos: Dispatch<SetStateAction<string | null>>;
     isLoading: boolean;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { ReadContext } from "./ReadContext";
+import { ReadContext, ResumeSettings } from "./ReadContext";
 import { getFromStorage, saveSettings, saveToStorage } from "@/Cookiesmv";
 import { Toaster } from "@/components/ui/toaster";
 import axios from "axios";
@@ -9,10 +9,6 @@ import { SessionProvider, useSession } from "next-auth/react";
 
 import { Resume, EmptyResume } from "@/app/types/resume";
 import { normalizeResumeData } from "./Themes/dataNormalization";
-
-interface SettingsType {
-  [key: string]: any;
-}
 
 const normalizeData = (data: any): any => {
   if (data === null || data === undefined) return '';
@@ -28,7 +24,7 @@ const normalizeData = (data: any): any => {
 function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<Resume>(EmptyResume);
   const [userinfos, setUserinfos] = useState<string | null>(null);
-  const [settings, setSettings] = useState<SettingsType | null>(null);
+  const [settings, setSettings] = useState<ResumeSettings | null>(null);
   const [AnlysedCV, setAnlysedCV] = useState<Resume>(EmptyResume);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();

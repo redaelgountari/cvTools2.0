@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 
-export function useFetch(url, options = null, immediate = true) {
-  const [data, setData] = useState(null);
+export function useFetch<T = any>(url: string, options: any = null, immediate = true) {
+  const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<any>(null);
 
   // prevent infinite retries
   const hasFetchedRef = useRef(false);
