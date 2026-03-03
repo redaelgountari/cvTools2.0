@@ -2,6 +2,7 @@
 import { useContext, useState } from "react"
 import pdfToText from "react-pdftotext"
 import { ReadContext } from "./ReadContext";
+import { normalizeResumeData } from "./Themes/dataNormalization";
 import { FileUpload } from "@/components/ui/file-upload"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
@@ -203,10 +204,10 @@ function ReadTXT() {
       extractedImages
 
 
-      setUserData({
+      setUserData(normalizeResumeData({
         text: generateStructuredPrompt(text) || "",
         image: imageUrls,
-      })
+      }))
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred during PDF processing"

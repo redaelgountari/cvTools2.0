@@ -46,16 +46,19 @@ export default function CoverLetterGenerate() {
     }, [isCVLoading, isCVAnalyzed, router]);
 
     useEffect(() => {
-        if (!AnlysedCV) {
-            const storedData = getFromStorage('userData', 'userData');
-            if (storedData) {
-                console.log("storedData :", storedData);
-                setResponse(JSON.stringify(storedData));
+        const loadData = async () => {
+            if (!AnlysedCV) {
+                const storedData = await getFromStorage('userData');
+                if (storedData) {
+                    console.log("storedData :", storedData);
+                    setResponse(storedData); // No need to JSON.stringify if it's already an object
+                }
+            } else {
+                console.log("AnlysedCV :", AnlysedCV);
+                setResponse(AnlysedCV);
             }
-        } else {
-            console.log("AnlysedCV :", AnlysedCV);
-            setResponse(AnlysedCV);
-        }
+        };
+        loadData();
     }, [AnlysedCV]);
 
     if (isCVLoading) {
@@ -219,7 +222,7 @@ IMPORTANT: Follow the requested format exactly.`;
         let y = margin;
         const lineHeight = 7;
 
-        lines.forEach((line) => {
+        lines.forEach((line: string) => {
             if (y + lineHeight > pageHeight - margin) {
                 pdf.addPage();
                 y = margin;

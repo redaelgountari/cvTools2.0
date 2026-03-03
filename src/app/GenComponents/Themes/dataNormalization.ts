@@ -82,6 +82,7 @@ export const normalizeResumeData = (data: any): Resume => {
             technologiesUsed: ensureArray(proj.technologiesUsed).map(getString),
             github: getString(proj.github),
             role: getString(proj.role),
+            images: ensureArray(proj.images),
         })),
 
         certifications: ensureArray(data.certifications).map((cert: any) => ({

@@ -1,17 +1,19 @@
 export interface PersonalInfo {
+  [key: string]: string | undefined;
   fullName: string;
   email: string;
   phone: string;
   location: string;
   city?: string;
-  linkedin: string;
-  website: string;
-  github: string;
-  portfolio: string;
+  linkedin?: string;
+  website?: string;
+  github?: string;
+  portfolio?: string;
   title?: string;
 }
 
 export interface Skills {
+  [key: string]: string[] | undefined;
   technical: string[];
   soft: string[];
   languages: string[];
@@ -81,10 +83,11 @@ export interface Project {
   role: string;
   url?: string;
   link?: string;
-  images?: string[];
+  images: string[];
 }
 
 export interface OnlinePresence {
+  [key: string]: string | undefined;
   twitter: string;
   stackOverflow: string;
   medium: string;
@@ -116,6 +119,7 @@ export interface Resume {
   onlinePresence: OnlinePresence;
   hobbies: string[];
   image: string[];
+  text?: string;
 }
 
 export const EmptyResume: Resume = {

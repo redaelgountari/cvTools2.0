@@ -7,12 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { Switch } from "@radix-ui/react-switch";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import React, { useState } from "react";
 
 export default function Jobdescription() {
   const [showJobDescription, setShowJobDescription] = useState(false);
+  const [jobAnnouncement, setJobAnnouncement] = useState("");
 
   return (
     <div>

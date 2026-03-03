@@ -2,16 +2,21 @@
 "use client";
 
 import React from 'react';
-import { 
-    Carousel, 
-    CarouselContent, 
-    CarouselItem, 
-    CarouselNext, 
-    CarouselPrevious 
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 
-export default function CarouselComponent({ activeTheme, setActiveTheme }) {
+interface CarouselComponentProps {
+    activeTheme: string;
+    setActiveTheme: (id: string) => void;
+}
+
+export default function CarouselComponent({ activeTheme, setActiveTheme }: CarouselComponentProps) {
     const themes = [
         { id: 'theme1', name: 'Modern' },
         { id: 'theme2', name: 'Professional' },
@@ -31,7 +36,7 @@ export default function CarouselComponent({ activeTheme, setActiveTheme }) {
                 {themes.map((theme, index) => (
                     <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                         <div className="p-1">
-                            <Card 
+                            <Card
                                 className={`cursor-pointer transition-all ${activeTheme === theme.id ? 'ring-2 ring-primary' : ''}`}
                                 onClick={() => setActiveTheme(theme.id)}
                             >

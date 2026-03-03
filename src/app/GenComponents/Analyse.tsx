@@ -28,9 +28,9 @@ export default function Analyse() {
   const [uploading, setUploading] = useState<boolean>(false);
 
   const calculateTotalExperience = useMemo(() => {
-    return response?.experience.reduce((total, exp) => {
-      const endDate = exp.endDate === 'Present' ? new Date() : new Date(exp.endDate);
-      const startDate = new Date(exp.startDate);
+    return response?.experience?.reduce((total, exp) => {
+      const endDate = exp.endDate === 'Present' ? new Date() : new Date(exp.endDate || '');
+      const startDate = new Date(exp.startDate || '');
       const years = (endDate.getFullYear() - startDate.getFullYear());
       return total + years;
     }, 0) || 0;
@@ -38,14 +38,14 @@ export default function Analyse() {
 
   const generateJobMatchingPrompt = (resumeData: Resume) => {
     const recentTitles = resumeData.experience
-      .slice(0, 3)
+      ?.slice(0, 3)
       .map(exp => exp.title)
-      .join(', ');
+      .join(', ') || '';
 
     const keyAchievements = resumeData.experience
-      .flatMap(exp => exp.responsibilities)
+      ?.flatMap(exp => exp.responsibilities || [])
       .slice(0, 5)
-      .join('; ');
+      .join('; ') || '';
 
     return `ehllo`;
   };

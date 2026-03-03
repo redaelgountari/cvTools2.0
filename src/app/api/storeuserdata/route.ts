@@ -4,12 +4,12 @@ import { NextResponse, NextRequest } from "next/server";
 import type { InferSchemaType } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
     try {
         type ResumeData = InferSchemaType<typeof ResumeShema>;
-        const session = await getServerSession(authOptions) as any;
+        const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

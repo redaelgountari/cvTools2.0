@@ -185,7 +185,7 @@ export default function AnalyseResults() {
       setAnlysedCV(validatedData as Resume);
 
       // Also update userData to ensure consistency
-      setUserData(prev => ({
+      setUserData(prev => normalizeResumeData({
         ...prev,
         ...validatedData
       }));

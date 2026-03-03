@@ -28,7 +28,7 @@ export function Login() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const registered = searchParams.get('registered');
   const errorParam = searchParams.get('error');
   const callbackUrl = searchParams.get('callbackUrl') || '/';
@@ -45,7 +45,7 @@ export function Login() {
   async function onSubmit(values: LoginFormValues) {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const result = await signIn('credentials', {
         email: values.email,
@@ -69,7 +69,7 @@ export function Login() {
       } else {
         router.push(callbackUrl);
       }
-      setUserinfos(result)
+      // No need to call setUserinfos(result) here, the provider handles it via session.
 
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Login failed');
@@ -81,15 +81,15 @@ export function Login() {
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const result = await signIn(provider, { 
+      const result = await signIn(provider, {
         callbackUrl,
-        redirect: false 
+        redirect: false
       });
 
-      setUserinfos(result)
-      console.log("result",result)
+      // No need to call setUserinfos(result) here.
+      console.log("result", result)
 
       if (result?.error) {
         throw new Error(`Failed to sign in with ${provider}`);
@@ -108,8 +108,8 @@ export function Login() {
   React.useEffect(() => {
     if (errorParam) {
       setError(
-        errorParam === "OAuthAccountNotLinked" 
-          ? "This email is already associated with another provider" 
+        errorParam === "OAuthAccountNotLinked"
+          ? "This email is already associated with another provider"
           : "Authentication error occurred"
       );
     }
@@ -129,7 +129,7 @@ export function Login() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {registered && (
           <Alert className="mb-4">
             <AlertDescription>
@@ -137,7 +137,7 @@ export function Login() {
             </AlertDescription>
           </Alert>
         )}
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -147,9 +147,9 @@ export function Login() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="your.email@example.com" 
-                      {...field} 
+                    <Input
+                      placeholder="your.email@example.com"
+                      {...field}
                       autoComplete="email"
                     />
                   </FormControl>
@@ -157,7 +157,7 @@ export function Login() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -165,10 +165,10 @@ export function Login() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      {...field} 
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      {...field}
                       autoComplete="current-password"
                     />
                   </FormControl>
@@ -176,22 +176,22 @@ export function Login() {
                 </FormItem>
               )}
             />
-            
+
             <div className="flex justify-end text-sm">
-              <Link 
-                href="/forgot-password" 
+              <Link
+                href="/forgot-password"
                 className="text-primary underline hover:text-primary/80"
               >
                 Forgot password?
               </Link>
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
         </Form>
-        
+
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -203,24 +203,24 @@ export function Login() {
               </span>
             </div>
           </div>
-          
+
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
-              type="button" 
+            <Button
+              variant="outline"
+              type="button"
               onClick={() => handleSocialLogin('google')}
               className="flex items-center justify-center gap-2"
               disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21.8 10.5H12v3h5.5c-.5 2.5-2.8 4.5-5.5 4.5-3 0-5.5-2.5-5.5-5.5s2.5-5.5 5.5-5.5c1.5 0 2.8.6 3.8 1.5l2.7-2.7C17.4 3.2 14.8 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10c0-.7-.1-1.4-.2-2z"/>
+                <path d="M21.8 10.5H12v3h5.5c-.5 2.5-2.8 4.5-5.5 4.5-3 0-5.5-2.5-5.5-5.5s2.5-5.5 5.5-5.5c1.5 0 2.8.6 3.8 1.5l2.7-2.7C17.4 3.2 14.8 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10c0-.7-.1-1.4-.2-2z" />
               </svg>
               Google
             </Button>
-            
-            <Button 
-              variant="outline" 
-              type="button" 
+
+            <Button
+              variant="outline"
+              type="button"
               onClick={() => handleSocialLogin('github')}
               className="flex items-center justify-center gap-2"
               disabled={isLoading}

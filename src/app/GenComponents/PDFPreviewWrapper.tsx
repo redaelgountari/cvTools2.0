@@ -26,9 +26,8 @@ interface PDFPreviewWrapperProps {
 
 export default function PDFPreviewWrapper({ resumeData, userImage, activeTheme }: PDFPreviewWrapperProps) {
   const renderThemeComponent = () => {
-    if (!resumeData) return null;
     const themeProps = { userdata: resumeData, userImage };
-    
+
     switch (activeTheme) {
       case 'theme1': return <Theme1 {...themeProps} />;
       case 'theme2': return <Theme2 {...themeProps} />;
@@ -45,9 +44,11 @@ export default function PDFPreviewWrapper({ resumeData, userImage, activeTheme }
     }
   };
 
+  if (!resumeData) return null;
+
   return (
     <PDFViewer width="100%" height="800px">
-      {renderThemeComponent()}
+      {renderThemeComponent() as any}
     </PDFViewer>
   );
 }
