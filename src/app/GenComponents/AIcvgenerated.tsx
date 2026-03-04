@@ -11,6 +11,7 @@ import { Loader2, Sparkles, FileText } from "lucide-react";
 import axios from "axios";
 import React, { useState } from "react";
 import { promptePromptEnhancement, prompteTemplate } from "../Promptes/Aipromptes";
+import { logger } from '@/lib/logger';
 
 export default function AIcvgenerated() {
   const [prompte, setPrompte] = useState<string>("");
@@ -25,13 +26,13 @@ export default function AIcvgenerated() {
       setError("Please enter a job description");
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      const { data } = await axios.post("/api/gemini", { 
-        userData: promptePromptEnhancement(prompte) 
+      const { data } = await axios.post("/api/gemini", {
+        userData: promptePromptEnhancement(prompte)
       });
       setPrompte(data.text);
     } catch (err) {
@@ -48,16 +49,16 @@ export default function AIcvgenerated() {
       setError("Please enter a job description");
       return;
     }
-    
+
     setIsTemplateLoading(true);
     setError(null);
-    
+
     try {
-      const { data } = await axios.post("/api/gemini", { 
+      const { data } = await axios.post("/api/gemini", {
         userData: prompteTemplate(prompte)
       });
       // setPrompte(data.text);
-      console.log("template :", data);
+      logger.log("template:", data);
     } catch (err) {
       console.error("Error:", err);
       setError("Failed to generate template. Please try again.");
@@ -78,7 +79,7 @@ export default function AIcvgenerated() {
             Optimize your resume for any job description with AI
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="pt-6">
           <div className="flex border-b mb-6">
             <button
@@ -96,7 +97,7 @@ export default function AIcvgenerated() {
               Generate Template
             </button>
           </div>
-          
+
           <form onSubmit={activeTab === "enhance" ? enhanceAipropte : Generatetempalte} className="space-y-6">
             <div className="space-y-3">
               <label htmlFor="job-description" className="block text-sm font-medium text-gray-700">
@@ -112,9 +113,9 @@ export default function AIcvgenerated() {
               />
               {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
             </div>
-            
+
             <div className="flex justify-end gap-3">
-              <Button 
+              <Button
                 type="button"
                 variant="outline"
                 onClick={() => setPrompte("")}
@@ -122,10 +123,10 @@ export default function AIcvgenerated() {
               >
                 Clear
               </Button>
-              
+
               {activeTab === "enhance" ? (
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isLoading}
                   className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-md"
                 >
@@ -142,8 +143,8 @@ export default function AIcvgenerated() {
                   )}
                 </Button>
               ) : (
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isTemplateLoading}
                   className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-md"
                 >
@@ -164,7 +165,7 @@ export default function AIcvgenerated() {
           </form>
         </CardContent>
       </Card>
-      
+
       <div className="text-center text-sm text-gray-500">
         <p>Tip: Copy the exact job description for best optimization results</p>
       </div>

@@ -10,6 +10,8 @@ import React, { useContext, useState, useEffect } from 'react'
 import { useToast } from "@/hooks/use-toast"
 import { ReadContext, ResumeSettings } from './ReadContext'
 import axios from 'axios'
+import { prompteLanguageChange } from '../Promptes/Aipromptes'
+import { logger } from '@/lib/logger';
 
 const SUPPORTED_LANGUAGES = [
   { value: 'english', label: 'English' },
@@ -46,7 +48,7 @@ export default function Settings() {
   const { toast } = useToast();
   const { userinfos } = useContext(ReadContext);
 
-  console.log("AnlysedCV :", AnlysedCV)
+
 
   // Initialize with context settings if they exist
   useEffect(() => {
@@ -67,7 +69,8 @@ export default function Settings() {
     if (!AnlysedCV) return;
 
     try {
-      const prompt = `Change the language of this CV to ${settings.selectedLanguage}. Return ONLY valid JSON without any additional text or markdown formatting: ${JSON.stringify(AnlysedCV)}`;
+      const cvDataString = JSON.stringify(AnlysedCV);
+      const prompt = prompteLanguageChange(cvDataString, settings.selectedLanguage);
       const { data } = await axios.post("/api/gemini", {
         userData: prompt,
         useCase: 'Translate-cv'
@@ -94,7 +97,7 @@ export default function Settings() {
         throw new Error('Invalid resume data format');
       }
 
-      console.log("Parsed Data:", parsedData);
+      logger.log("Parsed Data:", parsedData);
       setAnlysedCV(parsedData); // Fixed the incorrect function call
 
       toast({

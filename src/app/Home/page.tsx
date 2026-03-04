@@ -10,12 +10,12 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-  <div className="min-h-screen text-[#1A1A1A] bg-white">
+    <div className="min-h-screen text-[#1A1A1A] bg-white">
       <main>
         {/* Hero Section */}
         <div className="min-h-screen bg-[#45D1C9] py-12 md:py-16 px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="ml-24 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center min-h-[calc(100vh-6rem)]">
+            <div className="px-4 md:px-12 lg:px-24 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center min-h-[calc(100vh-6rem)]">
               <div>
                 <div className="flex items-center gap-3 mb-6 md:mb-8">
                   <div className="h-0.5 w-12 bg-[#FEE318]"></div>
@@ -106,7 +106,7 @@ export default function AboutPage() {
                 top: '-90px',
                 zIndex: 10
               }}>
-                <div style={{  strokeWidth: '2px', stroke: '#000', rotate: "180deg", fontSize:220, fontWeight:"Bold" }}>
+                <div style={{ strokeWidth: '2px', stroke: '#000', rotate: "180deg", fontSize: 220, fontWeight: "Bold" }}>
                   ,,
                 </div>
               </div>
@@ -117,8 +117,7 @@ export default function AboutPage() {
                   <h2 className="font-bold text-2xl md:text-3xl lg:text-[40px] md:leading-[59px]">
                     Vision
                   </h2>
-                  <br />
-                  <p className="text-black text-sm md:text-base lg:text-[16px] leading-relaxed font-semibold">
+                  <p className="text-black text-sm md:text-base lg:text-[16px] leading-relaxed font-semibold mt-4">
                     Nous voulons devenir la plateforme de référence au Maroc pour l'accès facile, transparent et digitalisé aux services juridiques et administratifs — en permettant à chacun (entreprise ou particulier) d'obtenir un accompagnement professionnel, rapide et fiable pour toutes leurs démarches légales.
                   </p>
                 </div>
@@ -137,16 +136,14 @@ export default function AboutPage() {
             </div>
 
             {/* Mission Section */}
-            <br />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 relative">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 relative mt-4">
               {/* Mission Text Card */}
               <div className="bg-[#47D6D2] p-4 md:p-6 rounded-xl aspect-square flex items-center justify-center">
                 <div className='p-2 md:p-4'>
                   <h2 className="font-bold text-2xl md:text-3xl lg:text-[40px] md:leading-[59px]">
                     Mission
                   </h2>
-                  <br />
-                  <p className="text-black text-sm md:text-base lg:text-[16px] leading-relaxed font-semibold">
+                  <p className="text-black text-sm md:text-base lg:text-[16px] leading-relaxed font-semibold mt-4">
                     Notre mission est d'offrir des solutions claires et accessibles pour la création d'entreprise, les formalités administratives et les besoins juridiques — dans le but de simplifier la vie de nos clients. Nous nous engageons à fournir un service professionnel, sécurisé et personnalisé, en combinant expertise juridique et approche digitale.
                   </p>
                 </div>
@@ -171,7 +168,7 @@ export default function AboutPage() {
                 top: '-90px',
                 zIndex: 10
               }}>
-                <div style={{  strokeWidth: '2px', stroke: '#000', rotate: "180deg", fontSize:220, fontWeight:"Bold" }}>
+                <div style={{ strokeWidth: '2px', stroke: '#000', rotate: "180deg", fontSize: 220, fontWeight: "Bold" }}>
                   ,,
                 </div>
               </div>
@@ -183,13 +180,13 @@ export default function AboutPage() {
         <div className="py-16 md:py-24 bg-white px-4">
           <div className="max-w-7xl mx-auto">
             <div className="mb-12">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6">Solution</h1>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6">Solution</h2>
               <p className="text-base md:text-lg text-black mb-4">
                 Des experts qui maîtrisent chaque détail.
               </p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
+              <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
                 solutions complètes et adaptées à vos besoins pour vous accompagner à chaque étape.
-              </h2>
+              </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 md:mt-16">
@@ -227,7 +224,7 @@ export default function AboutPage() {
         <div className="py-16 md:py-24 bg-gray-50 px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-teal-400 mb-3">Section Avis</h1>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-teal-400 mb-3">Avis Clients</h2>
               <p className="text-gray-700 text-sm md:text-base">
                 Découvrez les retours et témoignages de nos clients sur la qualité de nos services
               </p>
@@ -237,19 +234,19 @@ export default function AboutPage() {
               <div className="bg-white rounded-3xl border-4 border-black p-6 md:p-8 shadow-lg">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
-                    <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500"></div>
+                    <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600"></div>
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Jon Tucker</div>
-                    <div className="text-sm text-gray-500">@JonTuckerUSA</div>
+                    <div className="font-semibold text-gray-900">Ahmed Benali</div>
+                    <div className="text-sm text-gray-500">@ahmed_benali</div>
                   </div>
                 </div>
                 <p className="text-gray-700 mb-6">
-                  « Ils savent ce qu'ils font et ils le font bien. »
+                  « Service professionnel et réactif. Mon CV a été transformé en un outil percutant qui m'a permis de décrocher plusieurs entretiens. »
                 </p>
                 <div className="flex items-center gap-1 text-sm text-gray-600">
                   <span className="text-lg">👍</span>
-                  <span>Killer tool.</span>
+                  <span>Outil indispensable.</span>
                 </div>
               </div>
 
@@ -257,11 +254,11 @@ export default function AboutPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-700"></div>
+                      <div className="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600"></div>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">Jon KIMI</div>
-                      <div className="text-sm text-gray-500">@JonTuckerUSA</div>
+                      <div className="font-semibold text-gray-900">Fatima Zohra</div>
+                      <div className="text-sm text-gray-500">@fatima_z</div>
                     </div>
                   </div>
                   <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -269,10 +266,10 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <p className="text-gray-700 mb-6">
-                  The website is easy to navigate, and the product descriptions are very clear. My order arrived quickly—super happy
+                  « La lettre de motivation générée était parfaitement adaptée au poste. J'ai été impressionnée par la qualité et la rapidité du service. »
                 </p>
                 <div className="text-sm text-gray-600">
-                  <span className="font-semibold">@getpostpilot</span>. Killer tool.
+                  <span className="font-semibold">@clickexpert</span>. Un vrai gain de temps.
                 </div>
               </div>
 
@@ -280,11 +277,11 @@ export default function AboutPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800"></div>
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700"></div>
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900">SALMA SALMA</div>
-                      <div className="text-sm text-gray-500">@JonTuckerUSA</div>
+                      <div className="font-semibold text-gray-900">Karim El Amrani</div>
+                      <div className="text-sm text-gray-500">@karim_ela</div>
                     </div>
                   </div>
                   <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
@@ -292,10 +289,10 @@ export default function AboutPage() {
                   </svg>
                 </div>
                 <p className="text-gray-700 mb-6">
-                  Delivery times are too long. I was a bit
+                  « Un outil indispensable pour tous les chercheurs d'emploi. Simple, rapide et efficace. Je recommande vivement ! »
                 </p>
                 <div className="text-sm text-gray-600">
-                  <span className="font-semibold">@getpostpilot</span>. Killer tool.
+                  <span className="font-semibold">@clickexpert</span>. Service de qualité.
                 </div>
               </div>
             </div>
@@ -311,7 +308,7 @@ export default function AboutPage() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <p className="text-2xl md:text-3xl font-bold mb-2">Carrières</p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Nous recrutons</h1>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Nous recrutons</h2>
               <p className="text-sm md:text-base">
                 Rejoignez une équipe qui bâtit pour durer, pas pour impressionner.
               </p>
@@ -387,6 +384,6 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-    </div> 
+    </div>
   )
 }

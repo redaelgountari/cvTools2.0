@@ -3,6 +3,7 @@ import { useContext, useState } from "react"
 import pdfToText from "react-pdftotext"
 import { ReadContext } from "./ReadContext";
 import { normalizeResumeData } from "./Themes/dataNormalization";
+import { prompteCVAnalysis } from "../Promptes/Aipromptes";
 import { FileUpload } from "@/components/ui/file-upload"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
@@ -12,165 +13,8 @@ function ReadTXT() {
   const [extractedImages, setExtractedImages] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { setUserData } = useContext(ReadContext)
+  const { setUserData, settings } = useContext(ReadContext)
 
-  const generateStructuredPrompt = (cvText: string) => {
-    return `You are an advanced AI specialized in CV analysis and structured data extraction. Analyze the given CV text and return the extracted details strictly in JSON format.
-
-    ### 🔹 **EXTRACTION GUIDELINES**  
-    - **Maintain consistency**: Use standard formats for dates, locations, and names.  
-    - **Ensure accuracy**: Do not misclassify information (e.g., names as skills).  
-    - **No missing fields**: If data is unavailable, use "N/A".  
-    - **if their is no data just return data as empty
-    - **Structured JSON output**: Keep array structures even for single values.  
-
-    ### 🔹 **DATA EXTRACTION RULES**  
-
-    **📌 Personal Information**  
-    - Extract: Full name, email, phone, location, LinkedIn, personal website, GitHub, and portfolio link.  
-    - If multiple names are found, prioritize the one with contact details.  
-
-    **📌 Professional Summary**  
-    - Extract a short summary (if available) highlighting key strengths, experience, or career goals.  
-
-    **📌 Experience**  
-    - Extract: Job title, company, location, start & end dates, and key responsibilities.  
-    - Ensure date format is **YYYY-MM** (or "Present" if ongoing).  
-
-    **📌 Education**  
-    - Extract: Degree, institution, location, graduation year, and relevant courses.  
-
-    **📌 Projects**  
-    - Extract: Title, description, technologies used, GitHub link, and role played.  
-
-    **📌 Skills & Tools**  
-    - **Technical Skills**: Programming languages, frameworks, and libraries.  
-    - **Soft Skills**: Communication, teamwork, leadership, etc.  
-    - **Languages**: Spoken and written languages.  
-    - **Tools**: IDEs, databases, version control, DevOps tools, and design software.  
-
-    **📌 Certifications**  
-    - Extract: Certification name, issuer, and year.  
-
-    **📌 Publications**  
-    - Extract: Title, type (Research Paper, Blog, Book), year, and link.  
-
-    **📌 Awards & Recognitions**  
-    - Extract: Name, year, and brief description of awards, competitions, or honors.  
-
-    **📌 Volunteer Experience**  
-    - Extract: Role, organization, start & end dates, and description.  
-
-    **📌 Online Presence**  
-    - Extract: Twitter, GitHub, Stack Overflow, Medium, or relevant profiles.  
-
-    **📌 Hobbies & Interests**  
-    - Extract personal interests (e.g., sports, music, travel, coding hobbies).
-
-    **📌 Job Search Assistance**  
-    - Suggest a job title that best matches the profile.
-    - Provide relevant job recommendations and alternatives.
-
-    
-    ### 🔹 **EXPECTED JSON OUTPUT FORMAT**  
-    \`\`\`json
-    {
-      "personalInfo": {
-        "fullName": "",
-        "email": "",
-        "phone": "",
-        "location": "",
-        "city": "",
-        "linkedin": "",
-        "website": "",
-        "github": "",
-        "portfolio": ""
-      },
-      "professionalSummary": "",
-      "skills": {
-         "technical": [],
-         "soft": [],
-         "languages": []
-      },
-      "tools": [],
-      "experience": [
-        {
-          "title": "",
-          "company": "",
-          "location": "",
-          "startDate": "",
-          "endDate": "",
-          "responsibilities": []
-        }
-      ],
-      "education": [
-        {
-          "degree": "",
-          "institution": "",
-          "location": "",
-          "graduationYear": "",
-          "relevantCourses": []
-        }
-      ],
-      "certifications": [
-        {
-          "name": "",
-          "issuer": "",
-          "year": ""
-        }
-      ],
-      "publications": [
-        {
-          "title": "",
-          "publicationType": "",
-          "year": "",
-          "link": ""
-        }
-      ],
-      "awards": [
-        {
-          "name": "",
-          "year": "",
-          "description": ""
-        }
-      ],
-      "volunteerExperience": [
-        {
-          "role": "",
-          "organization": "",
-          "startDate": "",
-          "endDate": "",
-          "description": ""
-        }
-      ],
-      "projects": [
-        {
-          "title": "",
-          "description": "",
-          "technologiesUsed": [],
-          "github": "",
-          "role": "",
-          "image":""
-        }
-      ],
-      "onlinePresence": {
-        "twitter": "",
-        "stackOverflow": "",
-        "medium": ""
-      },
-      "hobbies": [],
-      "jobSearchTitle" : ""
-      "jobSearchSuggestions" : []
-      
-    }
-    \`\`\`
-
-    **Return only the structured JSON output.**  
-
-    **CV Text:**  
-    ${cvText}
-  `
-  }
 
   const handleFileUpload = async (files: File[]) => {
     const file = files[0]
@@ -205,7 +49,7 @@ function ReadTXT() {
 
 
       setUserData(normalizeResumeData({
-        text: generateStructuredPrompt(text) || "",
+        text: prompteCVAnalysis(text, settings?.selectedLanguage) || "",
         image: imageUrls,
       }))
 

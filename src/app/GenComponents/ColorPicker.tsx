@@ -1,83 +1,56 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
 
 interface ColorPickerProps {
     colors: { [key: string]: string };
     onChange: (key: string, value: string) => void;
 }
 
+const getFriendlyName = (key: string) => {
+    switch (key) {
+        case 'primary': return 'Accent';
+        case 'secondary': return 'Secondary';
+        case 'background': return 'Background';
+        case 'text': return 'Body Text';
+        case 'heading': return 'Headings';
+        case 'accent': return 'Accent';
+        default: return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    }
+}
+
 export function ColorPicker({ colors, onChange }: ColorPickerProps) {
-    const presetColors = [
-        '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
-        '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
-        '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#000000',
-        '#ffffff', '#6b7280'
-    ]
-
     return (
-        <div className="flex flex-wrap gap-4 p-4 border rounded-xl bg-muted/30">
+        <div className="flex flex-wrap items-center gap-5 p-3 bg-muted/30 rounded-lg border border-border/50">
+            <div className="flex flex-col gap-1 justify-center mr-2">
+                <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Live</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">Theme Colors</span>
+            </div>
+
+            <div className="w-px h-8 bg-border border-l mx-1"></div>
+
             {Object.entries(colors).map(([key, value]) => (
-                <div key={key} className="space-y-2">
-                    <Label className="capitalize text-[10px] font-bold text-muted-foreground">{key}</Label>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 h-9 px-2"
-                            >
-                                <div
-                                    className="h-4 w-4 rounded border shadow-sm"
-                                    style={{ backgroundColor: value }}
-                                />
-                                <span className="font-mono text-[10px]">{value}</span>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-64">
-                            <div className="space-y-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor={`${key}-hex`} className="text-xs">Hex Color</Label>
-                                    <Input
-                                        id={`${key}-hex`}
-                                        value={value}
-                                        onChange={(e) => onChange(key, e.target.value)}
-                                        className="font-mono h-8 text-xs"
-                                    />
-                                </div>
-
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Visual Selector</Label>
-                                    <input
-                                        type="color"
-                                        value={value}
-                                        onChange={(e) => onChange(key, e.target.value)}
-                                        className="h-8 w-full cursor-pointer rounded border p-0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label className="text-xs">Presets</Label>
-                                    <div className="grid grid-cols-5 gap-1.5">
-                                        {presetColors.map((presetColor) => (
-                                            <button
-                                                key={presetColor}
-                                                className="h-6 w-6 rounded border transition-transform hover:scale-110"
-                                                style={{
-                                                    backgroundColor: presetColor,
-                                                    borderWidth: value === presetColor ? '2px' : '1px',
-                                                    borderColor: value === presetColor ? '#000' : 'rgba(0,0,0,0.1)'
-                                                }}
-                                                onClick={() => onChange(key, presetColor)}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                <div key={key} className="flex flex-col items-center gap-1.5 group">
+                    <Label className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground group-hover:text-foreground transition-colors cursor-pointer">
+                        {getFriendlyName(key)}
+                    </Label>
+                    <div
+                        className="relative w-7 h-7 rounded-full shadow-sm border border-black/10 dark:border-white/10 overflow-hidden cursor-pointer hover:scale-110 transition-transform ring-2 ring-transparent group-hover:ring-primary/20"
+                        title={`Change ${getFriendlyName(key)} color`}
+                    >
+                        <input
+                            type="color"
+                            value={value}
+                            onChange={(e) => onChange(key, e.target.value)}
+                            className="absolute inset-0 w-20 h-20 -top-2 -left-2 cursor-pointer p-0 border-0 bg-transparent"
+                        />
+                    </div>
                 </div>
             ))}
         </div>

@@ -14,6 +14,8 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import { getFromStorage } from '@/Cookiesmv';
 import MatchAnalysisStats from './MatchAnalysisStats';
+import { prompteCoverLetter } from '../Promptes/Aipromptes';
+import { logger } from '@/lib/logger';
 
 interface MatchData {
     matchScore: number;
@@ -28,7 +30,7 @@ interface MatchData {
 export default function CoverLetterGenerate() {
     const { isCVAnalyzed, isLoading: isCVLoading } = useIsCVAnalyzed();
     const router = useRouter();
-    const { AnlysedCV } = useContext(ReadContext);
+    const { AnlysedCV, settings } = useContext(ReadContext);
 
     const [response, setResponse] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -50,11 +52,11 @@ export default function CoverLetterGenerate() {
             if (!AnlysedCV) {
                 const storedData = await getFromStorage('userData');
                 if (storedData) {
-                    console.log("storedData :", storedData);
+                    logger.log("storedData:", storedData);
                     setResponse(storedData); // No need to JSON.stringify if it's already an object
                 }
             } else {
-                console.log("AnlysedCV :", AnlysedCV);
+                logger.log("AnlysedCV:", AnlysedCV);
                 setResponse(AnlysedCV);
             }
         };
@@ -81,47 +83,8 @@ export default function CoverLetterGenerate() {
         setError('');
 
         try {
-            const prompt = `You are a professional career advisor. Generate a cover letter and match analysis.
-
-REQUIRED FORMAT:
-You MUST return your response in two distinct parts exactly as shown below:
-1. A valid JSON object for the analysis
-2. The cover letter text wrapped in <cover_letter> tags
-
-EXAMPLE FORMAT:
-{
-  "matchScore": 75,
-  "skillsMatch": 80,
-  "experienceMatch": 70,
-  "educationMatch": 75,
-  "skillsJustification": "Brief one-line explanation of skills match",
-  "experienceJustification": "Brief one-line explanation of experience match",
-  "educationJustification": "Brief one-line explanation of education match"
-}
-
-<cover_letter>
-Write the entire cover letter here. You can use standard formatting.
-</cover_letter>
-
-CRITICAL RULES:
-- Do NOT include the cover letter text inside the JSON.
-- The JSON should ONLY contain the analysis metrics.
-- Keep the justification strings short, plain text, and without double quotes or newlines.
-
-COVER LETTER REQUIREMENTS:
-- Approximately ${lineLimit} lines worth of content
-- Professional and formal tone
-- Highlight relevant skills and experiences from CV
-- Show enthusiasm for the role
-- Strong opening and closing
-
-CV DATA:
-${typeof response === 'string' ? response : JSON.stringify(response)}
-
-JOB ANNOUNCEMENT:
-${jobAnnouncement}
-
-IMPORTANT: Follow the requested format exactly.`;
+            const cvData = typeof response === 'string' ? response : JSON.stringify(response);
+            const prompt = prompteCoverLetter(cvData, jobAnnouncement, lineLimit, settings?.selectedLanguage);
 
             const { data } = await axios.post("/api/gemini", {
                 userData: prompt,
@@ -130,7 +93,7 @@ IMPORTANT: Follow the requested format exactly.`;
             });
 
             const responseText = data.text;
-            console.log("Raw AI Response:", responseText);
+            logger.log("Raw AI Response:", responseText);
 
             // First, find and extract the JSON
             const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -154,7 +117,7 @@ IMPORTANT: Follow the requested format exactly.`;
                 coverLetterText = remainingText.trim();
             }
 
-            console.log('Processed JSON String:', jsonString);
+            logger.log('Processed JSON String:', jsonString);
 
             try {
                 if (!jsonString) {

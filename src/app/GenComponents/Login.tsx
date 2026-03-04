@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import Link from 'next/link';
 import { ReadContext } from './ReadContext';
+import { logger } from '@/lib/logger';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -89,7 +90,7 @@ export function Login() {
       });
 
       // No need to call setUserinfos(result) here.
-      console.log("result", result)
+      logger.log("Social login result:", result)
 
       if (result?.error) {
         throw new Error(`Failed to sign in with ${provider}`);

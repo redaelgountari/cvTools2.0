@@ -30,6 +30,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className={switzer.className}>{children}</div>
+    <div lang="fr" className={switzer.className}>{children}</div>
   )
 }

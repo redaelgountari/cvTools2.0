@@ -51,6 +51,7 @@ import { normalizeResumeData } from './Themes/dataNormalization';
 import { z } from 'zod';
 import { Skeleton } from '@/components/ui/skeleton';
 import LoadingState from './LoadingState';
+import { logger } from '@/lib/logger';
 
 interface TagInputProps {
   tags: string[];
@@ -156,7 +157,7 @@ export default function AnalyseResults() {
           setInitialLoading(false);
           setShowNoData(true);
         }
-      }, 10000);
+      }, 3000);
     }
 
     return () => {
@@ -190,7 +191,7 @@ export default function AnalyseResults() {
         ...validatedData
       }));
 
-      console.log("Updated resume with images:", validatedData);
+      logger.log("Updated resume with images:", validatedData);
 
       toast({
         title: "Success",

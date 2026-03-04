@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -13,17 +15,26 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import ReadTXT from "../GenComponents/ReadTXT"
-import Analyse from "../GenComponents/Analyse"
-import ReadContextProvider from '../GenComponents/ReadContextProvider'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import SearchResults from "../GenComponents/SearchResults"
+import { usePathname } from "next/navigation"
+
+const PAGE_TITLES: Record<string, string> = {
+  "/ReadCV": "Upload CV",
+  "/Resume": "Resume Builder",
+  "/CoverLetter": "Cover Letter",
+  "/Settings": "Settings",
+  "/portfolios": "Portfolio",
+  "/Profile": "Profile",
+  "/exc": "Exercises",
+};
 
 interface PageProps {
-    children: React.ReactNode;
-  }
-  
-  export default function Dashboard({ children }: PageProps) {
+  children: React.ReactNode;
+}
+
+export default function Dashboard({ children }: PageProps) {
+  const pathname = usePathname();
+  const currentPage = PAGE_TITLES[pathname] || pathname.split("/").pop() || "Dashboard";
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -35,20 +46,20 @@ interface PageProps {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your CV
+                  <BreadcrumbLink href="/ReadCV">
+                    CV Tools
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>{currentPage}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
         <div className="m-5">
-        {children}
+          {children}
         </div>
       </SidebarInset>
     </SidebarProvider>

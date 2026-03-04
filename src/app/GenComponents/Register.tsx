@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { logger } from '@/lib/logger';
 
 const registerSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -34,7 +35,7 @@ export function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  
+
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -47,11 +48,11 @@ export function Register() {
   async function onSubmit(values: RegisterFormValues) {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch('/api/registration', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -80,7 +81,7 @@ export function Register() {
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     try {
       const result = await signIn(provider, { callbackUrl: '/' });
-      console.log("result",result)
+      logger.log("Social login result:", result)
 
     } catch (error) {
       console.error("Social login error:", error);
@@ -102,7 +103,7 @@ export function Register() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
+
         {success && (
           <Alert className="mb-4">
             <AlertDescription>
@@ -110,7 +111,7 @@ export function Register() {
             </AlertDescription>
           </Alert>
         )}
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -126,7 +127,7 @@ export function Register() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -143,7 +144,7 @@ export function Register() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="confirmPassword"
@@ -157,13 +158,13 @@ export function Register() {
                 </FormItem>
               )}
             />
-            
+
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating account..." : "Create account"}
             </Button>
           </form>
         </Form>
-        
+
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -175,26 +176,24 @@ export function Register() {
               </span>
             </div>
           </div>
-          
+
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
-              type="button" 
+            <Button
+              variant="outline"
+              type="button"
               onClick={() => handleSocialLogin('google')}
               className="flex items-center justify-center gap-2"
               disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M8 12 h8"></path>
-                <path d="M12 8 v8"></path>
+                <path d="M21.8 10.5H12v3h5.5c-.5 2.5-2.8 4.5-5.5 4.5-3 0-5.5-2.5-5.5-5.5s2.5-5.5 5.5-5.5c1.5 0 2.8.6 3.8 1.5l2.7-2.7C17.4 3.2 14.8 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10c0-.7-.1-1.4-.2-2z" />
               </svg>
               Google
             </Button>
-            
-            <Button 
-              variant="outline" 
-              type="button" 
+
+            <Button
+              variant="outline"
+              type="button"
               onClick={() => handleSocialLogin('github')}
               className="flex items-center justify-center gap-2"
               disabled={isLoading}

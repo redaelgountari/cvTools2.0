@@ -7,10 +7,11 @@ import { ReadContext } from './ReadContext';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { prompteCVUpdate } from '../Promptes/Aipromptes';
+import { prompteCVUpdate, prompteResumeTailoring } from '../Promptes/Aipromptes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsCVAnalyzed } from '@/hooks/useIsCVAnalyzed';
 import dynamic from "next/dynamic";
+import { logger } from '@/lib/logger';
 
 import {
   Card,
@@ -214,7 +215,7 @@ export default function Resume() {
     const loadResumeData = async () => {
       try {
         if (!contextLoading && AnlysedCV) {
-          console.log("Loading data from context:", AnlysedCV);
+          logger.log("Loading data from context:", AnlysedCV);
           // Optimization: check if data actually changed before processing
           const isString = typeof AnlysedCV === 'string';
           const stringData = isString ? AnlysedCV : JSON.stringify(AnlysedCV);
@@ -227,7 +228,7 @@ export default function Resume() {
         } else if (!contextLoading && !AnlysedCV) {
           const storedData = await getFromStorage('userData');
           if (storedData) {
-            console.log("Loading data from storage:", storedData);
+            logger.log("Loading data from storage:", storedData);
             const stringData = JSON.stringify(storedData);
             if (rawResponse !== stringData) {
               setRawResponse(stringData);
@@ -359,7 +360,7 @@ export default function Resume() {
   const resetToOriginal = () => {
     if (!rawResponse) return;
     try {
-      console.log("Resetting to baseline:", rawResponse);
+      logger.log("Resetting to baseline:", rawResponse);
       const originalCV = JSON.parse(rawResponse);
       const normalized = normalizeResumeData(originalCV);
       setResumeData(normalized);
@@ -389,80 +390,8 @@ export default function Resume() {
     setError('');
 
     try {
-      const prompt = `
-You are a highly skilled professional resume writer and career analyst.
-
-### TASK:
-1. Analyze the match between the CANDIDATE PROFILE (User Data) and the TARGET JOB (Job Description).
-2. ALWAYS generate a professional resume tailored to the job.
-   - If the match is strong, emphasize relevant experience and skills.
-   - If the match is weak, focus on transferable skills and soft skills. Do NOT lie, but present the candidate in the best possible light for this specific role.
-3. Calculate honest match statistics.
-
-### 1. CANDIDATE PROFILE (USER DATA):
-${rawResponse}
-
-${jobAnnouncement ? `### 2. TARGET JOB DESCRIPTION:\n${jobAnnouncement}\n` : ''}
-
-### CRITICAL RULES (VIOLATION = FAILURE):
-
-**A. MATCH ANALYSIS (HONESTY IS PARAMOUNT):**
-- Evaluate the match honestly.
-- If the candidate is a "Software Engineer" and the job is "Nurse", the Match Score should be low, but you MUST still generate the best possible resume (highlighting attention to detail, quick learning, etc.).
-
-**B. PERSONAL INFORMATION (STRICT PRESERVATION):**
-- **You must copy the following fields EXACTLY from the CANDIDATE PROFILE:**
-  - Full Name
-  - Email
-  - Phone Number
-  - Location/Address
-  - LinkedIn/Website Links
-- **DO NOT** change, "optimize", or "correct" the contact details.
-
-**C. RESUME CONTENT:**
-- **Tailoring:** Rewrite the Professional Summary and adapt the bullet points of Experience to align with the Job Description keywords where truthful.
-- **Language:** Write the resume in **${contextSettings?.selectedLanguage || 'French'}**.
-
-### OUTPUT FORMAT:
-
-**IMPORTANT: Return ONLY valid JSON.**
-The JSON structure must follow this format:
-
-{
-  "resume": {
-    "personalInfo": {
-      "fullName": "Exact string from input",
-      "email": "Exact string from input",
-      "phone": "Exact string from input",
-      "location": "Exact string from input",
-      "linkedin": "Exact string from input",
-      ...
-    },
-    "professionalSummary": "REWRITTEN summary tailored to the target job...",
-    "skills": { 
-        "technical": ["Relevant skill 1", "Relevant skill 2"],
-        ...
-    },
-    "experience": [ 
-        {
-            "title": "...",
-            "company": "...",
-            "responsibilities": ["REWRITTEN bullet point using keywords from job description...", "..."]
-        }
-    ],
-    // ... rest of resume structure
-  },
-  "analysis": {
-    "matchScore": 0,
-    "skillsMatch": 0,
-    "experienceMatch": 0,
-    "educationMatch": 0,
-    "skillsJustification": "Brief explanation...",
-    "experienceJustification": "Brief explanation...",
-    "educationJustification": "Brief explanation..."
-  }
-}
-`;
+      const language = contextSettings?.selectedLanguage || 'French';
+      const prompt = prompteResumeTailoring(rawResponse, jobAnnouncement, language);
 
       const { data } = await axios.post("/api/gemini", {
         userData: prompt,
@@ -488,8 +417,8 @@ The JSON structure must follow this format:
         cleanedData = cleanedData.substring(firstBrace, lastBrace + 1);
       }
 
-      console.log("Raw response:", data.text);
-      console.log("Cleaned data:", cleanedData);
+      logger.log("Raw response:", data.text);
+      logger.log("Cleaned data:", cleanedData);
 
       // Parse the JSON
       const parsedData = JSON.parse(cleanedData);
@@ -534,8 +463,8 @@ The JSON structure must follow this format:
         }, 1500);
       }
 
-      console.log("Parsed data:", parsedData);
-      console.log("Selected language:", contextSettings?.selectedLanguage);
+      logger.log("Parsed data:", parsedData);
+      logger.log("Selected language:", contextSettings?.selectedLanguage);
 
     } catch (error) {
       console.error('Error generating resume:', error);
@@ -570,7 +499,7 @@ The JSON structure must follow this format:
     setError('');
 
     try {
-      const prompt = prompteCVUpdate(JSON.stringify(resumeData), aiInstruction);
+      const prompt = prompteCVUpdate(JSON.stringify(resumeData), aiInstruction, contextSettings?.selectedLanguage);
 
       const { data } = await axios.post("/api/gemini", {
         userData: prompt,
@@ -639,9 +568,9 @@ The JSON structure must follow this format:
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       if (format === 'pdf') {
-        console.log('Exporting as PDF...');
+        logger.log('Exporting as PDF...');
       } else if (format === 'docx') {
-        console.log('Exporting as Word...');
+        logger.log('Exporting as Word...');
       }
 
       setError('');
@@ -653,30 +582,20 @@ The JSON structure must follow this format:
   };
 
   const themes = [
-    { id: 'theme1', name: 'Modern' },
-    { id: 'theme2', name: 'Professional' },
-    { id: 'theme3', name: 'Classic' },
-    { id: 'theme4', name: 'Creative' },
-    { id: 'theme5', name: 'Minimal' },
-    { id: 'theme6', name: 'Elegant' },
-    { id: 'theme7', name: 'Bold' },
-    { id: 'theme8', name: 'Simple' },
-    { id: 'theme9', name: 'Contemporary' },
-    { id: 'theme10', name: 'Executive' },
-    { id: 'theme11', name: 'Technical' },
+    { id: 'theme1', name: 'Modern', bgColor: 'bg-blue-50/50 dark:bg-blue-900/10', accentColor: 'text-blue-600 dark:text-blue-400', borderColor: 'border-blue-500/50', ringColor: 'ring-blue-500', badge: 'Popular' },
+    { id: 'theme2', name: 'Professional', bgColor: 'bg-slate-50/50 dark:bg-slate-800/20', accentColor: 'text-slate-800 dark:text-slate-200', borderColor: 'border-slate-500/50', ringColor: 'ring-slate-500', badge: 'ATS Friendly' },
+    { id: 'theme3', name: 'Classic', bgColor: 'bg-stone-50/50 dark:bg-stone-800/20', accentColor: 'text-stone-700 dark:text-stone-300', borderColor: 'border-stone-500/50', ringColor: 'ring-stone-500' },
+    { id: 'theme4', name: 'Creative', bgColor: 'bg-violet-50/50 dark:bg-violet-900/10', accentColor: 'text-violet-600 dark:text-violet-400', borderColor: 'border-violet-500/50', ringColor: 'ring-violet-500', badge: 'Trending' },
+    { id: 'theme5', name: 'Minimal', bgColor: 'bg-zinc-50/50 dark:bg-zinc-800/20', accentColor: 'text-zinc-600 dark:text-zinc-400', borderColor: 'border-zinc-500/50', ringColor: 'ring-zinc-500' },
+    { id: 'theme6', name: 'Elegant', bgColor: 'bg-rose-50/50 dark:bg-rose-900/10', accentColor: 'text-rose-600 dark:text-rose-400', borderColor: 'border-rose-500/50', ringColor: 'ring-rose-500' },
+    { id: 'theme7', name: 'Bold', bgColor: 'bg-emerald-50/50 dark:bg-emerald-900/10', accentColor: 'text-emerald-600 dark:text-emerald-400', borderColor: 'border-emerald-500/50', ringColor: 'ring-emerald-500' },
+    { id: 'theme8', name: 'Simple', bgColor: 'bg-gray-50/50 dark:bg-gray-800/20', accentColor: 'text-gray-600 dark:text-gray-400', borderColor: 'border-gray-500/50', ringColor: 'ring-gray-500' },
+    { id: 'theme9', name: 'Contemporary', bgColor: 'bg-cyan-50/50 dark:bg-cyan-900/10', accentColor: 'text-cyan-600 dark:text-cyan-400', borderColor: 'border-cyan-500/50', ringColor: 'ring-cyan-500' },
+    { id: 'theme10', name: 'Executive', bgColor: 'bg-indigo-50/50 dark:bg-indigo-900/10', accentColor: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-500/50', ringColor: 'ring-indigo-500', badge: 'Recommended' },
+    { id: 'theme11', name: 'Technical', bgColor: 'bg-teal-50/50 dark:bg-teal-900/10', accentColor: 'text-teal-600 dark:text-teal-400', borderColor: 'border-teal-500/50', ringColor: 'ring-teal-500' },
   ];
 
-  const handlePrevTheme = () => {
-    const newIndex = currentThemeIndex === 0 ? themes.length - 1 : currentThemeIndex - 1;
-    setCurrentThemeIndex(newIndex);
-    setActiveTheme(themes[newIndex].id);
-  };
-
-  const handleNextTheme = () => {
-    const newIndex = currentThemeIndex === themes.length - 1 ? 0 : currentThemeIndex + 1;
-    setCurrentThemeIndex(newIndex);
-    setActiveTheme(themes[newIndex].id);
-  };
+  const activeThemeObj = themes.find(t => t.id === activeTheme) || themes[1];
 
   // Check if we have actual data or just the empty initialization
   const hasActualData = AnlysedCV && AnlysedCV.personalInfo && AnlysedCV.personalInfo.email !== ' ';
@@ -695,272 +614,181 @@ The JSON structure must follow this format:
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-3 sm:p-4 md:p-6 max-w-[1600px]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto p-4 md:p-6 max-w-[1600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+
           {/* Left Column - Controls */}
-          <div className="lg:col-span-4 space-y-4 sm:space-y-6">
-            {/* Resume Template Section */}
-            <Card className="border-2 shadow-lg card-container">
-              <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6">
-                <CardTitle className="text-base sm:text-lg md:text-xl">Resume Template</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Choose a professional template for your resume
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
-                {/* Theme Carousel */}
-                <div className="flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePrevTheme}
-                    className="h-12 w-10 sm:h-16 sm:w-12 md:h-20 md:w-16 rounded-lg shrink-0 flex items-center justify-center"
-                    aria-label="Previous theme"
-                  >
-                    <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-                  </Button>
+          <div className="lg:col-span-4 space-y-6">
 
-                  <div className="flex-1 flex items-center justify-center gap-1 sm:gap-2 md:gap-3 overflow-hidden">
-                    {[currentThemeIndex - 1, currentThemeIndex, currentThemeIndex + 1].map((index, i) => {
-                      const actualIndex = ((index % themes.length) + themes.length) % themes.length;
-                      const theme = themes[actualIndex];
-                      const isActive = i === 1;
+            {/* Featured Template Picker */}
+            <div className="flex flex-col gap-4">
+              <h2 className="text-xl font-semibold tracking-tight">Template</h2>
 
-                      return (
-                        <Card
-                          key={`${theme.id}-${i}`}
-                          className={`cursor-pointer transition-all duration-300 overflow-hidden ${isActive
-                            ? 'ring-2 ring-primary scale-100 opacity-100'
-                            : 'scale-75 sm:scale-90 opacity-30 sm:opacity-40'
-                            } ${i === 0 || i === 2 ? 'hidden xs:block' : ''}`}
-                          onClick={() => {
-                            setCurrentThemeIndex(actualIndex);
-                            setActiveTheme(theme.id);
-                          }}
-                        >
-                          <CardContent className="p-0">
-                            <div className={`relative ${isActive
-                              ? 'w-24 h-32 sm:w-28 sm:h-36 md:w-32 md:h-40 lg:w-36 lg:h-48'
-                              : 'w-20 h-28 sm:w-24 sm:h-32 md:w-28 md:h-36'
-                              }`}>
-                              {/* Mock Resume Preview */}
-                              <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-1.5 sm:p-2 md:p-3">
-                                {/* Header */}
-                                <div className="space-y-0.5 sm:space-y-1">
-                                  <div className="h-1 sm:h-1.5 md:h-2 bg-primary/80 rounded w-3/4"></div>
-                                  <div className="h-0.5 sm:h-1 md:h-1.5 bg-primary/40 rounded w-1/2"></div>
-                                </div>
-                                {/* Content Lines */}
-                                <div className="mt-1.5 sm:mt-2 md:mt-3 space-y-0.5 sm:space-y-1">
-                                  <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
-                                  <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-5/6"></div>
-                                  <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-4/5"></div>
-                                  <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
-                                  <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-3/4"></div>
-                                </div>
-                              </div>
-                              {/* Theme Name Overlay */}
-                              <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${isActive
-                                ? 'from-primary/90 to-transparent'
-                                : 'from-slate-900/60 to-transparent'
-                                } p-1 sm:p-1.5 md:p-2`}>
-                                <span className="text-[7px] sm:text-[9px] md:text-[10px] font-semibold text-white block text-center leading-tight">
-                                  {theme.name}
-                                </span>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+              {/* Featured Selected Card */}
+              <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-500 ease-out bg-card ${activeThemeObj.borderColor} shadow-[0_4px_24px_-8px] shadow-${activeThemeObj.ringColor.replace('ring-', '')}/20`}>
+                <div className={`p-5 flex gap-5 items-center ${activeThemeObj.bgColor}`}>
+                  {/* Mockup SVG */}
+                  <div className="w-16 h-20 shrink-0 bg-white dark:bg-slate-900 rounded shadow-sm border border-black/5 dark:border-white/5 p-1.5 flex flex-col gap-1.5 transform group-hover:scale-105 transition-transform">
+                    <div className={`h-1.5 w-full rounded-sm ${activeThemeObj.accentColor.replace('text-', 'bg-').split(' ')[0]}`} />
+                    <div className="h-1 w-2/3 rounded-sm bg-muted-foreground/30" />
+                    <div className="h-px w-full bg-border my-0.5" />
+                    <div className="h-0.5 w-full rounded-sm bg-muted-foreground/20" />
+                    <div className="h-0.5 w-4/5 rounded-sm bg-muted-foreground/20" />
+                    <div className="h-0.5 w-full rounded-sm bg-muted-foreground/20" />
+                    <div className="h-0.5 w-3/4 rounded-sm bg-muted-foreground/20" />
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleNextTheme}
-                    className="h-12 w-10 sm:h-16 sm:w-12 md:h-20 md:w-16 rounded-lg shrink-0 flex items-center justify-center"
-                    aria-label="Next theme"
-                  >
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-                  </Button>
-                </div>
-
-                {/* All Themes Grid - Fully Responsive */}
-                <div className="pt-3 sm:pt-4 border-t">
-                  <h3 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-slate-700 dark:text-slate-300">
-                    All Templates
-                  </h3>
-                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-1.5 sm:gap-2 md:gap-3">
-                    {themes.map((theme, index) => (
-                      <Card
-                        key={theme.id}
-                        className={`cursor-pointer transition-all duration-200 overflow-hidden hover:ring-2 hover:ring-primary/50 hover:scale-105 ${activeTheme === theme.id ? 'ring-2 ring-primary scale-105' : ''
-                          }`}
-                        onClick={() => {
-                          setCurrentThemeIndex(index);
-                          setActiveTheme(theme.id);
-                        }}
-                      >
-                        <CardContent className="p-0">
-                          <div className="relative w-full aspect-[3/4]">
-                            {/* Mock Resume Preview */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-1 sm:p-1.5 md:p-2">
-                              {/* Header */}
-                              <div className="space-y-0.5">
-                                <div className="h-0.5 sm:h-1 md:h-1.5 bg-primary/80 rounded w-3/4"></div>
-                                <div className="h-0.5 sm:h-0.5 md:h-1 bg-primary/40 rounded w-1/2"></div>
-                              </div>
-                              {/* Content Lines */}
-                              <div className="mt-1 sm:mt-1.5 md:mt-2 space-y-0.5">
-                                <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
-                                <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-5/6"></div>
-                                <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-4/5"></div>
-                                <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
-                                <div className="h-0.5 bg-slate-300 dark:bg-slate-600 rounded w-3/4"></div>
-                              </div>
-                            </div>
-                            {/* Theme Name Overlay */}
-                            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${activeTheme === theme.id
-                              ? 'from-primary/90 to-transparent'
-                              : 'from-slate-900/60 to-transparent'
-                              } p-0.5 sm:p-1 md:p-1.5`}>
-                              <span className="text-[7px] sm:text-[8px] md:text-[9px] font-semibold text-white block text-center leading-tight">
-                                {theme.name}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Selected Theme Info */}
-                <div className="pt-3 sm:pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Selected Template:
-                      </p>
-                      <p className="text-sm sm:text-base md:text-lg font-bold text-primary">
-                        {themes[currentThemeIndex].name}
-                      </p>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg">{activeThemeObj.name}</h3>
+                      {activeThemeObj.badge && (
+                        <span className={`text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded border ${activeThemeObj.borderColor} ${activeThemeObj.accentColor}`}>
+                          {activeThemeObj.badge}
+                        </span>
+                      )}
                     </div>
-                    <Button className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2">
-                      Use Template
-                    </Button>
+                    <p className="text-xs text-muted-foreground font-medium">Currently applied to your resume</p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <CheckCircle className={`w-3.5 h-3.5 ${activeThemeObj.accentColor}`} />
+                      <span className={`text-xs font-semibold ${activeThemeObj.accentColor}`}>Selected ✓</span>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* AI Power Tools Section */}
-            <Card className="border-2 border-primary/20 shadow-md card-container overflow-hidden">
-              <div className="bg-primary/5 px-4 py-2 border-b border-primary/10 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-primary" />
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">AI Power Tools</span>
+                {/* Visual Color Customizer */}
+                <div className="px-5 pb-5 pt-0">
+                  <ColorPicker colors={themeColors} onChange={handleColorChange} />
+                </div>
               </div>
-              <CardContent className="p-0">
-                <Tabs value={activeAiTab} onValueChange={setActiveAiTab} className="w-full">
-                  <TabsList className="w-full grid grid-cols-2 rounded-none bg-muted/50 p-0 h-10">
-                    <TabsTrigger value="targeted" className="rounded-none text-xs data-[state=active]:bg-background border-r">
-                      <Briefcase className="mr-2 h-3 w-3" />
-                      Targeted Offer
-                    </TabsTrigger>
-                    <TabsTrigger value="editor" className="rounded-none text-xs data-[state=active]:bg-background">
-                      <Sparkles className="mr-2 h-3 w-3" />
-                      AI CV Update
-                    </TabsTrigger>
-                  </TabsList>
 
-                  <div className="p-4">
-                    <TabsContent value="targeted" className="mt-0 space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="job-offer" className="text-sm font-semibold flex items-center gap-2">
-                          Job Description
-                        </Label>
-                        <Textarea
-                          id="job-offer"
-                          placeholder="Paste the job offer here to tailor your resume..."
-                          className="min-h-[120px] text-sm resize-none focus:ring-primary/30"
-                          value={jobAnnouncement}
-                          onChange={(e) => setJobAnnouncement(e.target.value)}
-                        />
-                        <div className="flex items-center justify-between">
-                          <p className="text-[10px] text-muted-foreground italic">
-                            AI will optimize summaries and keywords for ATS
-                          </p>
+              {/* Grid Selector */}
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mt-2">
+                {themes.map((theme) => {
+                  const isActive = activeTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => setActiveTheme(theme.id)}
+                      className="group relative flex flex-col items-center gap-2 outline-none"
+                    >
+                      <div className={`w-full aspect-[3/4] rounded-md transition-all duration-300 border-2 overflow-hidden bg-card ${isActive
+                          ? `${theme.borderColor} ring-4 ${theme.ringColor.replace('ring-', 'ring-')}/20 scale-105 z-10 shadow-lg`
+                          : 'border-border hover:border-muted-foreground/50 hover:shadow-md hover:-translate-y-1'
+                        }`}
+                      >
+                        <div className={`w-full h-full p-2 flex flex-col gap-1 ${theme.bgColor}`}>
+                          <div className={`h-1.5 w-full rounded-sm ${theme.accentColor.replace('text-', 'bg-').split(' ')[0]}`} />
+                          <div className="h-1 w-2/3 rounded-sm bg-muted-foreground/30" />
+                          <div className="h-px w-full bg-border my-0.5" />
+                          <div className="h-0.5 w-full rounded-sm bg-muted-foreground/20" />
+                          <div className="h-0.5 w-4/5 rounded-sm bg-muted-foreground/20" />
+                          <div className="h-0.5 w-full rounded-sm bg-muted-foreground/20" />
                         </div>
                       </div>
-                      <Button
-                        className="w-full h-10 text-sm font-bold shadow-sm"
-                        onClick={generateResume}
-                        disabled={loading || !rawResponse || !jobAnnouncement}
-                      >
-                        {loading ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adapting...</>
-                        ) : (
-                          <><Zap className="mr-2 h-4 w-4" /> Adapt My CV</>
-                        )}
-                      </Button>
-                    </TabsContent>
+                      <span className={`text-[11px] font-medium transition-colors ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                        {theme.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                    <TabsContent value="editor" className="mt-0 space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="ai-editor" className="text-sm font-semibold flex items-center gap-2">
-                          AI Instructions
-                        </Label>
-                        <Textarea
-                          id="ai-editor"
-                          placeholder="Example: 'Make my summary sound more senior' or 'Translate my skills to English'..."
-                          className="min-h-[120px] text-sm resize-none focus:ring-primary/30"
-                          value={aiInstruction}
-                          onChange={(e) => setAiInstruction(e.target.value)}
-                        />
-                        <p className="text-[10px] text-muted-foreground italic">
-                          Give specific instructions to update your content
-                        </p>
-                      </div>
-                      <Button
-                        className="w-full h-10 text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm"
-                        onClick={applyAIUpdate}
-                        disabled={isAiLoading || !rawResponse || !aiInstruction}
-                      >
-                        {isAiLoading ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</>
-                        ) : (
-                          <><Sparkles className="mr-2 h-4 w-4" /> Apply AI Update</>
-                        )}
-                      </Button>
-                    </TabsContent>
+            {/* AI Power Tools Redesign */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h2 className="text-xl font-semibold tracking-tight">Optimize with AI</h2>
+              </div>
+
+              <Tabs value={activeAiTab} onValueChange={setActiveAiTab} className="w-full">
+                <TabsList className="w-full h-auto p-1 bg-muted/60 rounded-lg grid grid-cols-2 mb-4">
+                  <TabsTrigger value="targeted" className="rounded-md py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium transition-all">
+                    Targeted Offer
+                  </TabsTrigger>
+                  <TabsTrigger value="editor" className="rounded-md py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium transition-all">
+                    AI Editor
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="targeted" className="space-y-4 m-0 outline-none">
+                  <div className="space-y-2">
+                    <Label htmlFor="job-offer" className="text-xs font-semibold text-muted-foreground ml-1">
+                      Job Description
+                    </Label>
+                    <div className="relative">
+                      <Textarea
+                        id="job-offer"
+                        placeholder="Paste the target job description here..."
+                        className="min-h-[140px] text-sm resize-none border-border/60 bg-card focus:border-primary/50 focus:ring-1 focus:ring-primary/50 rounded-xl p-4 shadow-sm placeholder:text-muted-foreground/50 transition-all"
+                        value={jobAnnouncement}
+                        onChange={(e) => setJobAnnouncement(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </Tabs>
-              </CardContent>
-            </Card>
+                  <Button
+                    className="w-full h-11 text-sm font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all flex items-center justify-center gap-2"
+                    onClick={generateResume}
+                    disabled={loading || !rawResponse || !jobAnnouncement}
+                  >
+                    {loading ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Adapting...</>
+                    ) : (
+                      <><Zap className="h-4 w-4" /> Adapt My CV</>
+                    )}
+                  </Button>
+                </TabsContent>
 
-            {/* Sync & Reset buttons - only show when there are manual changes */}
+                <TabsContent value="editor" className="space-y-4 m-0 outline-none">
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-editor" className="text-xs font-semibold text-muted-foreground ml-1">
+                      Custom Instructions
+                    </Label>
+                    <div className="relative">
+                      <Textarea
+                        id="ai-editor"
+                        placeholder="E.g., 'Make my tone more executive' or 'Extract keywords for a Product Manager role'..."
+                        className="min-h-[140px] text-sm resize-none border-border/60 bg-card focus:border-primary/50 focus:ring-1 focus:ring-primary/50 rounded-xl p-4 shadow-sm placeholder:text-muted-foreground/50 transition-all"
+                        value={aiInstruction}
+                        onChange={(e) => setAiInstruction(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="w-full h-11 text-sm font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all flex items-center justify-center gap-2"
+                    onClick={applyAIUpdate}
+                    disabled={isAiLoading || !rawResponse || !aiInstruction}
+                  >
+                    {isAiLoading ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Updating...</>
+                    ) : (
+                      <><Sparkles className="h-4 w-4" /> Apply Magic Update</>
+                    )}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Sync & Reset buttons */}
             {isDirty && !loading && !isAiLoading && (
-              <div className="space-y-2 mt-2">
+              <div className="pt-2">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="w-full text-[10px] h-6 text-muted-foreground hover:text-destructive transition-colors"
+                  className="w-full text-xs h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                   onClick={resetToOriginal}
                 >
-                  Abandon changes and Reset to Original
+                  <RefreshCw className="w-3.5 h-3.5 mr-2" />
+                  Revert to Original
                 </Button>
               </div>
             )}
 
             {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
-
-
           </div>
 
           {/* Right Column - Preview */}
@@ -1089,13 +917,6 @@ The JSON structure must follow this format:
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex flex-col items-center justify-center border-t bg-muted/5 py-6">
-                <div className="text-center mb-4">
-                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Customize Theme Colors</h4>
-                  <p className="text-xs text-muted-foreground">Adjust the colors below to personalize this template</p>
-                </div>
-                <ColorPicker colors={themeColors} onChange={handleColorChange} />
-              </CardFooter>
             </Card>
           </div>
         </div>

@@ -15,14 +15,14 @@ import { getFromStorage, saveToStorage } from "../../Cookiesmv"
 import AnalyseResults from './AnalyseResults';
 import { Resume } from '../types/resume';
 import { normalizeResumeData } from './Themes/dataNormalization';
+import { prompteJobMatching } from '../Promptes/Aipromptes';
+import { logger } from '@/lib/logger';
 
 export default function Analyse() {
   const [response, setResponse] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { userData } = useContext(ReadContext);
-  const { userinfos } = useContext(ReadContext);
-  const { setAnlysedCV } = useContext(ReadContext);
+  const { AnlysedCV, settings, userData, userinfos, setAnlysedCV } = useContext(ReadContext);
   const [activeSection, setActiveSection] = useState('personal');
   const [jobMatchingPrompt, setJobMatchingPrompt] = useState<string>('');
   const [uploading, setUploading] = useState<boolean>(false);
@@ -47,7 +47,7 @@ export default function Analyse() {
       .slice(0, 5)
       .join('; ') || '';
 
-    return `ehllo`;
+    return prompteJobMatching(recentTitles, keyAchievements, settings?.selectedLanguage);
   };
 
   const fetchAnalysis = async () => {
@@ -60,20 +60,20 @@ export default function Analyse() {
     setError('');
 
     try {
-      console.log("Sending data to API:", userData);
+      logger.log("Sending data to API:", userData);
 
       const { data } = await axios.post("/api/gemini", {
         userData: userData.text,
         useCase: 'Analyse-resume',
       });
-      console.log("dtsll :", data)
+      logger.log("API response:", data)
 
       // Check if response exists
       if (!data || !data.text) {
         throw new Error('Empty response from API');
       }
 
-      console.log("Raw API response:", data.text);
+      logger.log("Raw API response:", data.text);
 
       // Clean the response
       const cleanedData = data.text.replace(/```json|```/g, '').trim();
@@ -83,7 +83,7 @@ export default function Analyse() {
         throw new Error('Empty JSON response after cleaning');
       }
 
-      console.log("Cleaned data:", cleanedData);
+      logger.log("Cleaned data:", cleanedData);
 
       // Try to parse JSON
       let parsedData;
@@ -100,7 +100,7 @@ export default function Analyse() {
         throw new Error('Invalid resume data format - missing required fields');
       }
 
-      console.log('rdatas :', { ...parsedData, image: userData.image })
+      logger.log('Parsed data:', { ...parsedData, image: userData.image })
       const normalizedData = normalizeResumeData({ ...parsedData, image: userData.image });
       setAnlysedCV(normalizedData);
       setUploading(true);
@@ -132,7 +132,7 @@ export default function Analyse() {
   useEffect(() => {
     if (userData?.text) {
       setUploading(false);
-      console.log("userData:", userData.text);
+      logger.log("userData:", userData.text);
       fetchAnalysis();
     } else {
       setUploading(true);

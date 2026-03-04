@@ -14,6 +14,7 @@ import {
 import axios from "axios";
 import { ReadContext } from "./ReadContext";
 import { getFromStorage } from "@/Cookiesmv";
+import { logger } from '@/lib/logger';
 
 // Types remain the same as in previous version
 interface JobResult {
@@ -78,14 +79,14 @@ const RechercheOffres = () => {
     const loadResumeData = async () => {
       try {
         if (AnlysedCV) {
-          console.log("Loading data from context:", AnlysedCV);
+          logger.log("Loading data from context:", AnlysedCV);
           setResumeData(AnlysedCV);
           setQuery(AnlysedCV.jobSearchTitle || "");
 
         } else {
           const storedData = await getFromStorage('userData');
           if (storedData) {
-            console.log("Loading data from storage:", storedData);
+            logger.log("Loading data from storage:", storedData);
             setQuery(storedData.jobSearchTitle || "");
             setResumeData(storedData as Resume);
           }
