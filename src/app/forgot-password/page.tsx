@@ -35,11 +35,13 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [devOTP, setDevOTP] = useState("");
+  const [isGoogleAccount, setIsGoogleAccount] = useState(false);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setIsGoogleAccount(false);
     setLoading(true);
 
     try {
@@ -52,6 +54,9 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.isGoogleAccount) {
+          setIsGoogleAccount(true);
+        }
         throw new Error(data.error || "Failed to send OTP");
       }
 
@@ -165,9 +170,22 @@ export default function ForgotPasswordPage() {
         </CardHeader>
 
         <CardContent>
-          {error && (
+          {error && !isGoogleAccount && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {error && isGoogleAccount && (
+            <Alert className="mb-4 border-blue-200 bg-blue-50 text-blue-800">
+              <AlertDescription className="flex flex-col gap-3">
+                <span>{error}</span>
+                <Link href="/login" className="w-full">
+                  <Button variant="outline" className="w-full bg-white hover:bg-gray-50 border-blue-200">
+                    Go to Login
+                  </Button>
+                </Link>
+              </AlertDescription>
             </Alert>
           )}
 

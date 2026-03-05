@@ -11,7 +11,7 @@ function generateOTP(): string {
 export async function POST(request: Request) {
   try {
     const requestBody = await request.json();
-    
+
     if (!requestBody?.email) {
       return NextResponse.json(
         { error: "Email is required" },
@@ -32,16 +32,27 @@ export async function POST(request: Request) {
 
     // Check if user exists
     const user = await db.collection("users").findOne({ email });
-    
+
     // For security, always return success even if user doesn't exist
     // This prevents email enumeration attacks
     if (!user) {
       return NextResponse.json(
-        { 
+        {
           message: "If an account exists with this email, an OTP has been sent",
-          success: true 
+          success: true
         },
         { status: 200 }
+      );
+    }
+
+    // Check if the user signed up with Google
+    if (user.provider === "google" || !user.password) {
+      return NextResponse.json(
+        {
+          error: "This account was created with Google. Please use the Sign in with Google button instead.",
+          isGoogleAccount: true
+        },
+        { status: 400 }
       );
     }
 
@@ -68,10 +79,10 @@ export async function POST(request: Request) {
 
     // CHANGE THIS LINE - use Resend's onboarding email for testing
     await resend.emails.send({
-        from: 'onboarding@resend.dev', // Changed from your Gmail
-        to: email,
-        subject: 'Password Reset OTP',
-        html: `
+      from: 'onboarding@resend.dev', // Changed from your Gmail
+      to: email,
+      subject: 'Password Reset OTP',
+      html: `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Password Reset Request</h2>
             <p>Your OTP code is:</p>
@@ -83,9 +94,9 @@ export async function POST(request: Request) {
     });
 
     console.log(`OTP for ${email}: ${otp}`);
-    
+
     return NextResponse.json(
-      { 
+      {
         message: "If an account exists with this email, an OTP has been sent",
         success: true,
         // Remove this in production!
@@ -96,7 +107,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Forgot password error:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
         details: error instanceof Error ? error.message : String(error)
       },

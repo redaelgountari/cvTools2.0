@@ -1,14 +1,17 @@
 // app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import { mdb } from '@/lib/mongodb';
-import userShema from '@/lib/UsersShema';
 import bcrypt from 'bcryptjs';
-import { ObjectId } from 'mongodb';
+import { Resend } from 'resend';
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export async function POST(request: Request) {
   try {
     const requestBody = await request.json();
-    
+
     if (!requestBody?.email || !requestBody?.password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -33,39 +36,78 @@ export async function POST(request: Request) {
     }
 
     const db = await mdb();
-
     const existingUser = await db.collection("users").findOne({ email });
+
     if (existingUser) {
-      return NextResponse.json(
-        { error: "User with this email already exists" },
-        { status: 409 }
-      );
+      if (existingUser.verified) {
+        return NextResponse.json(
+          { error: "User with this email already exists" },
+          { status: 409 }
+        );
+      }
+      // If unverified, we'll update their password and send a new OTP
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
-      email,
-      password: hashedPassword,
-      provider: 'credentials',
-      verified: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    const result = await db.collection("users").insertOne(newUser);
-
-    if (!result.acknowledged) {
-      throw new Error("Failed to create user");
+    if (existingUser) {
+      await db.collection("users").updateOne(
+        { email },
+        { $set: { password: hashedPassword, updatedAt: new Date() } }
+      );
+    } else {
+      const newUser = {
+        email,
+        password: hashedPassword,
+        provider: 'credentials',
+        verified: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      await db.collection("users").insertOne(newUser);
     }
 
-    return NextResponse.json(
-      { 
-        message: "User registered successfully",
-        user: {
-          id: result.insertedId.toString(),
-          email: email
+    // Generate and send OTP
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await db.collection("registration_otps").updateOne(
+      { email },
+      {
+        $set: {
+          email,
+          otp,
+          expiresAt: otpExpiry,
+          createdAt: new Date()
         }
+      },
+      { upsert: true }
+    );
+
+    const resend = new Resend("re_i5uLWS2e_Kw5nvbtyaiiEct8Ur5a8D9jQ");
+
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: email,
+      subject: 'Verify Your Account - OTP',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Verify Your Registration</h2>
+          <p>Your OTP code is:</p>
+          <h1 style="background: #f4f4f4; padding: 10px; text-align: center; letter-spacing: 5px;">${otp}</h1>
+          <p>This code expires in 10 minutes.</p>
+          <p style="color: #666; font-size: 12px;">If you didn't request this, please ignore this email.</p>
+        </div>
+      `
+    });
+
+    console.log(`Registration OTP for ${email}: ${otp}`);
+
+    return NextResponse.json(
+      {
+        message: "OTP sent successfully. Please verify your account.",
+        requiresOtp: true,
+        email: email
       },
       { status: 201 }
     );
@@ -73,7 +115,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
         details: error instanceof Error ? error.message : String(error)
       },

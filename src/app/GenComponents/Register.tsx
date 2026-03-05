@@ -12,6 +12,12 @@ import { Separator } from '@/components/ui/separator';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Loader2 } from "lucide-react";
 import { logger } from '@/lib/logger';
 
 const registerSchema = z.object({
@@ -34,7 +40,10 @@ export function Register() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | false>(false);
+  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [otp, setOtp] = useState("");
+  const [tempEmail, setTempEmail] = useState("");
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -67,10 +76,16 @@ export function Register() {
         throw new Error(data.message || 'Registration failed');
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/login?registered=true');
-      }, 2000);
+      if (data.requiresOtp) {
+        setSuccess("OTP sent to your email. Please verify your account.");
+        setTempEmail(values.email);
+        setStep('otp');
+      } else {
+        setSuccess("Registration successful! Redirecting to login page...");
+        setTimeout(() => {
+          router.push('/login?registered=true');
+        }, 2000);
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Registration failed');
     } finally {
@@ -86,6 +101,40 @@ export function Register() {
     } catch (error) {
       console.error("Social login error:", error);
       setError("Failed to sign in with provider");
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+
+    if (otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/verify-registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: tempEmail, otp }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Invalid OTP");
+      }
+
+      setSuccess("Account verified successfully! Redirecting to login...");
+      setTimeout(() => router.push("/login?registered=true"), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,84 +154,137 @@ export function Register() {
         )}
 
         {success && (
-          <Alert className="mb-4">
+          <Alert className="mb-4 text-green-800 border-green-200 bg-green-50">
             <AlertDescription>
-              Registration successful! Redirecting to login page...
+              {success}
             </AlertDescription>
           </Alert>
         )}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="your.email@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {step === 'details' && (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="your.email@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    At least 8 characters, including uppercase, lowercase and a number
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      At least 8 characters, including uppercase, lowercase and a number
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? "Creating account..." : "Create account"}
+              </Button>
+            </form>
+          </Form>
+        )}
+
+        {step === 'otp' && (
+          <form onSubmit={handleVerifyOTP} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Enter OTP
+              </label>
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={(value) => setOtp(value)}
+                  disabled={isLoading}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                We've sent a 6-digit code to {tempEmail}
+              </p>
+            </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? "Verifying..." : "Verify Account"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => {
+                setStep('details');
+                setOtp("");
+                setError(null);
+                setSuccess(false);
+              }}
+              disabled={isLoading}
+            >
+              Back to Registration
             </Button>
           </form>
-        </Form>
+        )}
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
+        {step === 'details' && (
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
             <Button
               variant="outline"
               type="button"
               onClick={() => handleSocialLogin('google')}
-              className="flex items-center justify-center gap-2"
+              className="w-full mt-4"
               disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -191,20 +293,8 @@ export function Register() {
               Google
             </Button>
 
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => handleSocialLogin('github')}
-              className="flex items-center justify-center gap-2"
-              disabled={isLoading}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-              </svg>
-              GitHub
-            </Button>
           </div>
-        </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">

@@ -1,6 +1,7 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
+import { useState, useEffect, useRef } from 'react'
 
 interface ColorPickerProps {
     colors: { [key: string]: string };
@@ -20,6 +21,46 @@ const getFriendlyName = (key: string) => {
 }
 
 export function ColorPicker({ colors, onChange }: ColorPickerProps) {
+    const [localColors, setLocalColors] = useState(colors);
+    const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
+
+    // Sync from props when parent updates (e.g., when a new theme is selected),
+    // but don't overwrite colors that are currently being actively dragged/debounced.
+    useEffect(() => {
+        setLocalColors(prev => {
+            const nextColors = { ...prev };
+            let hasChanges = false;
+
+            for (const key in colors) {
+                if (!timeoutRefs.current[key] && prev[key] !== colors[key]) {
+                    nextColors[key] = colors[key];
+                    hasChanges = true;
+                }
+            }
+
+            return hasChanges ? nextColors : prev;
+        });
+
+        return () => {
+            Object.values(timeoutRefs.current).forEach(timeout => {
+                if (timeout) clearTimeout(timeout);
+            });
+        };
+    }, [colors]);
+
+    const handleColorChange = (key: string, value: string) => {
+        setLocalColors(prev => ({ ...prev, [key]: value }));
+
+        if (timeoutRefs.current[key]) {
+            clearTimeout(timeoutRefs.current[key]!);
+        }
+
+        timeoutRefs.current[key] = setTimeout(() => {
+            onChange(key, value);
+            timeoutRefs.current[key] = null;
+        }, 300);
+    };
+
     return (
         <div className="flex flex-wrap items-center gap-5 p-3 bg-muted/30 rounded-lg border border-border/50">
             <div className="flex flex-col gap-1 justify-center mr-2">
@@ -35,7 +76,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
 
             <div className="w-px h-8 bg-border border-l mx-1"></div>
 
-            {Object.entries(colors).map(([key, value]) => (
+            {Object.entries(localColors).map(([key, value]) => (
                 <div key={key} className="flex flex-col items-center gap-1.5 group">
                     <Label className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground group-hover:text-foreground transition-colors cursor-pointer">
                         {getFriendlyName(key)}
@@ -47,7 +88,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
                         <input
                             type="color"
                             value={value}
-                            onChange={(e) => onChange(key, e.target.value)}
+                            onChange={(e) => handleColorChange(key, e.target.value)}
                             className="absolute inset-0 w-20 h-20 -top-2 -left-2 cursor-pointer p-0 border-0 bg-transparent"
                         />
                     </div>

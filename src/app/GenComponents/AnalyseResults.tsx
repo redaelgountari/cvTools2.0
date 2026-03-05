@@ -98,7 +98,7 @@ const TagInput = ({ tags = [], onTagsChange, placeholder }: TagInputProps) => {
         ))}
       </div>
       <div className="flex gap-2">
-        <Input
+        <Input maxLength={50}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -207,6 +207,35 @@ export default function AnalyseResults() {
       if (err instanceof z.ZodError) {
         // Create a more user-friendly error message from Zod validation issues
         errorMessage = `Validation Error: ${err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+
+        // automatically redirect to the section with the error
+        if (err.errors.length > 0) {
+          const topLevelField = String(err.errors[0].path[0] || '');
+          const errorSectionMap: Record<string, string> = {
+            personalInfo: 'personal',
+            professionalSummary: 'summary',
+            skills: 'skills',
+            tools: 'tools',
+            experience: 'experience',
+            education: 'education',
+            certifications: 'certifications',
+            publications: 'publications',
+            awards: 'awards',
+            volunteerExperience: 'volunteer',
+            projects: 'projects',
+            onlinePresence: 'online',
+            hobbies: 'hobbies',
+            image: 'image',
+          };
+
+          const targetSection = errorSectionMap[topLevelField];
+          if (targetSection) {
+            setActiveSection(targetSection);
+
+            // Scroll to top so the user can easily see the error alert and the fields
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
       }
 
       setError(errorMessage);
@@ -719,7 +748,7 @@ export default function AnalyseResults() {
                   ].map(field => (
                     <div key={field.key} className="space-y-2">
                       <Label>{field.label}</Label>
-                      <Input
+                      <Input maxLength={50}
                         type={field.type}
                         value={response.personalInfo?.[field.key] || ''}
                         onChange={(e) =>
@@ -740,7 +769,7 @@ export default function AnalyseResults() {
             {activeSection === 'summary' && (
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold pb-3 border-b">Professional Summary</h3>
-                <Textarea
+                <Textarea maxLength={3000}
                   value={response.professionalSummary || ''}
                   onChange={(e) => setResponse({ ...response, professionalSummary: e.target.value })}
                   placeholder="Write a compelling professional summary that highlights your key achievements and career goals..."
@@ -760,7 +789,7 @@ export default function AnalyseResults() {
                 ].map(skill => (
                   <div key={skill.key} className="space-y-2">
                     <Label>{skill.label}</Label>
-                    <TagInput
+                    <TagInput maxLength={20}
                       tags={response.skills?.[skill.key] || []}
                       onTagsChange={(newTags) =>
                         setResponse({
@@ -857,7 +886,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Job Title</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={exp.title || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -869,7 +898,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Company</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={exp.company || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -881,7 +910,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Start Date</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={exp.startDate || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -893,7 +922,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>End Date</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={exp.endDate || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -905,7 +934,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Location</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={exp.location || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -917,7 +946,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Responsibilities</Label>
-                          <Textarea
+                          <Textarea maxLength={3000}
                             value={exp.responsibilities?.join('\n') || ''}
                             onChange={(e) => {
                               const updated = [...response.experience];
@@ -998,7 +1027,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Degree</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={edu.degree || ''}
                             onChange={(e) => {
                               const updated = [...response.education];
@@ -1010,7 +1039,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Institution</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={edu.institution || ''}
                             onChange={(e) => {
                               const updated = [...response.education];
@@ -1022,7 +1051,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Location</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={edu.location || ''}
                             onChange={(e) => {
                               const updated = [...response.education];
@@ -1034,7 +1063,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Graduation Year</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={edu.graduationYear || ''}
                             onChange={(e) => {
                               const updated = [...response.education];
@@ -1046,7 +1075,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Relevant Courses</Label>
-                          <Textarea
+                          <Textarea maxLength={3000}
                             value={edu.relevantCourses?.join('\n') || ''}
                             onChange={(e) => {
                               const updated = [...response.education];
@@ -1105,7 +1134,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
                           <Label>Certification Name</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={cert.name || ''}
                             onChange={(e) => {
                               const updated = [...response.certifications];
@@ -1117,7 +1146,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Issuing Organization</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={cert.issuer || ''}
                             onChange={(e) => {
                               const updated = [...response.certifications];
@@ -1129,7 +1158,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Year</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={cert.year || ''}
                             onChange={(e) => {
                               const updated = [...response.certifications];
@@ -1186,7 +1215,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
                           <Label>Title</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={pub.title || ''}
                             onChange={(e) => {
                               const updated = [...response.publications];
@@ -1198,7 +1227,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Publication Type</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={pub.publicationType || ''}
                             onChange={(e) => {
                               const updated = [...response.publications];
@@ -1210,7 +1239,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Year</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={pub.year || ''}
                             onChange={(e) => {
                               const updated = [...response.publications];
@@ -1222,7 +1251,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Link</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={pub.link || ''}
                             onChange={(e) => {
                               const updated = [...response.publications];
@@ -1279,7 +1308,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Award Name</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={award.name || ''}
                             onChange={(e) => {
                               const updated = [...response.awards];
@@ -1291,7 +1320,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Year</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={award.year || ''}
                             onChange={(e) => {
                               const updated = [...response.awards];
@@ -1303,7 +1332,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Description</Label>
-                          <Textarea
+                          <Textarea maxLength={3000}
                             value={award.description || ''}
                             onChange={(e) => {
                               const updated = [...response.awards];
@@ -1361,7 +1390,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label>Role</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={vol.role || ''}
                             onChange={(e) => {
                               const updated = [...response.volunteerExperience];
@@ -1373,7 +1402,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Organization</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={vol.organization || ''}
                             onChange={(e) => {
                               const updated = [...response.volunteerExperience];
@@ -1385,7 +1414,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Start Date</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={vol.startDate || ''}
                             onChange={(e) => {
                               const updated = [...response.volunteerExperience];
@@ -1397,7 +1426,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>End Date</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={vol.endDate || ''}
                             onChange={(e) => {
                               const updated = [...response.volunteerExperience];
@@ -1409,7 +1438,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Description</Label>
-                          <Textarea
+                          <Textarea maxLength={3000}
                             value={vol.description || ''}
                             onChange={(e) => {
                               const updated = [...response.volunteerExperience];
@@ -1467,7 +1496,7 @@ export default function AnalyseResults() {
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
                           <Label>Project Title</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={proj.title || ''}
                             onChange={(e) => {
                               const updated = [...response.projects];
@@ -1656,7 +1685,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2 md:col-span-2">
                           <Label>Description</Label>
-                          <Textarea
+                          <Textarea maxLength={3000}
                             value={proj.description || ''}
                             onChange={(e) => {
                               const updated = [...response.projects];
@@ -1681,7 +1710,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>GitHub URL</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={proj.github || ''}
                             onChange={(e) => {
                               const updated = [...response.projects];
@@ -1693,7 +1722,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Project url</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={proj.url || ''}
                             onChange={(e) => {
                               const updated = [...response.projects];
@@ -1705,7 +1734,7 @@ export default function AnalyseResults() {
                         </div>
                         <div className="space-y-2">
                           <Label>Your Role</Label>
-                          <Input
+                          <Input maxLength={50}
                             value={proj.role || ''}
                             onChange={(e) => {
                               const updated = [...response.projects];
@@ -1734,7 +1763,7 @@ export default function AnalyseResults() {
                   ].map(field => (
                     <div key={field.key} className="space-y-2">
                       <Label>{field.label}</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={response.onlinePresence?.[field.key] || ''}
                         onChange={(e) =>
                           setResponse({
@@ -1803,7 +1832,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Job Title</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.title || ''}
                       onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
                       placeholder="Senior Developer"
@@ -1811,7 +1840,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Company</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.company || ''}
                       onChange={(e) => setModalData({ ...modalData, company: e.target.value })}
                       placeholder="Tech Corp"
@@ -1820,7 +1849,7 @@ export default function AnalyseResults() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Start Date</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.startDate || ''}
                         onChange={(e) => setModalData({ ...modalData, startDate: e.target.value })}
                         placeholder="2020-01"
@@ -1828,7 +1857,7 @@ export default function AnalyseResults() {
                     </div>
                     <div className="space-y-2">
                       <Label>End Date</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.endDate || ''}
                         onChange={(e) => setModalData({ ...modalData, endDate: e.target.value })}
                         placeholder="Present"
@@ -1837,7 +1866,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Location</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.location || ''}
                       onChange={(e) => setModalData({ ...modalData, location: e.target.value })}
                       placeholder="City, Country"
@@ -1845,7 +1874,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Responsibilities</Label>
-                    <Textarea
+                    <Textarea maxLength={3000}
                       value={modalData.responsibilities?.join('\n') || ''}
                       onChange={(e) => setModalData({ ...modalData, responsibilities: e.target.value.split('\n').filter(r => r.trim()) })}
                       placeholder="Enter responsibilities (one per line)"
@@ -1860,7 +1889,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Degree</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.degree || ''}
                       onChange={(e) => setModalData({ ...modalData, degree: e.target.value })}
                       placeholder="Bachelor of Science"
@@ -1868,7 +1897,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Institution</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.institution || ''}
                       onChange={(e) => setModalData({ ...modalData, institution: e.target.value })}
                       placeholder="University Name"
@@ -1877,7 +1906,7 @@ export default function AnalyseResults() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Location</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.location || ''}
                         onChange={(e) => setModalData({ ...modalData, location: e.target.value })}
                         placeholder="City, Country"
@@ -1885,7 +1914,7 @@ export default function AnalyseResults() {
                     </div>
                     <div className="space-y-2">
                       <Label>Graduation Year</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.graduationYear || ''}
                         onChange={(e) => setModalData({ ...modalData, graduationYear: e.target.value })}
                         placeholder="2024"
@@ -1894,7 +1923,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Relevant Courses</Label>
-                    <Textarea
+                    <Textarea maxLength={3000}
                       value={modalData.relevantCourses?.join('\n') || ''}
                       onChange={(e) => setModalData({ ...modalData, relevantCourses: e.target.value.split('\n').filter(c => c.trim()) })}
                       placeholder="Enter courses (one per line)"
@@ -1909,7 +1938,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Certification Name</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.name || ''}
                       onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
                       placeholder="AWS Certified Solutions Architect"
@@ -1917,7 +1946,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Issuing Organization</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.issuer || ''}
                       onChange={(e) => setModalData({ ...modalData, issuer: e.target.value })}
                       placeholder="Amazon Web Services"
@@ -1925,7 +1954,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Year</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.year || ''}
                       onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
                       placeholder="2024"
@@ -1938,7 +1967,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Title</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.title || ''}
                       onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
                       placeholder="Publication Title"
@@ -1946,7 +1975,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Publication Type</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.publicationType || ''}
                       onChange={(e) => setModalData({ ...modalData, publicationType: e.target.value })}
                       placeholder="Journal, Conference"
@@ -1955,7 +1984,7 @@ export default function AnalyseResults() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Year</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.year || ''}
                         onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
                         placeholder="2024"
@@ -1963,7 +1992,7 @@ export default function AnalyseResults() {
                     </div>
                     <div className="space-y-2">
                       <Label>Link</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.link || ''}
                         onChange={(e) => setModalData({ ...modalData, link: e.target.value })}
                         placeholder="https://..."
@@ -1977,7 +2006,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Award Name</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.name || ''}
                       onChange={(e) => setModalData({ ...modalData, name: e.target.value })}
                       placeholder="Employee of the Year"
@@ -1985,7 +2014,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Year</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.year || ''}
                       onChange={(e) => setModalData({ ...modalData, year: e.target.value })}
                       placeholder="2024"
@@ -1993,7 +2022,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
+                    <Textarea maxLength={3000}
                       value={modalData.description || ''}
                       onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
                       placeholder="Award description..."
@@ -2007,7 +2036,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Role</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.role || ''}
                       onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
                       placeholder="Volunteer Role"
@@ -2015,7 +2044,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Organization</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.organization || ''}
                       onChange={(e) => setModalData({ ...modalData, organization: e.target.value })}
                       placeholder="Organization"
@@ -2024,7 +2053,7 @@ export default function AnalyseResults() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Start Date</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.startDate || ''}
                         onChange={(e) => setModalData({ ...modalData, startDate: e.target.value })}
                         placeholder="2023-01"
@@ -2032,7 +2061,7 @@ export default function AnalyseResults() {
                     </div>
                     <div className="space-y-2">
                       <Label>End Date</Label>
-                      <Input
+                      <Input maxLength={50}
                         value={modalData.endDate || ''}
                         onChange={(e) => setModalData({ ...modalData, endDate: e.target.value })}
                         placeholder="Present"
@@ -2041,7 +2070,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
+                    <Textarea maxLength={3000}
                       value={modalData.description || ''}
                       onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
                       placeholder="Description..."
@@ -2055,7 +2084,7 @@ export default function AnalyseResults() {
                 <>
                   <div className="space-y-2">
                     <Label>Project Title</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.title || ''}
                       onChange={(e) => setModalData({ ...modalData, title: e.target.value })}
                       placeholder="Project Name"
@@ -2063,7 +2092,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Role</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.role || ''}
                       onChange={(e) => setModalData({ ...modalData, role: e.target.value })}
                       placeholder="Lead Developer"
@@ -2071,7 +2100,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea
+                    <Textarea maxLength={3000}
                       value={modalData.description || ''}
                       onChange={(e) => setModalData({ ...modalData, description: e.target.value })}
                       placeholder="Project description..."
@@ -2080,7 +2109,7 @@ export default function AnalyseResults() {
                   </div>
                   <div className="space-y-2">
                     <Label>GitHub Link</Label>
-                    <Input
+                    <Input maxLength={50}
                       value={modalData.github || ''}
                       onChange={(e) => setModalData({ ...modalData, github: e.target.value })}
                       placeholder="https://github.com/..."

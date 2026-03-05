@@ -457,6 +457,7 @@ export default function Resume() {
       } else {
         setResumeData(normalizeResumeData(newResumeData));
         setMatchData(newAnalysisData);
+        if (newAnalysisData) setShowStatsModal(true);
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
@@ -544,6 +545,7 @@ export default function Resume() {
       } else {
         setResumeData(normalizeResumeData(newResumeData));
         setMatchData(newAnalysisData);
+        if (newAnalysisData) setShowStatsModal(true);
         setShowSuccess(true);
         setAiInstruction('');
         setTimeout(() => setShowSuccess(false), 1500);
@@ -672,8 +674,8 @@ export default function Resume() {
                       className="group relative flex flex-col items-center gap-2 outline-none"
                     >
                       <div className={`w-full aspect-[3/4] rounded-md transition-all duration-300 border-2 overflow-hidden bg-card ${isActive
-                          ? `${theme.borderColor} ring-4 ${theme.ringColor.replace('ring-', 'ring-')}/20 scale-105 z-10 shadow-lg`
-                          : 'border-border hover:border-muted-foreground/50 hover:shadow-md hover:-translate-y-1'
+                        ? `${theme.borderColor} ring-4 ${theme.ringColor.replace('ring-', 'ring-')}/20 scale-105 z-10 shadow-lg`
+                        : 'border-border hover:border-muted-foreground/50 hover:shadow-md hover:-translate-y-1'
                         }`}
                       >
                         <div className={`w-full h-full p-2 flex flex-col gap-1 ${theme.bgColor}`}>
@@ -922,7 +924,40 @@ export default function Resume() {
         </div>
       </div>
 
-      {/* Success Alert Dialog */}
+      <AlertDialog open={showLowMatchWarning} onOpenChange={setShowLowMatchWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
+              Low Match Detected
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The target job description only has a {matchData?.matchScore}% match with your CV.
+              Are you sure you want to update your CV with this adaptation?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowLowMatchWarning(false);
+              setPendingResumeData(null);
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (pendingResumeData) setResumeData(pendingResumeData);
+              setShowLowMatchWarning(false);
+              if (matchData) setShowStatsModal(true);
+              setShowSuccess(true);
+              setTimeout(() => {
+                setShowSuccess(false);
+              }, 1500);
+            }} className="bg-amber-600 hover:bg-amber-700 text-white">
+              Update Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={showSuccess} onOpenChange={setShowSuccess}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -942,8 +977,6 @@ export default function Resume() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Low Match Warning Dialog */}
-      {/* Stats Analysis Dialog */}
       <AlertDialog open={showStatsModal} onOpenChange={setShowStatsModal}>
         <AlertDialogContent className="max-w-2xl">
           <AlertDialogHeader>
