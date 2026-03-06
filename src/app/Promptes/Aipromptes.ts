@@ -212,6 +212,17 @@ ${jobAnnouncement ? `### 2. TARGET JOB DESCRIPTION:\n${jobAnnouncement}\n` : ''}
 
 ### OUTPUT FORMAT:
 
+EXAMPLE FORMAT:
+{
+  "matchScore": 75,
+  "skillsMatch": 80,
+  "experienceMatch": 70,
+  "educationMatch": 75,
+  "skillsJustification": "Brief one-line explanation of skills match",
+  "experienceJustification": "Brief one-line explanation of experience match",
+  "educationJustification": "Brief one-line explanation of education match"
+}
+  
 **IMPORTANT: Return ONLY valid JSON.**
 The JSON structure must follow this format:
 

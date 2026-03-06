@@ -6,10 +6,9 @@ import path from "path";
 import Link from "next/link";
 
 async function getResumeData() {
-  const res = await fetch("http://localhost:3000/api/GettingUserData", {
-    cache: "no-store", // Ensure fresh data on each request
+  const res = await fetch("/api/GettingUserData", {
+    cache: "no-store",
   });
-
 
   return res.json();
 }

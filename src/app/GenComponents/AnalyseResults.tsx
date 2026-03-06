@@ -789,7 +789,7 @@ export default function AnalyseResults() {
                 ].map(skill => (
                   <div key={skill.key} className="space-y-2">
                     <Label>{skill.label}</Label>
-                    <TagInput maxLength={20}
+                    <TagInput
                       tags={response.skills?.[skill.key] || []}
                       onTagsChange={(newTags) =>
                         setResponse({
