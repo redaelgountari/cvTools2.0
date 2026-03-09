@@ -83,13 +83,13 @@ export default function CoverLetterGenerate() {
         setError('');
 
         try {
-            const cvData = typeof response === 'string' ? response : JSON.stringify(response);
-            const prompt = prompteCoverLetter(cvData, jobAnnouncement, lineLimit, settings?.selectedLanguage);
-
             const { data } = await axios.post("/api/gemini", {
-                userData: prompt,
+                userData: jobAnnouncement,
                 useCase: 'cover-letter',
-                jobDescription: jobAnnouncement
+                cvData: response,
+                jobDescription: jobAnnouncement,
+                lineLimit: lineLimit,
+                language: settings?.selectedLanguage || 'english'
             });
 
             const responseText = data.text;

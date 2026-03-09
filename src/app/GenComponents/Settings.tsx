@@ -69,11 +69,11 @@ export default function Settings() {
     if (!AnlysedCV) return;
 
     try {
-      const cvDataString = JSON.stringify(AnlysedCV);
-      const prompt = prompteLanguageChange(cvDataString, settings.selectedLanguage);
       const { data } = await axios.post("/api/gemini", {
-        userData: prompt,
-        useCase: 'Translate-cv'
+        userData: settings.selectedLanguage,
+        useCase: 'Translate-cv',
+        cvData: AnlysedCV,
+        targetLanguage: settings.selectedLanguage
       });
 
       // More robust cleaning of the response

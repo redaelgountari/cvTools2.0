@@ -390,13 +390,12 @@ export default function Resume() {
     setError('');
 
     try {
-      const language = contextSettings?.selectedLanguage || 'French';
-      const prompt = prompteResumeTailoring(rawResponse, jobAnnouncement, language);
-
       const { data } = await axios.post("/api/gemini", {
-        userData: prompt,
-        useCase: 'Analyse-resume',
-        jobDescription: jobAnnouncement
+        userData: jobAnnouncement,
+        useCase: 'resume-tailoring',
+        cvData: rawResponse,
+        jobDescription: jobAnnouncement,
+        language: contextSettings?.selectedLanguage || 'French'
       });
 
       // Enhanced cleaning to handle various markdown formats
@@ -500,11 +499,12 @@ export default function Resume() {
     setError('');
 
     try {
-      const prompt = prompteCVUpdate(JSON.stringify(resumeData), aiInstruction, contextSettings?.selectedLanguage);
-
       const { data } = await axios.post("/api/gemini", {
-        userData: prompt,
-        useCase: 'Analyse-resume'
+        userData: aiInstruction,
+        useCase: 'cv-update',
+        cvData: resumeData,
+        instructions: aiInstruction,
+        language: contextSettings?.selectedLanguage || 'english'
       });
 
       let cleanedData = data.text.trim();

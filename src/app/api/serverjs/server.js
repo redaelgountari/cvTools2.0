@@ -161,7 +161,7 @@ function ReadTXT() {
       console.log("textdts:", text)
       // Update context with extracted data
       setUserData({
-        text: prompteCVAnalysis(text, settings?.selectedLanguage) || "",
+        text: text,
         image: imageUrls
       });
 

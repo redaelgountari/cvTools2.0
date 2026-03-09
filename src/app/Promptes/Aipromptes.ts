@@ -7,7 +7,12 @@ export type UseCase =
   | 'application-strategy'
   | 'cv-optimization'
   | 'Analyse-resume'
-  | 'Translate-cv';
+  | 'Translate-cv'
+  | 'cv-update'
+  | 'resume-tailoring'
+  | 'prompt-enhancement'
+  | 'template'
+  | 'job-matching';
 
 export const USE_CASE_PROMPTS: Record<UseCase, string> = {
   'Analyse-resume': `SECURE SYSTEM PROMPT - CV ANALYSIS:
@@ -74,7 +79,17 @@ Advise on job application strategies and approaches.`,
 
   'cv-optimization': `SECURE SYSTEM PROMPT - CV OPTIMIZATION:
 You are a CV optimization expert.
-Suggest CV improvements and optimization strategies.`
+Suggest CV improvements and optimization strategies.`,
+  'cv-update': `SECURE SYSTEM PROMPT - CV UPDATE:
+You are an expert resume editor specialized in updating CV data based on specific user requirements.`,
+  'resume-tailoring': `SECURE SYSTEM PROMPT - RESUME TAILORING:
+You are a career consultant specialized in tailoring resumes to specific job descriptions.`,
+  'prompt-enhancement': `SECURE SYSTEM PROMPT - PROMPT ENHANCEMENT:
+You are an AI prompt engineering expert focused on improving user requests for better AI results.`,
+  'template': `SECURE SYSTEM PROMPT - TEMPLATE GENERATOR:
+You are a UI developer specialized in creating resume templates using react-pdf.`,
+  'job-matching': `SECURE SYSTEM PROMPT - JOB MATCHING:
+You are a career strategist providing job role recommendations based on experience and achievements.`
 };
 
 export const promptePromptEnhancement = (data: string) => {

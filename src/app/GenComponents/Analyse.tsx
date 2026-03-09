@@ -24,7 +24,6 @@ export default function Analyse() {
   const [error, setError] = useState('');
   const { AnlysedCV, settings, userData, userinfos, setAnlysedCV } = useContext(ReadContext);
   const [activeSection, setActiveSection] = useState('personal');
-  const [jobMatchingPrompt, setJobMatchingPrompt] = useState<string>('');
   const [uploading, setUploading] = useState<boolean>(false);
 
   const calculateTotalExperience = useMemo(() => {
@@ -36,19 +35,7 @@ export default function Analyse() {
     }, 0) || 0;
   }, [response]);
 
-  const generateJobMatchingPrompt = (resumeData: Resume) => {
-    const recentTitles = resumeData.experience
-      ?.slice(0, 3)
-      .map(exp => exp.title)
-      .join(', ') || '';
 
-    const keyAchievements = resumeData.experience
-      ?.flatMap(exp => exp.responsibilities || [])
-      .slice(0, 5)
-      .join('; ') || '';
-
-    return prompteJobMatching(recentTitles, keyAchievements, settings?.selectedLanguage);
-  };
 
   const fetchAnalysis = async () => {
     if (!userData?.text) {
@@ -65,6 +52,7 @@ export default function Analyse() {
       const { data } = await axios.post("/api/gemini", {
         userData: userData.text,
         useCase: 'Analyse-resume',
+        language: settings?.selectedLanguage || 'english'
       });
       logger.log("API response:", data)
 
@@ -106,8 +94,7 @@ export default function Analyse() {
       setUploading(true);
       setResponse(normalizedData);
 
-      const prompt = generateJobMatchingPrompt(parsedData);
-      setJobMatchingPrompt(prompt);
+
 
     } catch (error) {
       console.error('Error in fetchAnalysis:', error);
