@@ -1,10 +1,9 @@
 // next.config.ts
 import path from 'path';
-import { Configuration } from 'webpack';
 import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     // Add PDF.js worker handling
     config.module?.rules?.push({
       test: /pdf\.worker\.js$/,

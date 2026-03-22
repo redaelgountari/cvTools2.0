@@ -49,7 +49,7 @@ function ReadTXT() {
 
 
       setUserData(normalizeResumeData({
-        text: prompteCVAnalysis(text, settings?.selectedLanguage) || "",
+        text: text,
         image: imageUrls,
       }))
 

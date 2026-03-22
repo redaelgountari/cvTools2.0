@@ -19,6 +19,7 @@ import Analyse from "../../GenComponents/Analyse"
 import ReadContextProvider from '../../GenComponents/ReadContextProvider'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import SearchResults from "../../GenComponents/SearchResults"
+import CVHistory from "../../GenComponents/CVHistory"
 import { useEffect, useState } from "react"
 import { useTour } from "../TourProvider"
 import ClientOnly from "../../GenComponents/ClientOnly"
@@ -72,7 +73,7 @@ export default function Page() {
                     <ReadTXT onFileUploaded={handleFileUploaded} />
                   </div>
 
-                  <Card className="hidden md:block tips-card">
+                  {/* <Card className="hidden md:block tips-card">
                     <CardHeader>
                       <CardTitle>Tips</CardTitle>
                     </CardHeader>
@@ -84,7 +85,9 @@ export default function Page() {
                         <li>Keep formatting consistent</li>
                       </ul>
                     </CardContent>
-                  </Card>
+                  </Card> */}
+
+                  <CVHistory />
                 </div>
               </div>
 

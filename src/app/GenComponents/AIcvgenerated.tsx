@@ -32,7 +32,8 @@ export default function AIcvgenerated() {
 
     try {
       const { data } = await axios.post("/api/gemini", {
-        userData: promptePromptEnhancement(prompte)
+        userData: prompte,
+        useCase: 'prompt-enhancement'
       });
       setPrompte(data.text);
     } catch (err) {
@@ -55,7 +56,8 @@ export default function AIcvgenerated() {
 
     try {
       const { data } = await axios.post("/api/gemini", {
-        userData: prompteTemplate(prompte)
+        userData: prompte,
+        useCase: 'template'
       });
       // setPrompte(data.text);
       logger.log("template:", data);

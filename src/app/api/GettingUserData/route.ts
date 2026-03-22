@@ -12,15 +12,42 @@ export async function GET(request: NextRequest) {
         }
 
         const userId = session.user.id;
+        const { searchParams } = new URL(request.url);
+        const history = searchParams.get("history") === "true";
 
         const db = await mdb();
-        const data = await db.collection("Resumetl").findOne({ userId });
-
-        if (!data) {
-            return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+        if (!db) {
+            return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
         }
 
-        return NextResponse.json({ data }, { status: 200 });
+        if (history) {
+            const data = await db.collection("Resumetl")
+                .find({ userId, isCheckpoint: true })
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .toArray();
+
+            return NextResponse.json({ data }, { status: 200 });
+        } else {
+            const data = await db.collection("Resumetl").findOne({ userId, isActive: true });
+
+            if (!data) {
+                // fallback to finding the most recent if none is marked active
+                const mostRecent = await db.collection("Resumetl")
+                    .find({ userId })
+                    .sort({ updatedAt: -1 })
+                    .limit(1)
+                    .toArray();
+
+                if (mostRecent.length > 0) {
+                    return NextResponse.json({ data: mostRecent[0] }, { status: 200 });
+                }
+
+                return NextResponse.json({ error: "Resume not found" }, { status: 404 });
+            }
+
+            return NextResponse.json({ data }, { status: 200 });
+        }
 
     } catch (error) {
         console.error("Error fetching resume:", error);

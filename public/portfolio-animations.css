@@ -1,0 +1,147 @@
+/* 
+  Portfolio Animations System 
+  Replaces Framer Motion with export-safe CSS animations.
+*/
+
+[data-anim] {
+    opacity: 0;
+    transition-property: opacity, transform, clip-path;
+    transition-duration: var(--duration, 0.8s);
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--delay, 0s);
+    will-change: transform, opacity;
+}
+
+/* --- Animation Types --- */
+
+/* Fade In */
+[data-anim="fade"].in-view {
+    opacity: 1;
+}
+
+/* Slide Up */
+[data-anim="up"] {
+    transform: translateY(30px);
+}
+
+[data-anim="up"].in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Slide Left */
+[data-anim="left"] {
+    transform: translateX(-60px);
+}
+
+[data-anim="left"].in-view {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Slide Right */
+[data-anim="right"] {
+    transform: translateX(80px);
+}
+
+[data-anim="right"].in-view {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Reveal Up (Text) */
+[data-anim="reveal"] {
+    transform: translateY(100%);
+}
+
+[data-anim="reveal"].in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Zoom In */
+[data-anim="zoom"] {
+    transform: scale(0.9) rotate(2deg);
+}
+
+[data-anim="zoom"].in-view {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+}
+
+/* Scale X (Bars) */
+[data-anim="scale-x"] {
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+[data-anim="scale-x"].in-view {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+/* --- Infinite / Loop Animations --- */
+
+/* Scan Line */
+.anim-scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.3;
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--accent);
+    animation: scanLine 4s linear infinite;
+}
+
+@keyframes scanLine {
+    0% {
+        top: 0%;
+    }
+
+    100% {
+        top: 100%;
+    }
+}
+
+/* Pulse */
+.anim-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Background EXP Text Slide */
+.anim-bg-text {
+    animation: bgTextSlide 20s linear infinite;
+    white-space: nowrap;
+}
+
+@keyframes bgTextSlide {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+
+    10%,
+    90% {
+        opacity: 0.03;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+}
