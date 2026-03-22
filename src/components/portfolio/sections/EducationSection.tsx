@@ -37,7 +37,7 @@ export function EducationSection({ education }: EducationSectionProps) {
                             <span className="font-mono text-[0.85rem] tracking-widest uppercase">{edu.graduationYear} // {edu.location}</span>
                             <span className="text-[0.85rem] font-mono text-[var(--accent)]">DEGR_VAL_0{i + 1}</span>
                         </motion.div>
-                        <h3 className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-none" style={{ fontFamily: "'Syne', sans-serif" }}>{edu.degree}</h3>
+                        <h3 className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-none" style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)" }}>{edu.degree}</h3>
                         <p className="font-mono text-[0.9rem] md:text-[1rem] uppercase tracking-widest text-white/60">{edu.institution}</p>
                         {edu.relevantCourses?.length > 0 && (
                             <motion.div

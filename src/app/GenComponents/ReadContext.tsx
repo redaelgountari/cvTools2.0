@@ -19,6 +19,10 @@ export interface ReadContextType {
     userinfos: string | null;
     setUserinfos: Dispatch<SetStateAction<string | null>>;
     isLoading: boolean;
+    cvHistory: Resume[];
+    setCvHistory: Dispatch<SetStateAction<Resume[]>>;
+    refreshHistory: () => Promise<void>;
+    triggerNewVersion: () => void;
 }
 
 export const ReadContext = createContext<ReadContextType>({} as ReadContextType);

@@ -1,0 +1,228 @@
+.notebookContainer {
+  --paper-bg: #fff8e1;
+  --line-blue: #dae6f0;
+  --margin-red: #ffdbdb;
+  --ink-brown: #3d2b1f;
+  --pencil-gray: #6b6b6b;
+  --sticky-yellow: #fff385;
+  
+  min-height: 100vh;
+  background-color: #e0dcd3;
+  color: var(--ink-brown);
+  font-family: 'Patrick Hand', cursive;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.paper {
+  background-color: var(--paper-bg);
+  width: 100%;
+  max-width: 900px;
+  min-height: 1500px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  padding: 60px 40px 60px 100px;
+  background-image: 
+    linear-gradient(var(--line-blue) 1px, transparent 1px);
+  background-size: 100% 1.5rem;
+  line-height: 1.5rem;
+}
+
+.paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 80px;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--margin-red);
+}
+
+.paper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.section {
+  margin-bottom: 80px;
+  position: relative;
+}
+
+.heroName {
+  font-family: 'Caveat', cursive;
+  font-size: 4rem;
+  margin: 0;
+  display: inline-block;
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 3rem;
+  background-color: var(--ink-brown);
+  margin-left: 5px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.bio {
+  font-size: 1.5rem;
+  margin-top: 20px;
+  max-width: 600px;
+}
+
+.doodle {
+  position: absolute;
+  top: 0;
+  right: -20px;
+  width: 150px;
+  opacity: 0.7;
+}
+
+/* Skills Mind Map */
+.skillsMap {
+  height: 400px;
+  position: relative;
+}
+
+.skillBubble {
+  position: absolute;
+  background: transparent;
+  padding: 10px 20px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svgPath {
+  fill: none;
+  stroke: var(--pencil-gray);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+/* Project Sticky Notes */
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  padding: 20px 0;
+}
+
+.stickyNote {
+  background-color: var(--sticky-yellow);
+  padding: 20px;
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+  position: relative;
+  min-height: 200px;
+  transform: rotate(-2deg);
+  transition: transform 0.3s;
+}
+
+.stickyNote::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%);
+}
+
+.stickyNote h3 {
+  margin-top: 0;
+  text-decoration: underline wavy var(--pencil-gray);
+}
+
+/* Experience Timeline */
+.timelineLine {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  width: 3px;
+  background-color: var(--pencil-gray);
+  transform-origin: top;
+}
+
+.experienceItem {
+  margin-bottom: 40px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.experienceItem::before {
+  content: '';
+  position: absolute;
+  left: -19px;
+  top: 15px;
+  width: 30px;
+  height: 2px;
+  background-color: var(--pencil-gray);
+}
+
+/* Contact Form */
+.tornPage {
+  background-color: #fff;
+  padding: 40px;
+  border: 1px solid #ddd;
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 95%, 98% 97%, 95% 95%, 92% 98%, 90% 95%, 85% 97%, 80% 95%, 75% 98%, 70% 95%, 65% 97%, 60% 95%, 55% 98%, 50% 95%, 45% 97%, 40% 95%, 35% 98%, 30% 95%, 25% 97%, 20% 95%, 15% 98%, 10% 95%, 5% 97%, 0 95%);
+}
+
+.formGroup {
+  margin-bottom: 25px;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.formGroup input, .formGroup textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--ink-brown);
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.2rem;
+  padding: 5px 0;
+  outline: none;
+}
+
+.submitBtn {
+  background: transparent;
+  border: 2px solid var(--ink-brown);
+  padding: 10px 30px;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.3rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.submitBtn:hover {
+  background: rgba(0,0,0,0.05);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .paper {
+    padding: 60px 20px 60px 60px;
+  }
+  .paper::before {
+    left: 40px;
+  }
+}

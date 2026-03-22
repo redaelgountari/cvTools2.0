@@ -29,7 +29,6 @@ export function ThemeSetup() {
           background: var(--bg);
           color: var(--fg);
           font-family: 'Syne', sans-serif;
-          cursor: none;
           overflow-x: hidden;
           margin: 0;
           padding: 0;
@@ -37,21 +36,24 @@ export function ThemeSetup() {
         }
 
         /* Essential resets for navigation and layouts */
-        nav, header, footer { display: none !important; }
+        /* nav, header, footer { display: none !important; } */
         
         * {
-          cursor: none !important;
+          /* cursor: default; */
         }
 
         /* ---------------------------------
            EXPORT-SAFE UTILITY OVERRIDES
            Filters hardcoded Tailwind dark classes
            --------------------------------- */
-        :root[data-theme="light"] .bg-\\[\\#080808\\] { background-color: var(--bg) !important; }
-        :root[data-theme="light"] .bg-\\[\\#080808\\]\\/95 { background-color: rgba(244, 242, 238, 0.95) !important; }
+        :root[data-theme="light"] .bg-\\[\\#080808\\],
+        :root[data-theme="light"] .bg-\\[\\#0A0A0A\\] { background-color: var(--bg) !important; }
+        :root[data-theme="light"] .bg-\\[\\#080808\\]\\/95,
+        :root[data-theme="light"] .bg-\\[\\#0A0A0A\\]\\/95 { background-color: rgba(244, 242, 238, 0.95) !important; }
         :root[data-theme="light"] .bg-black\\/20,
         :root[data-theme="light"] .bg-black\\/40 { background-color: rgba(26,26,26,0.05) !important; }
-        :root[data-theme="light"] .border-\\[\\#080808\\] { border-color: var(--bg) !important; }
+        :root[data-theme="light"] .border-\\[\\#080808\\],
+        :root[data-theme="light"] .border-\\[\\#0A0A0A\\] { border-color: var(--bg) !important; }
         
         :root[data-theme="light"] .text-white { color: var(--fg) !important; }
         :root[data-theme="light"] .text-white\\/5 { color: rgba(26,26,26,0.05) !important; }
@@ -139,15 +141,13 @@ export function ThemeSetup() {
                   setTheme(prefersLight ? 'light' : 'dark');
               }
 
-              // Event listener binding for runtime and static export environments
-              document.addEventListener('DOMContentLoaded', function() {
-                var btn = document.getElementById('theme-toggle');
+              // Event delegation for both runtime and static environments
+              document.addEventListener('click', function(e) {
+                var btn = e.target.closest('#theme-toggle');
                 if (btn) {
-                  btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var current = document.documentElement.getAttribute('data-theme') || 'dark';
-                    setTheme(current === 'light' ? 'dark' : 'light');
-                  });
+                  e.preventDefault();
+                  var current = document.documentElement.getAttribute('data-theme') || 'dark';
+                  setTheme(current === 'light' ? 'dark' : 'light');
                 }
               });
             })();

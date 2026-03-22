@@ -24,7 +24,7 @@ export function ProfileSection({
                 whileInView={{ opacity: 0.03, x: 0 }}
                 transition={{ duration: 1.5 }}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-[30vw] md:text-[40vw] font-bold text-white leading-none -z-10 select-none"
-                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}
             >
                 BIO
             </motion.div>
@@ -45,7 +45,7 @@ export function ProfileSection({
                             viewport={{ once: true }}
                             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                             className="text-[clamp(2.5rem,8vw,6rem)] font-bold leading-[0.9] mb-8 md:mb-12 uppercase tracking-tighter"
-                            style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}
+                            style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)", fontWeight: 800 }}
                         >
                             "Missions <br className="hidden md:block" /> with intent"
                         </motion.h2>
@@ -76,7 +76,7 @@ export function ProfileSection({
                         className="flex justify-between items-center"
                     >
                         <span className="text-[0.8rem] font-mono opacity-30 uppercase">FIELD_YEARS</span>
-                        <span className="text-4xl md:text-5xl font-bold text-[var(--accent)]" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><Counter value={yearsExp} />+</span>
+                        <span className="text-4xl md:text-5xl font-bold text-[var(--accent)]" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}><Counter value={yearsExp} />+</span>
                     </motion.div>
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -86,7 +86,7 @@ export function ProfileSection({
                         className="flex justify-between items-center"
                     >
                         <span className="text-[0.8rem] font-mono opacity-30 uppercase">LOG_ENTRIES</span>
-                        <span className="text-4xl md:text-5xl font-bold text-[var(--accent)]" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><Counter value={missionsCount} />+</span>
+                        <span className="text-4xl md:text-5xl font-bold text-[var(--accent)]" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}><Counter value={missionsCount} />+</span>
                     </motion.div>
 
                     <motion.div

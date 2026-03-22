@@ -4,181 +4,268 @@ import { Resume } from '@/app/types/resume';
 import { hasContent, checkOnlinePresence } from './contentVerification';
 
 export const THEME11_COLORS = {
-  primary: '#1e3a8a',
-  secondary: '#000000',
-  accent: '#64748b',
-  text: '#1a1a1a',
-  background: '#FFFFFF',
-  border: '#cbd5e1'
+  headerBand: '#c9b99a',
+  sidebarBg:  '#e8dece',
+  pageBg:     '#faf7f2',
+  primary:    '#2c2318',
+  accent:     '#7a6050',
+  border:     '#c9b99a',
+  muted:      '#5a4a3a',
+  text:       '#3c2e20',
 };
 
-export default function Theme11({ userdata, colors = THEME11_COLORS }: { userdata: Resume, colors?: typeof THEME11_COLORS }) {
+export default function Theme11({
+  userdata,
+  colors = THEME11_COLORS,
+}: {
+  userdata: Resume;
+  colors?: typeof THEME11_COLORS;
+}) {
   const styles = StyleSheet.create({
+
+    /* ── PAGE ── */
     page: {
-      backgroundColor: colors.background,
+      flexDirection: 'column',
+      backgroundColor: colors.pageBg,
       fontFamily: 'Helvetica',
-      padding: '25 35',
-      fontSize: 11,
-      lineHeight: 1.2,
-      color: colors.text,
+      fontSize: 10,
+      color: colors.primary,
     },
-    headerContainer: {
+
+    /* ── HEADER BAND (full width) ── */
+    headerBand: {
       flexDirection: 'row',
-      marginBottom: 12,
-      paddingBottom: 8,
-      borderBottomWidth: 1.5,
-      borderBottomColor: colors.primary,
+      backgroundColor: colors.headerBand,
+      alignItems: 'center',
+      padding: '22 32 22 28',
+      minHeight: 155,
     },
-    headerLeft: {
-      flex: 1,
+    photoWrap: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      overflow: 'hidden',
+      border: `3 solid ${colors.pageBg}`,
+      marginRight: 24,
+      flexShrink: 0,
+      backgroundColor: '#a89070',
     },
     profileImage: {
-      width: 55,
-      height: 55,
-      borderRadius: 28,
-      marginLeft: 12,
+      width: 110,
+      height: 110,
+      borderRadius: 55,
       objectFit: 'cover',
     },
-    name: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      color: colors.secondary,
-      marginBottom: 4,
-      letterSpacing: 0.3,
+    photoPlaceholder: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      backgroundColor: '#a89070',
     },
-    profiletitle: {
-      fontSize: 12,
-      fontWeight: 'bold',
-      color: colors.secondary,
-      marginTop: 4,
-      letterSpacing: 0.3,
+    headerInfo: {
+      flex: 1,
     },
-    contactInfo: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      fontSize: 9.5,
-      color: colors.text,
-      marginTop: 8,
-      lineHeight: 1.3,
-    },
-    contactItem: {
-      marginRight: 6,
-    },
-    contactDivider: {
-      marginRight: 6,
-      color: colors.accent,
-    },
-    onlineLinks: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      fontSize: 8,
-      color: colors.primary,
-      marginTop: 2,
-    },
-    section: {
-      marginBottom: 13,
-    },
-    sectionTitle: {
+    headerName: {
       fontSize: 10,
-      fontWeight: 'bold',
+      fontFamily: 'Helvetica',
+      letterSpacing: 2.5,
       color: colors.primary,
+      marginBottom: 3,
       textTransform: 'uppercase',
-      marginBottom: 4,
-      letterSpacing: 0.6,
-      paddingBottom: 1,
-      borderBottomWidth: 0.5,
-      borderBottomColor: colors.border,
     },
-    summaryText: {
-      fontSize: 11,
-      color: colors.text,
-      lineHeight: 1.3,
+    headerTitle: {
+      fontSize: 22,
+      fontFamily: 'Helvetica-Bold',
+      color: colors.primary,
+      lineHeight: 1.05,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+    },
+    headerDivider: {
+      width: 36,
+      height: 1,
+      backgroundColor: colors.accent,
+      marginBottom: 8,
+      opacity: 0.6,
+    },
+    headerSummary: {
+      fontSize: 9,
+      color: colors.muted,
+      lineHeight: 1.6,
       textAlign: 'justify',
+      fontFamily: 'Helvetica',
     },
-    itemContainer: {
-      marginBottom: 6,
-    },
-    itemHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: 1,
-    },
-    itemTitleRow: {
+
+    /* ── BODY ── */
+    body: {
       flexDirection: 'row',
       flex: 1,
-      flexWrap: 'wrap',
     },
-    jobTitle: {
-      fontSize: 9.5,
-      fontWeight: 'bold',
-      color: colors.secondary,
+
+    /* ── SIDEBAR ── */
+    sidebar: {
+      width: 185,
+      backgroundColor: colors.sidebarBg,
+      padding: '18 15 28 15',
     },
-    companyName: {
-      fontSize: 10,
-      fontWeight: 'bold',
-      color: colors.text,
-    },
-    locationText: {
-      fontSize: 10,
+    sidebarSectionTitle: {
+      fontSize: 8,
+      fontFamily: 'Helvetica-Bold',
+      letterSpacing: 2,
+      textTransform: 'uppercase',
       color: colors.accent,
+      paddingBottom: 4,
+      borderBottomWidth: 0.75,
+      borderBottomColor: colors.border,
+      marginBottom: 8,
+      marginTop: 14,
+    },
+    contactRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: 6,
+    },
+    contactDot: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: colors.primary,
+      marginRight: 7,
+      marginTop: 1,
+      flexShrink: 0,
+    },
+    contactText: {
+      fontSize: 9,
+      color: colors.primary,
+      lineHeight: 1.4,
+      flex: 1,
+      fontFamily: 'Helvetica',
+    },
+    skillRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: 5,
+    },
+    skillDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.accent,
+      marginRight: 6,
+      marginTop: 3.5,
+      flexShrink: 0,
+    },
+    skillText: {
+      flex: 1,
+      fontSize: 9.5,
+      color: colors.primary,
+      lineHeight: 1.35,
+      fontFamily: 'Helvetica',
+    },
+    langText: {
+      fontSize: 9.5,
+      color: colors.primary,
+      lineHeight: 1.4,
+      fontFamily: 'Helvetica',
+      marginBottom: 3,
+    },
+    toolText: {
+      fontSize: 9.5,
+      color: colors.primary,
+      marginBottom: 3,
+      fontFamily: 'Helvetica',
+    },
+
+    /* ── MAIN ── */
+    main: {
+      flex: 1,
+      padding: '18 24 24 18',
+      backgroundColor: colors.pageBg,
+    },
+    mainSectionTitle: {
+      fontSize: 8.5,
+      fontFamily: 'Helvetica-Bold',
+      letterSpacing: 2,
+      textTransform: 'uppercase',
+      color: colors.accent,
+      paddingBottom: 4,
+      borderBottomWidth: 0.75,
+      borderBottomColor: colors.border,
+      marginBottom: 10,
+      marginTop: 14,
+    },
+
+    /* ── TIMELINE ITEM ── */
+    itemContainer: {
+      flexDirection: 'row',
+      marginBottom: 10,
+    },
+    itemBorderBar: {
+      width: 2,
+      backgroundColor: colors.border,
+      marginRight: 10,
+      borderRadius: 1,
+    },
+    itemContent: {
+      flex: 1,
+    },
+    itemTitle: {
+      fontSize: 10,
+      fontFamily: 'Helvetica-Bold',
+      color: colors.primary,
+      marginBottom: 1,
+    },
+    itemSubtitle: {
+      fontSize: 9,
+      fontFamily: 'Helvetica-Oblique',
+      color: colors.accent,
+      marginBottom: 2,
     },
     itemDate: {
       fontSize: 8.5,
       color: colors.accent,
-      marginLeft: 8,
-      whiteSpace: 'nowrap',
+      marginBottom: 4,
+      fontFamily: 'Helvetica',
     },
     bulletList: {
-      marginTop: 2,
-      paddingLeft: 10,
+      marginTop: 1,
     },
     bulletItem: {
-      fontSize: 9.5,
-      color: colors.text,
-      marginBottom: 2,
       flexDirection: 'row',
-      lineHeight: 1.25,
+      marginBottom: 2,
     },
     bullet: {
-      width: 8,
-      color: colors.text,
+      fontSize: 9,
+      color: colors.border,
+      marginRight: 4,
+      fontFamily: 'Helvetica',
+      lineHeight: 1.5,
     },
     bulletText: {
       flex: 1,
-    },
-    skillsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 2,
-    },
-    skillItem: {
-      fontSize: 10,
+      fontSize: 9,
       color: colors.text,
-      marginRight: 6,
-      marginBottom: 1,
-    },
-    languagesText: {
-      fontSize: 11,
-      color: colors.text,
-      lineHeight: 1.2,
-    },
-    projectTitle: {
-      fontSize: 10,
-      fontWeight: 'bold',
-      color: colors.secondary,
-      marginBottom: 2,
+      lineHeight: 1.5,
+      fontFamily: 'Helvetica',
     },
     projectText: {
-      fontSize: 10,
+      fontSize: 9,
       color: colors.text,
+      lineHeight: 1.5,
+      fontFamily: 'Helvetica',
       marginBottom: 2,
-      lineHeight: 1.25,
     },
     stackText: {
-      fontSize: 9.1,
+      fontSize: 8.5,
       color: colors.accent,
-      lineHeight: 1.2,
+      fontFamily: 'Helvetica-Oblique',
+      marginTop: 2,
+    },
+    onlineLinkText: {
+      fontSize: 9,
+      color: colors.primary,
+      fontFamily: 'Helvetica',
+      marginBottom: 2,
     },
   });
 
@@ -187,256 +274,301 @@ export default function Theme11({ userdata, colors = THEME11_COLORS }: { userdat
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header with Name, Contact, and Image */}
-        <View style={styles.headerContainer}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.name}>{hasContent(userdata.personalInfo.fullName) ? userdata.personalInfo.fullName : 'NAME'}</Text>
-            <Text style={styles.profiletitle}>{userdata.experience[0]?.title || ''}</Text>
 
-            <View style={styles.contactInfo}>
-              {hasContent(userdata.personalInfo.email) && (
-                <Text style={styles.contactItem}>{userdata.personalInfo.email}</Text>
-              )}
-              {hasContent(userdata.personalInfo.email) && (hasContent(userdata.personalInfo.phone) || hasContent(userdata.personalInfo.location)) && (
-                <Text style={styles.contactDivider}>|</Text>
-              )}
-              {hasContent(userdata.personalInfo.phone) && (
-                <Text style={styles.contactItem}>{userdata.personalInfo.phone}</Text>
-              )}
-              {hasContent(userdata.personalInfo.phone) && hasContent(userdata.personalInfo.location) && (
-                <Text style={styles.contactDivider}>|</Text>
-              )}
-              {hasContent(userdata.personalInfo.location) && (
-                <Text style={styles.contactItem}>{userdata.personalInfo.location}</Text>
-              )}
-              {hasContent(userdata.personalInfo.city) && (
-                <>
-                  <Text style={styles.contactDivider}>|</Text>
-                  <Text style={styles.contactItem}>{userdata.personalInfo.city}</Text>
-                </>
-              )}
-            </View>
-
-            {(hasContent(userdata.personalInfo.linkedin) || hasContent(userdata.personalInfo.github)) && (
-              <View style={styles.onlineLinks}>
-                {hasContent(userdata.personalInfo.linkedin) && (
-                  <Text style={styles.contactItem}>LinkedIn: {userdata.personalInfo.linkedin}</Text>
-                )}
-                {hasContent(userdata.personalInfo.linkedin) && hasContent(userdata.personalInfo.github) && (
-                  <Text style={styles.contactDivider}>|</Text>
-                )}
-                {hasContent(userdata.personalInfo.github) && (
-                  <Text style={styles.contactItem}>GitHub: {userdata.personalInfo.github}</Text>
-                )}
-              </View>
+        {/* ══ FULL-WIDTH HEADER BAND ══ */}
+        <View style={styles.headerBand}>
+          {/* Profile photo */}
+          <View style={styles.photoWrap}>
+            {userdata.image && userdata.image[0] ? (
+              <Image style={styles.profileImage} src={userdata.image[0]} />
+            ) : (
+              <View style={styles.photoPlaceholder} />
             )}
           </View>
 
-          {userdata.image && userdata.image[0] && (
-            <Image style={styles.profileImage} src={userdata.image[0]} />
-          )}
+          {/* Name / Job title / Summary */}
+          <View style={styles.headerInfo}>
+            <Text style={styles.headerName}>
+              {hasContent(userdata.personalInfo.fullName)
+                ? userdata.personalInfo.fullName
+                : 'NAME'}
+            </Text>
+            <Text style={styles.headerTitle}>
+              {userdata.experience[0]?.title || ''}
+            </Text>
+            <View style={styles.headerDivider} />
+            {hasContent(userdata.professionalSummary) && (
+              <Text style={styles.headerSummary}>
+                {userdata.professionalSummary}
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Professional Summary */}
-        {hasContent(userdata.professionalSummary) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Profil Professionnel</Text>
-            <Text style={styles.summaryText}>{userdata.professionalSummary}</Text>
-          </View>
-        )}
+        {/* ══ BODY ══ */}
+        <View style={styles.body}>
 
-        {/* Work Experience */}
-        {userdata.experience.length > 0 && userdata.experience.some(exp => hasContent(exp.title) || hasContent(exp.company)) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Expérience Professionnelle</Text>
-            {userdata.experience.map((exp, index) => (hasContent(exp.title) || hasContent(exp.company)) && (
-              <View key={index} style={styles.itemContainer}>
-                <View style={styles.itemHeader}>
-                  <View style={styles.itemTitleRow}>
-                    <Text style={styles.jobTitle}>{exp.title}</Text>
-                    {hasContent(exp.company) && <Text style={styles.jobTitle}> — </Text>}
-                    <Text style={styles.companyName}>{exp.company}</Text>
-                    {hasContent(exp.location) && <Text style={styles.locationText}> | {exp.location}</Text>}
+          {/* ── LEFT SIDEBAR ── */}
+          <View style={styles.sidebar}>
+
+            {/* Contact */}
+            <Text style={styles.sidebarSectionTitle}>Contact</Text>
+            {hasContent(userdata.personalInfo.phone) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.phone}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.email) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.email}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.portfolio) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.portfolio}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.website) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.website}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.location) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.location}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.city) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>{userdata.personalInfo.city}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.linkedin) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>LinkedIn: {userdata.personalInfo.linkedin}</Text>
+              </View>
+            )}
+            {hasContent(userdata.personalInfo.github) && (
+              <View style={styles.contactRow}>
+                <View style={styles.contactDot} />
+                <Text style={styles.contactText}>GitHub: {userdata.personalInfo.github}</Text>
+              </View>
+            )}
+
+            {/* Technical Skills */}
+            {userdata.skills.technical && userdata.skills.technical.some(hasContent) && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Compétences</Text>
+                {userdata.skills.technical.filter(hasContent).map((skill, i) => (
+                  <View key={i} style={styles.skillRow}>
+                    <View style={styles.skillDot} />
+                    <Text style={styles.skillText}>{skill}</Text>
                   </View>
-                  <Text style={styles.itemDate}>
-                    {exp.startDate} {exp.startDate && exp.endDate && ' - '} {exp.endDate || (exp.startDate ? 'Present' : '')}
-                  </Text>
-                </View>
+                ))}
+              </>
+            )}
 
-                {exp.responsibilities && exp.responsibilities.length > 0 && (
-                  <View style={styles.bulletList}>
-                    {exp.responsibilities.map((resp, idx) => hasContent(resp) && (
-                      <View key={idx} style={styles.bulletItem}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{resp}</Text>
+            {/* Soft Skills */}
+            {userdata.skills.soft && userdata.skills.soft.some(hasContent) && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Qualités</Text>
+                {userdata.skills.soft.filter(hasContent).map((skill, i) => (
+                  <View key={i} style={styles.skillRow}>
+                    <View style={styles.skillDot} />
+                    <Text style={styles.skillText}>{skill}</Text>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Tools */}
+            {userdata.tools && userdata.tools.some(hasContent) && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Outils & Technologies</Text>
+                {userdata.tools.filter(hasContent).map((tool, i) => (
+                  <Text key={i} style={styles.toolText}>• {tool}</Text>
+                ))}
+              </>
+            )}
+
+            {/* Languages */}
+            {userdata.skills.languages && userdata.skills.languages.some(hasContent) && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Langues</Text>
+                {userdata.skills.languages.filter(hasContent).map((lang, i) => (
+                  <Text key={i} style={styles.langText}>• {lang}</Text>
+                ))}
+              </>
+            )}
+
+            {/* Hobbies */}
+            {userdata.hobbies && userdata.hobbies.some(hasContent) && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Centres d'intérêt</Text>
+                {userdata.hobbies.filter(hasContent).map((hobby, i) => (
+                  <View key={i} style={styles.skillRow}>
+                    <View style={styles.skillDot} />
+                    <Text style={styles.skillText}>{hobby}</Text>
+                  </View>
+                ))}
+              </>
+            )}
+
+            {/* Online Presence */}
+            {hasOnlinePresence && (
+              <>
+                <Text style={styles.sidebarSectionTitle}>Présence en ligne</Text>
+                {hasContent(userdata.onlinePresence?.twitter) && (
+                  <Text style={styles.onlineLinkText}>Twitter: {userdata.onlinePresence.twitter}</Text>
+                )}
+                {hasContent(userdata.onlinePresence?.stackOverflow) && (
+                  <Text style={styles.onlineLinkText}>Stack Overflow: {userdata.onlinePresence.stackOverflow}</Text>
+                )}
+                {hasContent(userdata.onlinePresence?.medium) && (
+                  <Text style={styles.onlineLinkText}>Medium: {userdata.onlinePresence.medium}</Text>
+                )}
+              </>
+            )}
+
+          </View>
+
+          {/* ── RIGHT MAIN ── */}
+          <View style={styles.main}>
+
+            {/* Work Experience */}
+            {userdata.experience.length > 0 &&
+              userdata.experience.some(exp => hasContent(exp.title) || hasContent(exp.company)) && (
+              <>
+                <Text style={styles.mainSectionTitle}>Expérience Professionnelle</Text>
+                {userdata.experience.map((exp, index) =>
+                  (hasContent(exp.title) || hasContent(exp.company)) && (
+                    <View key={index} style={styles.itemContainer}>
+                      <View style={styles.itemBorderBar} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{exp.title}</Text>
+                        <Text style={styles.itemSubtitle}>
+                          {[exp.company, exp.location].filter(hasContent).join(' | ')}
+                        </Text>
+                        <Text style={styles.itemDate}>
+                          {exp.startDate}
+                          {exp.startDate && exp.endDate ? ' - ' : ''}
+                          {exp.endDate || (exp.startDate ? 'Present' : '')}
+                        </Text>
+                        {exp.responsibilities && exp.responsibilities.length > 0 && (
+                          <View style={styles.bulletList}>
+                            {exp.responsibilities.map((resp, idx) =>
+                              hasContent(resp) && (
+                                <View key={idx} style={styles.bulletItem}>
+                                  <Text style={styles.bullet}>•</Text>
+                                  <Text style={styles.bulletText}>{resp}</Text>
+                                </View>
+                              )
+                            )}
+                          </View>
+                        )}
                       </View>
-                    ))}
-                  </View>
+                    </View>
+                  )
                 )}
-              </View>
-            ))}
-          </View>
-        )}
+              </>
+            )}
 
-        {/* Education */}
-        {userdata.education.length > 0 && userdata.education.some(edu => hasContent(edu.degree) || hasContent(edu.institution)) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>ÉDUCATION</Text>
-            {userdata.education.map((edu, index) => (hasContent(edu.degree) || hasContent(edu.institution)) && (
-              <View key={index} style={styles.itemContainer}>
-                <View style={styles.itemHeader}>
-                  <Text style={styles.jobTitle}>{edu.degree}</Text>
-                  <Text style={styles.itemDate}>
-                    {edu.graduationYear || edu.endDate || ''}
-                  </Text>
-                </View>
-                <Text style={styles.projectText}>
-                  {edu.institution}
-                  {hasContent(edu.location) && ` | ${edu.location}`}
-                </Text>
-                {hasContent(edu.fieldOfStudy) && (
-                  <Text style={styles.projectText}>{edu.fieldOfStudy}</Text>
+            {/* Education */}
+            {userdata.education.length > 0 &&
+              userdata.education.some(edu => hasContent(edu.degree) || hasContent(edu.institution)) && (
+              <>
+                <Text style={styles.mainSectionTitle}>Formations</Text>
+                {userdata.education.map((edu, index) =>
+                  (hasContent(edu.degree) || hasContent(edu.institution)) && (
+                    <View key={index} style={styles.itemContainer}>
+                      <View style={styles.itemBorderBar} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{edu.degree}</Text>
+                        <Text style={styles.itemSubtitle}>
+                          {[edu.institution, edu.location].filter(hasContent).join(' | ')}
+                        </Text>
+                        <Text style={styles.itemDate}>
+                          {edu.graduationYear || edu.endDate || ''}
+                        </Text>
+                        {hasContent(edu.fieldOfStudy) && (
+                          <Text style={styles.projectText}>{edu.fieldOfStudy}</Text>
+                        )}
+                        {hasContent(edu.gpa) && (
+                          <Text style={styles.projectText}>GPA: {edu.gpa}</Text>
+                        )}
+                      </View>
+                    </View>
+                  )
                 )}
-                {hasContent(edu.gpa) && (
-                  <Text style={styles.projectText}>GPA: {edu.gpa}</Text>
+              </>
+            )}
+
+            {/* Projects */}
+            {userdata.projects.length > 0 &&
+              userdata.projects.some(p => hasContent(p.title) || hasContent(p.description)) && (
+              <>
+                <Text style={styles.mainSectionTitle}>Projets</Text>
+                {userdata.projects.map((project, index) =>
+                  (hasContent(project.title) || hasContent(project.description)) && (
+                    <View key={index} style={styles.itemContainer}>
+                      <View style={styles.itemBorderBar} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{project.title}</Text>
+                        {hasContent(project.role) && (
+                          <Text style={styles.itemSubtitle}>{project.role}</Text>
+                        )}
+                        {hasContent(project.description) && (
+                          <Text style={styles.projectText}>{project.description}</Text>
+                        )}
+                        {(project.technologiesUsed?.some(hasContent) || project.technologies?.some(hasContent)) && (
+                          <Text style={styles.stackText}>
+                            Stack: {(project.technologiesUsed?.filter(hasContent) || project.technologies?.filter(hasContent) || []).join(', ')}
+                          </Text>
+                        )}
+                        {hasContent(project.github) && (
+                          <Text style={styles.projectText}>GitHub: {project.github}</Text>
+                        )}
+                        {(hasContent(project.link) || hasContent(project.url)) && (
+                          <Text style={styles.projectText}>Lien: {project.link || project.url}</Text>
+                        )}
+                      </View>
+                    </View>
+                  )
                 )}
-              </View>
-            ))}
-          </View>
-        )}
+              </>
+            )}
 
-        {/* Technical Skills */}
-        {userdata.skills.technical && userdata.skills.technical.length > 0 && userdata.skills.technical.some(hasContent) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>COMPÉTENCES TECHNIQUES</Text>
-            <View style={styles.skillsGrid}>
-              {userdata.skills.technical.map((skill, index) => hasContent(skill) && (
-                <Text key={index} style={styles.skillItem}>• {skill}</Text>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Tools */}
-        {userdata.tools && userdata.tools.length > 0 && userdata.tools.some(hasContent) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tools & Technologies</Text>
-            <View style={styles.skillsGrid}>
-              {userdata.tools.map((tool, index) => hasContent(tool) && (
-                <Text key={index} style={styles.skillItem}>• {tool}</Text>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Languages */}
-        {userdata.skills.languages && userdata.skills.languages.length > 0 && userdata.skills.languages.some(hasContent) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>LANGUES</Text>
-            <Text style={styles.languagesText}>
-              {userdata.skills.languages.filter(hasContent).join(', ')}
-            </Text>
-          </View>
-        )}
-
-        {/* Projects */}
-        {userdata.projects.length > 0 && userdata.projects.some(p => hasContent(p.title) || hasContent(p.description)) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PROJECTS</Text>
-            {userdata.projects.map((project, index) => (hasContent(project.title) || hasContent(project.description)) && (
-              <View key={index} style={styles.itemContainer}>
-                <Text style={styles.projectTitle}>{project.title}</Text>
-                {hasContent(project.role) && <Text style={styles.projectText}>Role: {project.role}</Text>}
-                {hasContent(project.description) && <Text style={styles.projectText}>{project.description}</Text>}
-                {project.technologiesUsed && project.technologiesUsed.length > 0 && project.technologiesUsed.some(hasContent) && (
-                  <Text style={styles.stackText}>
-                    Stack: {project.technologiesUsed.filter(hasContent).join(', ')}
-                  </Text>
+            {/* Certifications */}
+            {userdata.certifications.length > 0 &&
+              userdata.certifications.some(c => hasContent(c.name)) && (
+              <>
+                <Text style={styles.mainSectionTitle}>Certifications</Text>
+                {userdata.certifications.map((cert, index) =>
+                  hasContent(cert.name) && (
+                    <View key={index} style={styles.itemContainer}>
+                      <View style={styles.itemBorderBar} />
+                      <View style={styles.itemContent}>
+                        <Text style={styles.itemTitle}>{cert.name}</Text>
+                        <Text style={styles.itemSubtitle}>
+                          {[cert.issuer, cert.year].filter(hasContent).join(' | ')}
+                          {hasContent(cert.expiryDate) ? ` | Valide jusqu'au ${cert.expiryDate}` : ''}
+                        </Text>
+                      </View>
+                    </View>
+                  )
                 )}
-                {project.technologies && project.technologies.length > 0 && project.technologies.some(hasContent) && (
-                  <Text style={styles.stackText}>
-                    Stack: {project.technologies.filter(hasContent).join(', ')}
-                  </Text>
-                )}
-                {hasContent(project.github) && <Text style={styles.projectText}>GitHub: {project.github}</Text>}
-                {(hasContent(project.link) || hasContent(project.url)) && (
-                  <Text style={styles.projectText}>Link: {project.link || project.url}</Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
+              </>
+            )}
 
-        {/* Soft Skills */}
-        {userdata.skills.soft && userdata.skills.soft.length > 0 && userdata.skills.soft.some(hasContent) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Soft Skills</Text>
-            <View style={styles.skillsGrid}>
-              {userdata.skills.soft.map((skill, index) => hasContent(skill) && (
-                <Text key={index} style={styles.skillItem}>• {skill}</Text>
-              ))}
-            </View>
           </View>
-        )}
-
-        {/* Certifications */}
-        {userdata.certifications.length > 0 && userdata.certifications.some(c => hasContent(c.name)) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Certifications</Text>
-            {userdata.certifications.map((cert, index) => hasContent(cert.name) && (
-              <View key={index} style={styles.itemContainer}>
-                <Text style={styles.projectTitle}>{cert.name}</Text>
-                <Text style={styles.projectText}>
-                  {cert.issuer}
-                  {hasContent(cert.year) && ` | ${cert.year}`}
-                  {hasContent(cert.expiryDate) && ` | Valid until: ${cert.expiryDate}`}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Online Presence */}
-        {hasOnlinePresence && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Online Presence</Text>
-            <View style={styles.skillsGrid}>
-              {hasContent(userdata.personalInfo.linkedin) && (
-                <Text style={styles.skillItem}>LinkedIn: {userdata.personalInfo.linkedin}</Text>
-              )}
-              {hasContent(userdata.personalInfo.github) && (
-                <Text style={styles.skillItem}>GitHub: {userdata.personalInfo.github}</Text>
-              )}
-              {hasContent(userdata.personalInfo.portfolio) && (
-                <Text style={styles.skillItem}>Portfolio: {userdata.personalInfo.portfolio}</Text>
-              )}
-              {hasContent(userdata.personalInfo.website) && (
-                <Text style={styles.skillItem}>Website: {userdata.personalInfo.website}</Text>
-              )}
-              {hasContent(userdata.onlinePresence.twitter) && (
-                <Text style={styles.skillItem}>Twitter: {userdata.onlinePresence.twitter}</Text>
-              )}
-              {hasContent(userdata.onlinePresence.stackOverflow) && (
-                <Text style={styles.skillItem}>Stack Overflow: {userdata.onlinePresence.stackOverflow}</Text>
-              )}
-              {hasContent(userdata.onlinePresence.medium) && (
-                <Text style={styles.skillItem}>Medium: {userdata.onlinePresence.medium}</Text>
-              )}
-            </View>
-          </View>
-        )}
-
-        {/* Hobbies */}
-        {userdata.hobbies && userdata.hobbies.length > 0 && userdata.hobbies.some(hasContent) && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Interests & Hobbies</Text>
-            <View style={styles.skillsGrid}>
-              {userdata.hobbies.map((hobby, index) => hasContent(hobby) && (
-                <Text key={index} style={styles.skillItem}>• {hobby}</Text>
-              ))}
-            </View>
-          </View>
-        )}
+        </View>
       </Page>
     </Document>
   );

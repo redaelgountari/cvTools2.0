@@ -43,8 +43,8 @@ export function ProjectsSection({ projects, setLightboxData }: ProjectsSectionPr
                             <div className="flex-1">
                                 <div className="flex flex-wrap justify-between items-center gap-6 md:gap-10">
                                     <div className="flex gap-6 md:gap-10 items-center">
-                                        <span className="text-2xl font-bold text-[var(--accent)] opacity-20" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>0{i + 1}</span>
-                                        <h3 className="text-4xl md:text-5xl font-bold uppercase tracking-tight group-hover:text-[var(--accent)] transition-colors" style={{ fontFamily: "'Syne', sans-serif" }}>{p.title}</h3>
+                                        <span className="text-2xl font-bold text-[var(--accent)] opacity-20" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}>0{i + 1}</span>
+                                        <h3 className="text-4xl md:text-5xl font-bold uppercase tracking-tight group-hover:text-[var(--accent)] transition-colors" style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)" }}>{p.title}</h3>
                                     </div>
                                     <div className="flex flex-wrap gap-3 text-[0.85rem] font-mono opacity-20 group-hover:opacity-60 uppercase">
                                         {(p.technologiesUsed || p.technologies || []).map((t: string) => <span key={t} className="border border-white/10 px-2.5 py-1">[{t}]</span>)}

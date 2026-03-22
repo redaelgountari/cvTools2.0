@@ -43,7 +43,7 @@ export function ExtraSection({
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
                             {certifications.map((c: any, i: number) => (
                                 <div key={i} className="border-l border-white/5 pl-8 py-2">
-                                    <h4 className="text-2xl font-bold uppercase tracking-tight leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>{c.name}</h4>
+                                    <h4 className="text-2xl font-bold uppercase tracking-tight leading-tight" style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)" }}>{c.name}</h4>
                                     <p className="font-mono text-[0.85rem] text-white/30 uppercase mt-4">{c.issuer} // {c.year}</p>
                                     {c.expiryDate && <p className="font-mono text-[0.75rem] text-white/20 uppercase mt-1">EXPIRES: {c.expiryDate}</p>}
                                 </div>
@@ -65,7 +65,7 @@ export function ExtraSection({
                             {publications.map((pub: any, i: number) => (
                                 <div key={i} className="border-l-2 border-[var(--accent)]/20 pl-8 py-2 group hover:border-[var(--accent)] transition-colors">
                                     <div className="flex items-baseline justify-between gap-6 flex-wrap">
-                                        <h4 className="text-xl font-bold uppercase tracking-tight leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>{pub.title}</h4>
+                                        <h4 className="text-xl font-bold uppercase tracking-tight leading-tight" style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)" }}>{pub.title}</h4>
                                         <span className="font-mono text-[0.8rem] text-[var(--accent)] uppercase shrink-0">{pub.year || pub.date}</span>
                                     </div>
                                     <p className="font-mono text-[0.85rem] text-white/30 uppercase mt-2">{pub.publicationType}{pub.publisher ? ` // ${pub.publisher}` : ''}</p>

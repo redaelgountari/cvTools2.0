@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/render
 import { Resume } from '@/app/types/resume';
 import { hasContent, checkOnlinePresence } from './contentVerification';
 
-export const THEME11_COLORS = {
+export const THEME12_COLORS = {
   primary: '#0f2557',
   secondary: '#0f172a',
   accent: '#3b6fd4',
@@ -16,7 +16,7 @@ export const THEME11_COLORS = {
   gold: '#c9a84c',
 };
 
-export default function Theme11({ userdata, colors = THEME11_COLORS }: { userdata: Resume, colors?: typeof THEME11_COLORS }) {
+export default function Theme12({ userdata, colors = THEME12_COLORS }: { userdata: Resume, colors?: typeof THEME12_COLORS }) {
   const styles = StyleSheet.create({
     page: {
       backgroundColor: colors.background,

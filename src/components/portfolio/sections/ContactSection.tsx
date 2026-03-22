@@ -10,7 +10,7 @@ interface ContactSectionProps {
 export function ContactSection({ personalInfo, onlinePresence, displayName }: ContactSectionProps) {
     return (
         <section id="contact" className="min-h-[70vh] md:min-h-[80vh] flex flex-col items-center justify-center px-6 sm:px-8 md:px-20 py-24 md:py-32 text-center relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none opacity-[0.02] flex items-center justify-center text-[20vw] md:text-[30vw] font-bold" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            <div className="absolute inset-0 pointer-events-none opacity-[0.02] flex items-center justify-center text-[20vw] md:text-[30vw] font-bold" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}>
                 END_LOG
             </div>
 
@@ -28,7 +28,7 @@ export function ContactSection({ personalInfo, onlinePresence, displayName }: Co
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 className="text-[clamp(2.5rem,10vw,10rem)] font-bold leading-[0.8] text-white mb-16 md:mb-20 tracking-tighter uppercase relative z-10"
-                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}
             >
                 <div className="overflow-hidden">
                     <motion.div

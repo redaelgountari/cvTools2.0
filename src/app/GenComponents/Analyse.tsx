@@ -22,7 +22,7 @@ export default function Analyse() {
   const [response, setResponse] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { AnlysedCV, settings, userData, userinfos, setAnlysedCV } = useContext(ReadContext);
+  const { AnlysedCV, settings, userData, userinfos, setAnlysedCV, cvHistory, setCvHistory, triggerNewVersion } = useContext(ReadContext);
   const [activeSection, setActiveSection] = useState('personal');
   const [uploading, setUploading] = useState<boolean>(false);
 
@@ -90,6 +90,8 @@ export default function Analyse() {
 
       logger.log('Parsed data:', { ...parsedData, image: userData.image })
       const normalizedData = normalizeResumeData({ ...parsedData, image: userData.image });
+
+      triggerNewVersion();
       setAnlysedCV(normalizedData);
       setUploading(true);
       setResponse(normalizedData);

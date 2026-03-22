@@ -7,6 +7,8 @@ import GalleryPortfolio from "@/components/portfolio/GalleryPortfolio";
 import CustomCursor from "@/components/portfolio/CustomCursor";
 import ReadContextProvider from "@/app/GenComponents/ReadContextProvider";
 import { ThemeSetup } from "@/components/portfolio/ThemeSetup";
+import { CustomizationProvider } from "@/components/portfolio/CustomizationContext";
+import { PortfolioCustomizer } from "@/components/portfolio/PortfolioCustomizer";
 
 export default function PortfolioPage() {
   const [activeTemplate, setActiveTemplate] = useState<"editorial" | "clean" | "gallery">("editorial");
@@ -54,7 +56,20 @@ export default function PortfolioPage() {
           ))}
         </div>
 
-        {activeTemplate === "editorial" && <MagazinePortfolio />}
+        {activeTemplate === "editorial" && (
+          <CustomizationProvider
+            disableThemeMode={true}
+            initialLightVars={{
+              '--bg': '#f4f2ee',
+              '--fg': '#1a1a1a',
+              '--accent': '#d93800',
+              '--border': 'rgba(26,26,26,0.15)'
+            }}
+          >
+            <MagazinePortfolio />
+            <PortfolioCustomizer />
+          </CustomizationProvider>
+        )}
         {activeTemplate === "clean" && <CleanPortfolio />}
         {activeTemplate === "gallery" && <GalleryPortfolio />}
       </main>

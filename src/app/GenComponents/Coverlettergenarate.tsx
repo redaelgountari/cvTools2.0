@@ -205,10 +205,11 @@ export default function CoverLetterGenerate() {
                     {/* Left Column - Input and Output */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Input Card */}
-                        <Card className="shadow-lg border-2">
-                            <CardHeader className="pb-4">
+                        <Card className="shadow-xl border-2 bg-card/50 backdrop-blur-sm overflow-hidden">
+                            <CardHeader className="pb-4 relative">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-transparent" />
                                 <CardTitle className="text-xl flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5 text-yellow-500" />
+                                    <Sparkles className="h-5 w-5 text-amber-500" />
                                     Job Details
                                 </CardTitle>
                                 <CardDescription>
@@ -309,8 +310,9 @@ export default function CoverLetterGenerate() {
 
                         {/* Output Card */}
                         {coverLetter && (
-                            <Card className="shadow-lg border-2">
-                                <CardHeader className="pb-4">
+                            <Card className="shadow-xl border-2 bg-card/50 backdrop-blur-sm overflow-hidden">
+                                <CardHeader className="pb-4 relative">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600/20 via-green-600/20 to-transparent" />
                                     <div className="flex justify-between items-start flex-wrap gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-xl">

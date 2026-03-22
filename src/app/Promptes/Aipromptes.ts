@@ -145,136 +145,243 @@ export const prompteCVUpdate = (cvData: string, instructions: string, language: 
     Now provide the updated CV JSON:`;
 }
 
-export const prompteCoverLetter = (cvData: string, jobAnnouncement: string, lineLimit: number, language: string = 'english') => {
-  return `You are a professional career advisor. Generate a cover letter and match analysis.
+export const prompteCoverLetter = (
+  cvData: string,
+  jobAnnouncement: string,
+  lineLimit: number,
+  language: string = 'English'
+) => {
+  const safeCvData = cvData?.trim()
+    ? cvData
+    : '[WARNING: CV data is empty. Set all match scores to 0 and note "No CV data provided" in each justification.]';
 
-REQUIRED FORMAT:
-You MUST return your response in two distinct parts exactly as shown below:
-1. A valid JSON object for the analysis
-2. The cover letter text wrapped in <cover_letter> tags
+  const safeJobData = jobAnnouncement?.trim()
+    ? jobAnnouncement
+    : '[WARNING: Job announcement is empty. Set all match scores to 0 and note "No job data provided" in each justification.]';
 
-EXAMPLE FORMAT:
+  return `You are an expert career advisor and professional cover letter writer with 15+ years of experience in talent acquisition and HR consulting.
+
+## LANGUAGE REQUIREMENT (HIGHEST PRIORITY)
+ALL output — including the JSON justification strings AND the cover letter — MUST be written entirely in **${language}**.
+Do not mix languages. Do not default to English unless ${language} is English.
+
+---
+
+## YOUR TASK
+You will receive a candidate's CV and a job announcement. You must produce exactly two outputs in this exact order:
+1. A JSON object containing the match analysis
+2. A cover letter wrapped in <cover_letter></cover_letter> tags
+
+---
+
+## STRICT OUTPUT FORMAT
+
+Your response MUST begin immediately with the opening curly brace { of the JSON object.
+Do NOT write any introduction, explanation, preamble, or commentary before or after the two required blocks.
+
+### Block 1 — JSON Analysis Object
+
+Output a single valid JSON object with EXACTLY these 7 fields and no others:
+
 {
-  "matchScore": 75,
-  "skillsMatch": 80,
-  "experienceMatch": 70,
-  "educationMatch": 75,
-  "skillsJustification": "Brief one-line explanation of skills match",
-  "experienceJustification": "Brief one-line explanation of experience match",
-  "educationJustification": "Brief one-line explanation of education match"
+  "matchScore": <integer 0-100>,
+  "skillsMatch": <integer 0-100>,
+  "experienceMatch": <integer 0-100>,
+  "educationMatch": <integer 0-100>,
+  "skillsJustification": "<plain text, max 120 characters, no double quotes, no newlines>",
+  "experienceJustification": "<plain text, max 120 characters, no double quotes, no newlines>",
+  "educationJustification": "<plain text, max 120 characters, no double quotes, no newlines>"
 }
+
+Scoring Rules:
+- skillsMatch: percentage of required job skills found in the CV (0 = none, 100 = all)
+- experienceMatch: evaluate based on (1) total DURATION of experiences in months/years 
+  as explicitly stated in the CV — do NOT count the number of positions or internships 
+  as years, (2) relevance of each experience to the job domain, and (3) seniority level. 
+  Example: 3 internships of 2 months each = ~6 months total experience, NOT 3 years. 
+  If no explicit dates or durations are provided for an experience, do not assume its length.
+- educationMatch: alignment of candidate education with job requirements (0-100)
+- matchScore: weighted average = (skillsMatch x 0.45) + (experienceMatch x 0.35) + (educationMatch x 0.20), rounded to nearest integer
+- If a CV section is entirely missing, set that score to 0 and write "Not provided in CV" in the justification (translated to ${language})
+- Justification strings: plain text only, no Markdown, no double quotes, no line breaks, max 120 characters
+
+Do NOT include the cover letter inside the JSON block.
+
+### Block 2 — Cover Letter
+
+Immediately after the closing } of the JSON, output the cover letter wrapped exactly as:
 
 <cover_letter>
-Write the entire cover letter here. You can use standard formatting.
+[cover letter content here]
 </cover_letter>
 
-CRITICAL RULES:
-- Do NOT include the cover letter text inside the JSON.
-- The JSON should ONLY contain the analysis metrics.
-- Keep the justification strings short, plain text, and without double quotes or newlines.
+Cover Letter Requirements:
+- Length: approximately ${lineLimit} lines (1 line = 10-12 words; stay within 10% of target)
+- Tone: professional, formal, and warm — avoid generic openers like "I am writing to apply"
+- Structure: Opening paragraph, Relevant skills and experience, Cultural and role fit, Strong closing with call to action
+- Use plain text only — no Markdown, no bullet points, no bold, no headers
+- Do NOT invent or fabricate any fact not explicitly present in the CV
+- Do NOT copy-paste chunks of the CV verbatim — synthesize and tailor
+- Use the candidate's name from the CV for the closing signature
+- If no hiring manager name is available, use a professional generic salutation in ${language}
 
-COVER LETTER REQUIREMENTS:
-- Approximately ${lineLimit} lines worth of content
-- Professional and formal tone
-- Highlight relevant skills and experiences from CV
-- Show enthusiasm for the role
-- Strong opening and closing
-- **Language**: The entire cover letter and analysis justifications MUST be in ${language}.
+---
 
-CV DATA:
-${cvData}
+## INPUT DATA
 
-JOB ANNOUNCEMENT:
-${jobAnnouncement}
+### CV DATA:
+${safeCvData}
 
-IMPORTANT: Follow the requested format exactly.`;
-}
+### JOB ANNOUNCEMENT:
+${safeJobData}
 
-export const prompteResumeTailoring = (cvData: string, jobAnnouncement: string, language: string = 'French') => {
-  return `
-You are a highly skilled professional resume writer and career analyst.
+---
 
-### TASK:
-1. Analyze the match between the CANDIDATE PROFILE (User Data) and the TARGET JOB (Job Description).
-2. ALWAYS generate a professional resume tailored to the job.
-   - If the match is strong, emphasize relevant experience and skills.
-   - If the match is weak, focus on transferable skills and soft skills. Do NOT lie, but present the candidate in the best possible light for this specific role.
-3. Calculate honest match statistics.
+## SELF-VERIFICATION
+Before outputting, silently verify:
+- Output starts directly with { and no preamble
+- JSON has exactly 7 fields with correct integer and string types
+- matchScore equals (skillsMatch x 0.45) + (experienceMatch x 0.35) + (educationMatch x 0.20) rounded
+- No justification exceeds 120 characters or contains double quotes or newlines
+- Cover letter appears after the JSON, inside cover_letter tags
+- Cover letter is approximately ${lineLimit} lines with no Markdown
+- No facts are invented beyond what the CV provides
+- All text is in ${language}
 
-### 1. CANDIDATE PROFILE (USER DATA):
-${cvData}
+Do not output the checklist. Only output the JSON block followed by the cover letter.`;
+};
 
-${jobAnnouncement ? `### 2. TARGET JOB DESCRIPTION:\n${jobAnnouncement}\n` : ''}
+export const prompteResumeTailoring = (
+  cvData: string,
+  jobAnnouncement: string,
+  language: string = 'French'
+) => {
+  return `CRITICAL: Return ONLY raw JSON. No text before. No text after.
+Start with { and end with }. Any other output breaks the parser.
 
-### CRITICAL RULES (VIOLATION = FAILURE):
+You are a highly skilled professional resume writer and career analyst. Write everything in ${language}.
 
-**A. MATCH ANALYSIS (HONESTY IS PARAMOUNT):**
-- Evaluate the match honestly.
-- If the candidate is a "Software Engineer" and the job is "Nurse", the Match Score should be low, but you MUST still generate the best possible resume (highlighting attention to detail, quick learning, etc.).
+TASK:
+1. Analyze the match between the candidate profile and the target job.
+2. Generate a tailored resume that reframes existing content — never remove, never fabricate.
 
-**B. PERSONAL INFORMATION (STRICT PRESERVATION):**
-- **You must copy the following fields EXACTLY from the CANDIDATE PROFILE:**
-  - Full Name
-  - Email
-  - Phone Number
-  - Location/Address
-  - LinkedIn/Website Links
-- **DO NOT** change, "optimize", or "correct" the contact details.
+SCORING RULES:
 
-**C. RESUME CONTENT:**
-- **Tailoring:** Rewrite the Professional Summary and adapt the bullet points of Experience to align with the Job Description keywords where truthful.
-- **Language:** Write the resume in **${language}**.
+skillsMatch (0-100):
+- Count how many DISTINCT skills required by the job are present in the CV (exact or equivalent)
+- Score = (matched skills / total required skills) * 100, rounded to integer
 
-### OUTPUT FORMAT:
+experienceMatch (0-100):
+- Sum ONLY explicit date ranges in the CV
+- 0 months = 0 | 1–3 months = 20 | 4–6 months = 35 | 7–12 months = 50
+- 1–2 years = 65 | 2–3 years = 75 | 3–5 years = 85 | 5+ years = 95
+- Add up to +10 bonus if domain is directly relevant. Cap at 100.
 
-EXAMPLE FORMAT:
+educationMatch (0-100):
+- Evaluate domain relevance, NOT keyword matching
+- Computer science, software engineering, IT, web dev → 70-90 for any dev role
+- Completely unrelated field → 10-30
+- Licence/Bac+3 = +10 bonus over base. Cap at 100.
+- NEVER score 0 because degree title lacks job-specific keywords
+
+matchScore: (skillsMatch*0.45 + experienceMatch*0.35 + educationMatch*0.20) rounded to integer
+
+PRESERVATION RULES:
+- Keep ALL education entries — never remove any
+- Keep ALL experience entries — never remove any
+- Keep ALL skills — add job-relevant ones if truthful, never remove
+- Keep ALL tools from CV in the tools array
+- Keep ALL projects from CV in the projects array
+- Keep github/linkedin/website links exactly as written
+- The "company" field must be the employer name, never the job title
+- Never generate soft skills not explicitly stated in the CV
+- Never invent responsibilities, skills, tools, or credentials
+
+REWRITING RULES:
+- professionalSummary: rewrite to align with job using real background only
+- jobSearchTitle: the exact job title from the job offer
+- experience responsibilities: rephrase to emphasize relevance — same facts, sharper framing
+- Extract languages spoken (French, English, Arabic etc.) into skills.languages array
+
+JSON STRUCTURE — return exactly this shape:
 {
-  "matchScore": 75,
-  "skillsMatch": 80,
-  "experienceMatch": 70,
-  "educationMatch": 75,
-  "skillsJustification": "Brief one-line explanation of skills match",
-  "experienceJustification": "Brief one-line explanation of experience match",
-  "educationJustification": "Brief one-line explanation of education match"
-}
-  
-**IMPORTANT: Return ONLY valid JSON.**
-The JSON structure must follow this format:
-
-{
-  "resume": {
-    "personalInfo": {
-      "fullName": "Exact string from input",
-      "email": "Exact string from input",
-      "phone": "Exact string from input",
-      "location": "Exact string from input",
-      "linkedin": "Exact string from input"
-    },
-    "professionalSummary": "REWRITTEN summary tailored to the target job...",
-    "skills": { 
-        "technical": ["Relevant skill 1", "Relevant skill 2"]
-    },
-    "experience": [ 
-        {
-            "title": "...",
-            "company": "...",
-            "responsibilities": ["REWRITTEN bullet point using keywords from job description...", "..."]
-        }
-    ]
-  },
   "analysis": {
     "matchScore": 0,
     "skillsMatch": 0,
     "experienceMatch": 0,
     "educationMatch": 0,
-    "skillsJustification": "Brief explanation...",
-    "experienceJustification": "Brief explanation...",
-    "educationJustification": "Brief explanation..."
+    "skillsJustification": "plain text max 120 chars",
+    "experienceJustification": "plain text max 120 chars",
+    "educationJustification": "plain text max 120 chars"
+  },
+  "resume": {
+    "personalInfo": {
+      "fullName": "Exact from CV",
+      "email": "Exact from CV",
+      "phone": "Exact from CV",
+      "location": "Exact from CV",
+      "linkedin": "Exact from CV or N/A",
+      "github": "Exact from CV or N/A",
+      "website": "N/A",
+      "portfolio": "N/A",
+      "title": "Job title from offer"
+    },
+    "professionalSummary": "Rewritten using real background...",
+    "jobSearchTitle": "Exact job title from the offer",
+    "skills": {
+      "technical": ["All CV skills preserved, job-relevant ones first"],
+      "soft": ["Only soft skills explicitly stated in CV"],
+      "languages": ["French", "English", "Arabic"]
+    },
+    "tools": ["All tools from CV — Git, Docker, Figma, VS Code, etc."],
+    "experience": [
+      {
+        "title": "Exact from CV",
+        "company": "Employer name — never the job title",
+        "location": "Exact from CV or N/A",
+        "startDate": "YYYY-MM from CV",
+        "endDate": "YYYY-MM from CV or Present",
+        "responsibilities": ["Rephrased bullet using real facts only"]
+      }
+    ],
+    "education": [
+      {
+        "degree": "Exact from CV",
+        "institution": "Exact from CV",
+        "location": "Exact from CV or N/A",
+        "graduationYear": "YYYY from CV",
+        "fieldOfStudy": "Inferred from degree name",
+        "relevantCourses": []
+      }
+    ],
+    "projects": [
+      {
+        "title": "Exact from CV",
+        "description": "Exact from CV",
+        "technologiesUsed": ["tech1", "tech2"],
+        "github": "Exact from CV or N/A",
+        "role": "Developer",
+        "images": []
+      }
+    ],
+    "certifications": [],
+    "publications": [],
+    "awards": [],
+    "volunteerExperience": [],
+    "hobbies": [],
+    "onlinePresence": {
+      "twitter": "N/A",
+      "stackOverflow": "N/A",
+      "medium": "N/A"
+    }
   }
 }
-`;
-}
 
+CANDIDATE PROFILE:
+${cvData}
+
+${jobAnnouncement ? `TARGET JOB DESCRIPTION:\n${jobAnnouncement}` : ''}`;
+};
 
 export const prompteLanguageChange = (cvData: string, targetLanguage: string) => {
   return `Change the language of this CV to ${targetLanguage}. Return ONLY valid JSON without any additional text or markdown formatting: ${cvData}`;

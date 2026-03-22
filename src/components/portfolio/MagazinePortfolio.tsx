@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, useContext } from "react";
 import { ReadContext } from "@/app/GenComponents/ReadContext";
 import { Lightbox, LightboxDataType } from "./Lightbox";
 import { useExportHTML } from "@/hooks/useExportHTML";
+import { useCustomization } from "./CustomizationContext";
 
 // Sections
 import { HeroSection } from "./sections/HeroSection";
@@ -44,6 +45,8 @@ export default function MagazinePortfolio() {
         damping: 30,
         restDelta: 0.001
     });
+
+    const { visibility, themeVars } = useCustomization() || { visibility: {}, themeVars: {} };
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -100,7 +103,15 @@ export default function MagazinePortfolio() {
 
 
     return (
-        <div ref={containerRef} className="relative selection:bg-[#ff3c00] selection:text-white">
+        <div 
+            ref={containerRef} 
+            className="relative selection:bg-[#ff3c00] selection:text-white"
+            style={{
+                fontFamily: (themeVars as any)['--font-main'],
+                '--radius': (themeVars as any)['--radius'],
+                '--border-width': (themeVars as any)['--border-width']
+            } as any}
+        >
 
             {isExporting && (
                 <div data-export-exclude className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center font-mono">
@@ -164,7 +175,7 @@ export default function MagazinePortfolio() {
 
             {/* SECTION NAV - REFINED SCALE (DESKTOP) */}
             <div id="desktop-sec-nav" className="fixed right-6 top-1/2 -translate-y-1/2 z-[100] hidden xl:flex flex-col items-end gap-5 text-[0.7rem] font-mono tracking-widest">
-                {sections.map(s => (
+                {sections.filter(s => (visibility as any)[s.id] !== false).map(s => (
                     <button
                         key={s.id}
                         data-section={s.id}
@@ -175,49 +186,65 @@ export default function MagazinePortfolio() {
                         <span className={`rotate-180 transition-all duration-500 ${activeSection === s.id ? 'opacity-100 text-[var(--accent)] font-bold mb-2' : 'opacity-20 hover:opacity-100'}`}>
                             {s.label}
                         </span>
-                        <div className={`w-[1px] bg-[#ff3c00] transition-all duration-700 ${activeSection === s.id ? 'h-8' : 'h-0 group-hover:h-2 opacity-30'}`} />
+                        <div className={`w-[1px] bg-[#ff3c00] transition-all duration-700 ${activeSection === s.id ? 'h-8' : 'h-0 group-hover:h-2 opacity-30 shadow-[0_0_10px_var(--accent)]'}`} />
                     </button>
                 ))}
             </div>
 
-            <HeroSection
-                displayName={displayName}
-                displayTitle={displayTitle}
-                displayLocation={displayLocation}
-                personalInfo={personalInfo}
-                userImage={userImage}
-                handleExportHTML={handleExportHTML}
-            />
+            {visibility.hero !== false && (
+                <HeroSection
+                    displayName={displayName}
+                    displayTitle={displayTitle}
+                    displayLocation={displayLocation}
+                    personalInfo={personalInfo}
+                    userImage={userImage}
+                    handleExportHTML={handleExportHTML}
+                />
+            )}
 
-            <ProfileSection
-                professionalSummary={professionalSummary}
-                yearsExp={yearsExp}
-                missionsCount={missionsCount}
-                personalInfo={personalInfo}
-                displayLocation={displayLocation}
-            />
+            {visibility.about !== false && (
+                <ProfileSection
+                    professionalSummary={professionalSummary}
+                    yearsExp={yearsExp}
+                    missionsCount={missionsCount}
+                    personalInfo={personalInfo}
+                    displayLocation={displayLocation}
+                />
+            )}
 
-            <ExperienceSection experience={experience} />
+            {visibility.experience !== false && (
+                <ExperienceSection experience={experience} />
+            )}
 
-            <EducationSection education={education} />
+            {visibility.education !== false && (
+                <EducationSection education={education} />
+            )}
 
-            <SkillsSection skills={skills} tools={tools} />
+            {visibility.skills !== false && (
+                <SkillsSection skills={skills} tools={tools} />
+            )}
 
-            <ProjectsSection projects={projects} setLightboxData={setLightboxData} />
+            {visibility.projects !== false && (
+                <ProjectsSection projects={projects} setLightboxData={setLightboxData} />
+            )}
 
-            <ExtraSection
-                certifications={certifications}
-                publications={publications}
-                awards={awards}
-                volunteerExperience={volunteerExperience}
-                hobbies={hobbies}
-            />
+            {visibility.additional !== false && (
+                <ExtraSection
+                    certifications={certifications}
+                    publications={publications}
+                    awards={awards}
+                    volunteerExperience={volunteerExperience}
+                    hobbies={hobbies}
+                />
+            )}
 
-            <ContactSection
-                personalInfo={personalInfo}
-                onlinePresence={onlinePresence}
-                displayName={displayName}
-            />
+            {visibility.contact !== false && (
+                <ContactSection
+                    personalInfo={personalInfo}
+                    onlinePresence={onlinePresence}
+                    displayName={displayName}
+                />
+            )}
 
             <Lightbox lightboxData={lightboxData} setLightboxData={setLightboxData} />
 

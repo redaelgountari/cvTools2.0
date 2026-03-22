@@ -26,12 +26,14 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
   const [userinfos, setUserinfos] = useState<string | null>(null);
   const [settings, setSettings] = useState<ResumeSettings | null>(null);
   const [AnlysedCV, setAnlysedCV] = useState<Resume>(EmptyResume);
+  const [cvHistory, setCvHistory] = useState<Resume[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { data: session } = useSession();
 
   const isDataLoaded = useRef(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousAnlysedCV = useRef<Resume | null>(null);
+  const forceNewVersionRef = useRef(false);
 
   useEffect(() => {
     if (!isDataLoaded.current || !AnlysedCV || !userinfos) return;
@@ -50,12 +52,21 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
       try {
         await saveToStorage(userinfos, AnlysedCV, 7);
 
-        await axios.post("/api/storeuserdata", {
+        const action = forceNewVersionRef.current ? 'create-version' : 'save';
+        forceNewVersionRef.current = false;
+
+        const { data } = await axios.post("/api/storeuserdata", {
           userData: AnlysedCV,
           userId: userinfos,
+          action: action
         });
 
-        previousAnlysedCV.current = AnlysedCV;
+        if (data.resume) {
+          // Update AnlysedCV with the returned data (which has the _id)
+          setAnlysedCV(normalizeResumeData(data.resume));
+          previousAnlysedCV.current = normalizeResumeData(data.resume);
+          refreshHistory();
+        }
       } catch (err) {
         console.error("Error storing user data:", err);
       }
@@ -90,6 +101,18 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
           await saveToStorage(userinfos, normalized, 7);
         }
 
+        // Load History from DB
+        try {
+          const { data: historyData } = await axios.get("/api/GettingUserData", {
+            params: { userId: userinfos, history: "true" },
+          });
+          if (historyData.data && Array.isArray(historyData.data)) {
+            setCvHistory(historyData.data.map((item: any) => normalizeResumeData(item)));
+          }
+        } catch (historyErr) {
+          console.error("Error loading CV history from DB:", historyErr);
+        }
+
         isDataLoaded.current = true;
         setIsLoading(false);
       } catch (err) {
@@ -101,6 +124,24 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
 
     loadUserData();
   }, [userinfos]);
+
+  const triggerNewVersion = () => {
+    forceNewVersionRef.current = true;
+  };
+
+  const refreshHistory = async () => {
+    if (!userinfos) return;
+    try {
+      const { data: historyData } = await axios.get("/api/GettingUserData", {
+        params: { userId: userinfos, history: "true" },
+      });
+      if (historyData.data && Array.isArray(historyData.data)) {
+        setCvHistory(historyData.data.map((item: any) => normalizeResumeData(item)));
+      }
+    } catch (err) {
+      console.error("Error refreshing CV history:", err);
+    }
+  };
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -135,6 +176,10 @@ function ReadContextProviderInner({ children }: { children: React.ReactNode }) {
         userinfos,
         setUserinfos,
         isLoading,
+        cvHistory,
+        setCvHistory,
+        refreshHistory,
+        triggerNewVersion,
       }}
     >
       {children}

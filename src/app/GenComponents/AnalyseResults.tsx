@@ -118,7 +118,8 @@ export default function AnalyseResults() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeSection, setActiveSection] = useState('personal');
-  const { AnlysedCV, setAnlysedCV, userData, setUserData, isLoading: contextLoading } = useContext(ReadContext);
+  const { AnlysedCV, setAnlysedCV, userData, setUserData, isLoading: contextLoading, triggerNewVersion } = useContext(ReadContext);
+  const [isDirty, setIsDirty] = useState(false);
   const [userImages, setUserImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -164,6 +165,48 @@ export default function AnalyseResults() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [AnlysedCV, contextLoading]);
+
+  // Dirty check
+  useEffect(() => {
+    if (!AnlysedCV || !response) return;
+
+    // Fast shallow comparison of response vs AnlysedCV (ignoring _id and updatedAt for change detection)
+    const checkDirty = () => {
+      const { _id: rId, updatedAt: rUp, ...rRest } = response;
+      const { _id: aId, updatedAt: aUp, ...aRest } = AnlysedCV;
+      return JSON.stringify(rRest) !== JSON.stringify(aRest);
+    };
+
+    setIsDirty(checkDirty());
+  }, [response, AnlysedCV]);
+
+  const handleSaveAsNew = async () => {
+    setLoading(true);
+    try {
+      // Normalize data
+      const normalizedData = normalizeResumeData(response || {});
+      // Important: trigger new version creation
+      triggerNewVersion();
+      // This will trigger the ReadContextProvider effect with action: 'create-version'
+      setAnlysedCV(normalizedData as Resume);
+
+      toast({
+        title: "New Version Created",
+        description: "Your resume has been saved as a new historical version.",
+        variant: "default",
+        className: "bg-primary text-primary-foreground border-none"
+      });
+    } catch (err) {
+      console.error("Error creating new version:", err);
+      toast({
+        title: "Error",
+        description: "Failed to create new version.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -1796,23 +1839,46 @@ export default function AnalyseResults() {
               </div>
             )}
 
-            <div className="flex justify-end pt-6 border-t">
-              <Button
-                type="submit"
-                disabled={loading}
-                size="lg"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    Save Changes
-                  </>
-                )}
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t mt-8 justify-end items-center">
+              {isDirty && !loading && (
+                <p className="text-sm text-amber-600 flex items-center gap-1.5 font-medium animate-pulse sm:mr-auto">
+                  <AlertCircle className="w-4 h-4" />
+                  Unsaved changes detected
+                </p>
+              )}
+              
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <Button
+                  type="submit"
+                  disabled={loading || !isDirty}
+                  className="min-w-[140px]"
+                  size="lg"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={loading || !isDirty}
+                  onClick={handleSaveAsNew}
+                  className="border-primary/20 hover:border-primary hover:bg-primary/5 min-w-[180px]"
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Save as New Version
+                </Button>
+              </div>
             </div>
           </CardContent>
         </form>

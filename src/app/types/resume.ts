@@ -122,6 +122,9 @@ export interface Resume {
   hobbies: string[];
   image: string[];
   text?: string;
+  _id?: string;
+  isActive?: boolean;
+  updatedAt?: string;
 }
 
 export const EmptyResume: Resume = {

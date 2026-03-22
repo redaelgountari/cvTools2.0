@@ -114,7 +114,10 @@ const SECURITY_CONFIG = {
     /qualification/gi,
     /application/gi,
     /professional/gi,
-    /work|employment/gi
+    /work|employment/gi,
+    /generate|create|write|tailor|update|make/gi,
+    /lettre\s+de\s+motivation/gi,
+    /curriculum\s+vitae/gi
   ],
 
   maxInjectionScore: 5
@@ -147,7 +150,7 @@ export async function POST(request: Request) {
     }
 
     // Content relevance check
-    const relevanceCheck = checkContentRelevance(userData, useCase);
+    const relevanceCheck = checkContentRelevance(body);
     if (!relevanceCheck.relevant) {
       return NextResponse.json({
         error: `Your request doesn't appear to be related to ${useCase}. Please ask career-related questions only.`
@@ -326,8 +329,9 @@ function performSecurityChecks(body: RequestBody): {
   };
 }
 
-function checkContentRelevance(userData: string, useCase: UseCase): { relevant: boolean; reason?: string } {
-  const input = userData.toLowerCase();
+function checkContentRelevance(body: RequestBody): { relevant: boolean; reason?: string } {
+  const { userData, useCase, cvData, jobDescription } = body;
+  const input = (userData || '').toLowerCase();
 
   if (useCase === 'Analyse-resume') {
     const hasCVAnalysisPatterns = SECURITY_CONFIG.cvAnalysisPatterns.some(pattern =>
@@ -348,20 +352,37 @@ function checkContentRelevance(userData: string, useCase: UseCase): { relevant: 
     const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
       pattern.test(input)
     );
-    const hasJSONData = input.includes('{') && input.includes('}');
+    const hasJSONData = (input.includes('{') && input.includes('}')) || (cvData && typeof cvData === 'object');
 
     if (hasTranslationPatterns && (hasCareerPatterns || hasJSONData)) {
       return { relevant: true };
     }
-  } else {
-    // For other use cases
+  } else if (['cover-letter', 'resume-tailoring', 'cv-update', 'job-matching'].includes(useCase)) {
     const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
       pattern.test(input)
     );
-    if (!hasCareerPatterns) {
+    
+    // Check if we have substantial context data
+    const hasCVData = cvData && (typeof cvData === 'string' ? cvData.length > 50 : Object.keys(cvData).length > 0);
+    const hasJobDesc = jobDescription && jobDescription.length > 20;
+
+    if (hasCareerPatterns || hasCVData || hasJobDesc) {
+      return { relevant: true };
+    }
+
+    return {
+      relevant: false,
+      reason: `Your request for ${useCase} needs more career-related context (like your CV or a job description).`
+    };
+  } else {
+    // For other use cases (like prompt-enhancement, template)
+    const hasCareerPatterns = SECURITY_CONFIG.careerPatterns.some(pattern =>
+      pattern.test(input)
+    );
+    if (!hasCareerPatterns && input.length < 50) {
       return {
         relevant: false,
-        reason: 'No career-related content detected'
+        reason: 'Please provide more career-related details in your request.'
       };
     }
   }
@@ -600,7 +621,7 @@ async function tryGroq(prompt: string, useCase: UseCase): Promise<APIResponse | 
     });
 
     // Free model with generous limits
-    const modelName = 'llama-3.1-8b-instant';
+    const modelName = 'llama-3.3-70b-versatile';
 
     const response = await groq.chat.completions.create({
       model: modelName,

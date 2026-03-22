@@ -978,12 +978,12 @@ export default function Resume() {
       </AlertDialog>
 
       <AlertDialog open={showStatsModal} onOpenChange={setShowStatsModal}>
-        <AlertDialogContent className="max-w-2xl">
+        <AlertDialogContent className="max-w-4xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Match Analysis</AlertDialogTitle>
           </AlertDialogHeader>
-          <div className="py-4">
-            <MatchAnalysisStats matchData={matchData} />
+          <div className="py-2">
+            <MatchAnalysisStats matchData={matchData} layout="horizontal" />
           </div>
           <AlertDialogFooter>
             <AlertDialogAction>Close</AlertDialogAction>

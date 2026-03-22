@@ -47,7 +47,7 @@ export function HeroSection({
                             whileInView={{ y: 0 }}
                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                             className="text-[clamp(3.5rem,12vw,12rem)] font-bold leading-[0.8] tracking-tighter uppercase"
-                            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                            style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}
                         >
                             {displayName.split(" ")[0]}
                         </motion.h1>
@@ -64,7 +64,7 @@ export function HeroSection({
                             whileInView={{ y: 0 }}
                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
                             className="text-[clamp(3rem,12vw,12rem)] font-bold leading-[0.8] tracking-tighter text-[var(--accent)] mt-2 md:mt-[-0.5vw] md:ml-[3vw] uppercase"
-                            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                            style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}
                         >
                             {displayName.split(" ").slice(1).join(" ") || "ENGINEER"}
                         </motion.h1>

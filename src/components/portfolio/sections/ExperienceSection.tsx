@@ -13,7 +13,7 @@ export function ExperienceSection({ experience }: ExperienceSectionProps) {
             <motion.div
                 whileInView={{ x: [100, 0], opacity: [0, 0.03] }}
                 className="absolute -right-20 top-20 text-[25vw] md:text-[35vw] font-bold text-white leading-none -z-10 select-none"
-                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+                style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}
             >
                 EXP
             </motion.div>
@@ -56,7 +56,7 @@ export function ExperienceSection({ experience }: ExperienceSectionProps) {
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.6, delay: i * 0.12 + 0.1, ease: [0.16, 1, 0.3, 1] }}
                                         className="text-3xl md:text-5xl font-bold uppercase tracking-tighter mb-2 leading-none"
-                                        style={{ fontFamily: "'Syne', sans-serif" }}
+                                        style={{ fontFamily: "var(--font-main, 'Syne', sans-serif)" }}
                                     >{exp.company}</motion.h3>
                                 </div>
                                 <motion.div
@@ -77,7 +77,7 @@ export function ExperienceSection({ experience }: ExperienceSectionProps) {
                         </div>
 
                         <div className="grid lg:grid-cols-[1fr_2fr] gap-8 lg:gap-12 items-start">
-                            <div className="hidden lg:block text-[10vw] font-bold text-white/[0.02] -mt-16" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>0{i + 1}</div>
+                            <div className="hidden lg:block text-[10vw] font-bold text-white/[0.02] -mt-16" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}>0{i + 1}</div>
                             <div className="flex flex-col gap-6">
                                 <ul className="flex flex-col gap-5 border-l border-white/5 pl-10">
                                     {exp.responsibilities?.map((res: string, ri: number) => (

@@ -45,7 +45,7 @@ export function SkillsSection({ skills, tools }: SkillsSectionProps) {
                         className="bg-[#080808] p-12 group relative overflow-hidden"
                     >
                         {/* Background Number */}
-                        <div className="absolute top-6 right-6 md:top-10 md:right-10 text-[12vw] md:text-[10vw] font-bold text-white/[0.02] leading-none pointer-events-none" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+                        <div className="absolute top-6 right-6 md:top-10 md:right-10 text-[12vw] md:text-[10vw] font-bold text-white/[0.02] leading-none pointer-events-none" style={{ fontFamily: "var(--font-main, 'Bebas Neue', sans-serif)" }}>
                             0{i + 1}
                         </div>
 
